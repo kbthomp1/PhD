@@ -1,0 +1,93 @@
+% $ biblatex auxiliary file $
+% $ biblatex version 2.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated as
+% required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+\entry{einstein1935particle}{article}{}
+  \name{author}{2}{}{%
+    {{}%
+     {Einstein}{E.}%
+     {A.}{A.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Rosen}{R.}%
+     {N.}{N.}%
+     {}{}%
+     {}{}}%
+  }
+  \list{publisher}{1}{%
+    {APS}%
+  }
+  \strng{namehash}{EARN1}
+  \strng{fullhash}{EARN1}
+  \field{number}{1}
+  \field{pages}{73\bibrangedash 77}
+  \field{title}{{The particle problem in the general theory of relativity}}
+  \field{volume}{48}
+  \field{journaltitle}{Physical Review}
+  \field{year}{1935}
+\endentry
+
+\entry{golub1996matrix}{book}{}
+  \name{author}{2}{}{%
+    {{}%
+     {Golub}{G.}%
+     {G.H.}{G.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Van~Loan}{V.~L.}%
+     {C.F.}{C.}%
+     {}{}%
+     {}{}}%
+  }
+  \list{publisher}{1}{%
+    {Johns Hopkins Univ Pr}%
+  }
+  \strng{namehash}{GGVLC1}
+  \strng{fullhash}{GGVLC1}
+  \field{title}{{Matrix computations}}
+  \field{year}{1996}
+\endentry
+
+\entry{larsen1974asymptotic}{article}{}
+  \name{author}{2}{}{%
+    {{}%
+     {Larsen}{L.}%
+     {E.W.}{E.}%
+     {}{}%
+     {}{}}%
+    {{}%
+     {Keller}{K.}%
+     {J.B.}{J.}%
+     {}{}%
+     {}{}}%
+  }
+  \strng{namehash}{LEKJ1}
+  \strng{fullhash}{LEKJ1}
+  \field{pages}{75}
+  \field{title}{{Asymptotic solution of neutron transport problems for small
+  mean free paths}}
+  \field{volume}{15}
+  \field{journaltitle}{Journal of Mathematical Physics}
+  \field{year}{1974}
+\endentry
+
+\lossort
+\endlossort
+
+\endinput

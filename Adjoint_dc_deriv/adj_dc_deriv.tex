@@ -1,0 +1,121 @@
+%        File: adj_dc_deriv.tex
+%     Created: Fri Sep 11 04:00 PM 2015 E
+% Last Change: Fri Sep 11 04:00 PM 2015 E
+%
+\documentclass[10pt]{article}
+\usepackage{amsmath}
+\usepackage{fullpage,amsmath}
+
+\begin{document}
+\centerline{Species Decoupled Costate Variable Relationship Derivation}
+
+\vspace{.2in}
+
+The purpose of this is to show the relationship between the costate variable for total density $\lambda_\rho$ to the costate variables for species densities $\lambda_{\rho_s}$. Beginning with the definition of the Adjoint Equations:
+\begin{equation}
+  \left(\frac{\partial R}{\partial Q}\right)^T\lambda = \frac{\partial F}{\partial Q}
+  \label{adj_eqn}
+\end{equation}
+Where the $R$ is the residual of the governing equations, $Q$ is the vector of conserved variables, and $F$ is the cost function (i.e. lift, drag, etc.). Note that the first term is simply the transpose of the jacobian multiplied by the costate variable vector $\lambda$, and can be written as:
+\begin{equation}
+  \left(\frac{\partial R}{\partial Q}\right)_i^T \lambda 
+  = \sum_{j=1}^{N_{eq}}{
+    \left(\frac{\partial R_j}{\partial Q_i}\right) \lambda_j}
+  \label{lhs_sum}
+\end{equation}
+Suppose we define the system of equations in two different ways.  The first system, which we'll call the ``meanflow system'', consists of 5 equations:
+\begin{equation}
+  R = \begin{pmatrix} 
+        R_{\rho} \\ R_{\rho u} \\ R_{\rho v} \\ R_{\rho w} \\ R_{\rho E}
+      \end{pmatrix}, \quad
+      \lambda = \begin{pmatrix}
+        \lambda_\rho \\ \lambda_{\rho u} \\ \lambda_{\rho v} \\ \lambda_{\rho w} \\
+        \lambda_{\rho E}
+      \end{pmatrix}
+  \label{5x5}
+\end{equation}
+The second system consists of the full system of equations:
+\begin{equation}
+  R = \begin{pmatrix} 
+        R_{\rho_1} \\ \vdots \\ R_{\rho_s} \\ R_{\rho u} \\
+        R_{\rho v} \\ R_{\rho w} \\ R_{\rho E}
+      \end{pmatrix}, \quad
+      \lambda = \begin{pmatrix}
+        \lambda_{\rho_1} \\ \vdots \\ \lambda_{\rho_s} \\
+        \lambda_{\rho u} \\ \lambda_{\rho v} \\ \lambda_{\rho w} \\
+        \lambda_{\rho E}
+      \end{pmatrix}
+  \label{full_sys}
+\end{equation}
+By making the approximation that the mass fraction $c_s$ is constant, we can show that the full system of equations reduces to the meanflow system.  By this approximation the derivatives with respect to species density become:
+\begin{equation}
+  \frac{\partial R}{\partial \rho} =
+  \frac{\partial R}{\partial \rho_s} 
+  \frac{\partial \rho_s}{\partial \rho} =
+  c_s\left(\frac{\partial R}{\partial \rho_s}\right)
+  \label{mass_frac_approx}
+\end{equation}
+Thus, for a single row of the full system:
+\begin{equation}
+  \left(\frac{\partial R}{\partial Q}\right)_{\rho_s}^T \lambda 
+  = \sum_{j=1}^{N_{full}}{
+    \left(\frac{\partial R_j}{\partial \rho}\right) \frac{\lambda_j}{c_s}}
+    = \frac{1}{c_s}\left(\frac{\partial F}{\partial \rho}\right)
+  \label{full_reduction}
+\end{equation}
+After cancelling the mass fractions, this allows the first row of the full system to be equated to the first row of the meanflow system:
+\begin{equation}
+  \sum_{j=1}^{N_{full}}{
+    \left(\frac{\partial R_j}{\partial \rho}\right) \lambda_j}
+  = \sum_{j=1}^{N_{meanflow}}{
+    \left(\frac{\partial R_j}{\partial \rho}\right) \lambda_j}
+  \label{eq_mean_full}
+\end{equation}
+Expanding this out, it becomes clear many terms cancel:
+\begin{multline}
+  \frac{\partial R_{\rho_1}}{\partial \rho}\lambda_{\rho_1} +
+  \dots +
+  \frac{\partial R_{\rho_s}}{\partial \rho}\lambda_{\rho_s} +
+  \frac{\partial R_{\rho u}}{\partial \rho}\lambda_{\rho u} +
+  \frac{\partial R_{\rho v}}{\partial \rho}\lambda_{\rho v} +
+  \frac{\partial R_{\rho w}}{\partial \rho}\lambda_{\rho w} +
+  \frac{\partial R_{\rho E}}{\partial \rho}\lambda_{\rho E} = \\
+  \frac{\partial R_{\rho}}{\partial \rho}\lambda_{\rho} +
+  \frac{\partial R_{\rho u}}{\partial \rho}\lambda_{\rho u} +
+  \frac{\partial R_{\rho v}}{\partial \rho}\lambda_{\rho v} +
+  \frac{\partial R_{\rho w}}{\partial \rho}\lambda_{\rho w} +
+  \frac{\partial R_{\rho E}}{\partial \rho}\lambda_{\rho E}
+  \label{expand_row}
+\end{multline}
+\begin{equation}
+  \frac{\partial R_{\rho_1}}{\partial \rho}\lambda_{\rho_1} +
+  \dots +
+  \frac{\partial R_{\rho_s}}{\partial \rho}\lambda_{\rho_s} =
+  \frac{\partial R_{\rho}}{\partial \rho}\lambda_{\rho}
+  \label{simpl_ex_row}
+\end{equation}
+Finally, because the individual species mass fluxes must sum to the total mass flux:
+\begin{equation}
+  \sum_{s=1}^{N_{species}}{R_{\rho_s}} = R_{\rho}
+  \label{sp_sum}
+\end{equation}
+Eqn (\ref{simpl_ex_row}) can be rewritten as:
+\begin{equation}
+  \frac{\partial R_{\rho_1}}{\partial \rho}\lambda_{\rho_1} +
+  \dots +
+  \frac{\partial R_{\rho_s}}{\partial \rho}\lambda_{\rho_s} =
+  \frac{\partial R_{\rho_1}}{\partial \rho}\lambda_{\rho} +
+  \dots +
+  \frac{\partial R_{\rho_s}}{\partial \rho}\lambda_{\rho}
+  \label{near_final}
+\end{equation}
+Which implies that the species mass costate variables are all equal to the total mass costate variable, yielding:
+\begin{align}
+  \lambda_{\rho} &= \lambda_{\rho_s} \\
+  d \lambda_{\rho} &= d \lambda_{\rho_s}
+  \label{final_result}
+\end{align}
+
+\end{document}
+
+
