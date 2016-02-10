@@ -1,0 +1,54 @@
+\begin{figure}
+\begin{center}
+\includegraphics{surface_pressure}
+\caption{Pressure on Hemisphere Surface}
+\label{surf_press}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\begin{center}
+\includegraphics{surface_temperature}
+\caption{Temperature on Hemisphere Surface}
+\label{surf_temp}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\begin{center}
+\includegraphics{stag_line_mf}
+\caption{Species Mass Fractions on the Hemisphere Stagnation Line}
+\label{stag_line}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\begin{center}
+\includegraphics{mem_req}
+\caption{Memory Required Convergence Study}
+\label{mem_req}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\begin{center}
+\includegraphics{linear_solve_speedup}
+\caption{Relative Speedup of Implicit Solve for the Decoupled Scheme wrt the Fully Coupled Scheme}
+\label{lsolve_speedup}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
+\begin{figure}
+\begin{center}
+\includegraphics{total_cost}
+\caption{Overall Relative Speedup of the Decoupled Scheme wrt the Fully Coupled Scheme}
+\label{overall_speedup}
+\end{center}
+\end{figure}
+\efloatseparator
+ 
