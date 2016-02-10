@@ -14,10 +14,10 @@ example tex files demonstrating the use of the class file.
 
 Archive contents:
    Files:
-       * YourName-thesis.tex - main tex thesis document
+       * KyleThompson-thesis.tex - main tex thesis document
        * front.tex - front matter thesis content
        * optional.tex - ncsuthesis-compatible optional packages 
-       * YourName-thesis.bib - BibTeX references file
+       * KyleThompson-thesis.bib - BibTeX references file
 
        * ncsuthesis.cls - NC State thesis class
        * changepage.sty - A package to change margins within
