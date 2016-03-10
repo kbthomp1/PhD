@@ -1,96 +1,293 @@
 \chapter{Introduction}
 \label{chap-one}
-Let's start with a few paragraph basics, here is how to make \textbf{bold}, 
-and \textit{italics}, and \emph{emphasized}.  Let's say you need to cite 
-something in your references, simply type \verb^\cite{key}^, which produces
-\cite{einstein1935particle}.  
-Some other references are \cite{golub1996matrix} and 
-\cite{larsen1974asymptotic}.
-Some \LaTeX{} compilers 
-require a second compilation for citations and references 
-to be sorted and matched properly in the resulting document.  
 
-Here is a quotation:
-\begin{quotation}
-Alice, Bob and Carol are boring.  Who would even want to know their secret?
-\end{quotation}
+\section{Flow Solver Decoupled Approach}
+\subsection{Introduction}
 
-Let's say we need to make a list, try this on for size
-\begin{enumerate}
-  \item NCSU is great
-  \item I like NCSU
-  \item I really hope I can find a job when I graduate!
-\end{enumerate} 
+The usability of hypersonic solvers on complex geometries is often limited by
+the extreme problem size associated with high energy physics.  The additional
+equations required in reacting gas simulations lead to large Jacobians that
+scale quadratically in size to the number of governing equations.  This leads
+to a significant increase in the memory required to store the flux
+linearizations and the computational cost of the point solver.  As reacting gas
+CFD solvers are used to solve increasingly more complex problems, this onerous
+quadratic scaling of computational cost and Jacobian size will ultimately
+surpass the current limits of hardware and time constraints on achieving a flow
+solution\cite{fischer}.
 
-\section{Math enviroments}
-\subsection{Equations}
+The proposed method is based heavily upon the work of Candler et
+al.\cite{candler}. In that work, it was shown that quadratic scaling between the
+cost of solving the implicit system and adding species mass equations can be
+reduced from quadratic to linear scaling by decoupling the species mass
+equations from the mixture mass, momentum, and energy equations and solving the
+two systems sequentially.  In the aforementioned work, the scheme was derived
+for a modified form of the Steger-Warming flux vector splitting
+method\cite{MacCormack}, whereas the work presented here is derived for the Roe
+flux difference splitting (FDS) scheme\cite{roe}.
 
-There are many different ways to write equations, for example we could put 
-$a^2 + b^2 = c^2$ directly into a sentence.  Or we could use the equation 
-enviroment and do 
+A primary motivator for the presented work is to prepare for the implementation
+of an adjoint capability in a reacting gas solver that employs the Roe scheme.
+Developing an adjoint implementation for non-equilibrium flows is an extremely
+challenging problem, because deriving exact Jacobians for a reacting gas system
+is particularly difficult.  Decoupling the system also simplifies the derivation
+of exact Jacobians.  If the species mass equations are decoupled, the mixture mass,
+momentum, and energy flux Jacobians can be easily derived\cite{Nishikawa}, and a
+weighting scheme can be used to correct the non-uniqueness of the pressure
+linearization\cite{Shuen}.  For the decoupled species fluxes, we derive an exact
+linearization in the presented work.  Future work will include an adjoint-based
+error estimation capability that leverages these exact linearizations.
+
+\subsection{Background: Fully-Coupled Point Implicit Method}
+
+All work presented here is for the inviscid conservation equations, but it can be
+extended to include viscous terms.  For an inviscid, multi-species mixture, the
+governing equations in vector form are:
+\begin{equation}
+	\label{inv_flux_vec}
+	\frac{\partial \mathbf{U}}{\partial t}
+	+ \nabla\cdot \mathbf{F} = \mathbf{W}
+\end{equation}
+ or, in semi-discrete form,
+\begin{equation}
+	\label{inv_flux_fv}
+	\frac{\partial \mathbf{U}}{\partial t}
+	 + \frac{1}{V}\sum\limits_{f}(\mathbf{F}\cdot\mathbf{S})^f = \mathbf{W}
+ \end{equation}
+summing over all faces, $f$, in the domain, where V is the cell volume, 
+$\mathbf{W}$ is the chemical source term vector, and $\mathbf{S}$ is the face
+outward normal vector.  The vectors of conserved variables and fluxes are:
+\begin{equation}
+	\begin{matrix}
+	\mathbf{U}=\begin{pmatrix}
+   		\rho_1\\
+		\vdots \\
+		\rho_{ns} \\
+		\rho u \\
+		\rho v \\
+		\rho w \\
+		\rho E \\
+	\end{pmatrix},      &
+ 	\mathbf{F} = \begin{pmatrix}
+		\rho_1  \overline{U} \\
+		\vdots \\
+		\rho_{ns} \overline{U} \\
+		\rho u \overline{U} + p s_x\\
+		\rho u \overline{U} + p s_y\\
+		\rho u \overline{U} + p s_z\\
+		(\rho E + p) \overline{U} \\
+	\end{pmatrix}
+	\end{matrix}
+ \end{equation}
+where $\overline{U}$ is the outward pointing normal velocity, and $E$ is
+the total energy of the mixture per unit mass, defined as: 
+\begin{equation} E = \sum{c_s e_s}
+   + \frac{u^2+v^2+w^2}{2} 
+\end{equation}
+where $e_s$ is the internal energy of species $s$.  By using the Roe FDS scheme,
+\begin{equation}
+	\begin{matrix}
+		\mathbf{F}^{n+1} \approx \mathbf{F}^n+\frac{\partial \mathbf{F}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
+		\\
+		\mathbf{W}^{n+1} \approx \mathbf{W}^n+\frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
+	\end{matrix}
+\end{equation}
+%
+where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  By using an implicit time integration, the implicit scheme becomes:
 %
 \begin{equation}
-  a^2+b^2=c^2.
-  \label{eq:one}
+	\frac{\mathbf{\delta U}^n}{\Delta t}+\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^L}}\delta\mathbf{U}^L
+	+\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^R}}\delta\mathbf{U}^R)^n \mathbf{S}^f
+	- \frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n
+	= -\frac{1}{V}\sum\limits_{f}(\mathbf{F}^f\cdot\mathbf{S}^f)^n + \mathbf{W}^n
+\end {equation}
+%
+or, put more simply:
+%
+\begin{equation}
+	A\delta\mathbf{U}^n = \mathbf{b}
+\end{equation}
+%
+where $A$ is the Jacobian matrix of the fully coupled system, and $\mathbf{b}$
+is the residual vector.  For a point implicit relaxation scheme, the Jacobian
+matrix can be split into its diagonal and off-diagonal elements, with the latter
+moved to the RHS:
+%
+\begin{equation}
+\label{decomp_jac}
+	A=O+D
+\end{equation}
+%
+Each matrix element is a square $(ns+4)\times(ns+4)$ matrix.  One method of
+solving this system is a Red-Black Gauss-Seidel scheme\cite{red-black}, where matrix
+coefficients with even indices are updated first and, subsequently, the
+coefficients with odd indices are updated.  This red-black ordering enables
+better vectorization in solving the linear system.  The computational work for
+the Gauss-Seidel scheme is dominated by matrix-vector multiplications of
+elements of $O$ with $\delta\mathbf{U}$, which are $O(N^2)$ operations, where
+$N=ns+4$.  In the next section, it is shown that decoupling the system reduces
+these matrix-vector multiplications to $O(N^2 + M)$ operations, where $N=ns$ and
+$M=ns$.
+
+\subsection{Background: Decoupled Point Implicit Method}
+
+If the species mass equations are replaced by a single mixture mass equation,
+the mixture equations can be separated from the species mass
+equations and the conserved variables become
+%
+\begin{equation}
+	\begin{matrix}
+		\mathbf{U}'=\begin{pmatrix}
+			\rho \\
+			\rho u \\
+			\rho v \\
+			\rho w \\
+			\rho E
+		\end{pmatrix} &
+		\mathbf{\hat{U}}=\begin{pmatrix}
+			\rho_1 \\
+			\vdots \\
+			\rho_{ns}
+		\end{pmatrix}
+	\end{matrix}
+\end{equation}
+%
+Solving the flux vector is performed in two sequential steps.  The mixture
+fluxes are first solved as
+%
+\begin{equation} \frac{\partial \mathbf{{U}'}}{\partial t} +
+  \frac{1}{V}\sum\limits_{f}(\mathbf{F}'\cdot\mathbf{S})^f = 0 \end{equation}
+ %
+followed by the species fluxes as
+%
+\begin{equation} \frac{\partial \mathbf{\hat{U}}}{\partial t} +
+  \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot\mathbf{S})^f =
+  \mathbf{\hat{W}} \end{equation}
+ %
+Point relaxation uses Red-Black Gauss-Seidel to update the conserved
+variables in $\mathbf{U}'$ and all associated auxiliary variables, such as
+temperature, pressure, speed of sound, etc.  This is done by holding the
+thermo-chemical state constant, and will always result in the relaxation of a
+five-equation system.  This does trade an implicit relationship between the mixture
+and species equations for an explicit one; thus, this decoupling can have an
+impact on the stability of the scheme, especially due to the non-linearity of
+the chemical source term\cite{park}.
+ 
+The solution of the species mass equations takes a different form.  Based on the
+work of Candler et al.\cite{candler}, the decoupled variables can be rewritten
+in terms of mass fraction, as follows:
+%
+\begin{equation} \delta \mathbf{\hat{U}}^n =
+  \rho^{n+1}\mathbf{\hat{V}}^{n+1}-\rho^n\mathbf{\hat{V}}^n = \rho^{n+1} \delta
+  \mathbf{\hat{V}}^n + \mathbf{\hat{V}}^n \delta \rho^n \end{equation}
+%
+where $\mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T$, and $c_s=\rho_s/\rho$ the mass
+fraction of species $s$.  While the derivation of the species mass equations is
+different for the Roe FVS scheme from that of Steger-Warming proposed by Candler
+et al.\cite{candler}, the final result takes a similar form: 
+%
+\begin{gather} \hat{F}_{\rho_s} = c_s F'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
+  + (c_s^R-\tilde{c}_s)\rho^R\lambda^- \label{dc_flux} \end{gather}
+%
+where $F_\rho'$ is the total mass flux computed previously using all
+$\mathbf{U}'$ variables, and $\tilde{}$ denotes a Roe-averaged quantity.
+Likewise, linearizing the species mass fluxes with respect to the
+$\mathbf{\hat{V}}$ variables yields
+%
+\begin{align} \mathbf{\hat{F}}^{n+1} &= \mathbf{\hat{F}}^n +\frac{\partial
+    \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^L}\delta \mathbf{\hat{V}}^L
+    +\frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R}\delta
+    \mathbf{\hat{V}}^R \\ \frac{\partial \mathbf{\hat{F}}}{\partial
+      \mathbf{\hat{V}}^L} &= wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\
+      \frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R} &=
+      (1-w)F_\rho+(w-1)\rho^L\lambda^+ + w\rho^R\lambda^- \label{d_last}
+    \end{align}
+%
+A full derivation of Eqs.~(\ref{dc_flux}-\ref{d_last}), along with the
+definition of $w$, is included in Appendix A.  The chemical source term is
+linearized in the same manner as the fully coupled scheme; however, the updated
+$\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
+applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
+fractions:
+%
+\begin{equation} \mathbf{\hat{W}}^{n+1} = \mathbf{\hat{W}}^n+\frac{\partial
+    \mathbf{\hat{W}}}{\partial \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial
+      \mathbf{U}}{\partial \mathbf{\hat{V}}} \end{equation}
+%
+For simplicity of notation, we define
+%
+\begin{equation} C = \frac{\partial \mathbf{\hat{W}}}{\partial
+    \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial \mathbf{U}}{\partial
+      \mathbf{\hat{V}}} \end{equation}
+%
+The decoupled system to be solved becomes:
+%
+\begin{gather} \begin{split} \rho^{n+1}&\frac{\mathbf{\delta \hat{V}}^n}{\Delta
+    t}+\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{\hat{F}}^f}{\partial
+      \mathbf{\hat{V}}^L}\delta 	\mathbf{\hat{V}}^L +\frac{\partial
+        \mathbf{\hat{F}}^f}{\partial \mathbf{\hat{V}}^R}\delta
+        \mathbf{\hat{V}}^R)^{n, n+1}\mathbf{S}^f - C^{n, n+1}\delta\mathbf{V}^n
+        \\ &=
+        -\frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}^{n,n+1}\cdot\mathbf{S})^f +
+        \mathbf{W}^{n, n+1} -\mathbf{\hat{V}}^n\frac{\delta \rho^n}{\Delta t} -
+        R_\rho \end{split} \\ R_\rho =
+      -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}{(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
+    \end{gather}
+%
+where $R_\rho$ is included to preserve the constraint that the mass fractions
+sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta
+c_s}=0$.
+
+\subsection{Cost and Memory Savings of the Decoupled Implicit Problem}
+
+In decoupling the species equations, the most significant savings comes from the
+source term linearization being purely node-based\cite{gnoffo-tp}.  Solving the
+mean flow equations is conducted in the same manner as the fully coupled system.
+All entries in the Jacobian $A_m$ are linearizations of the mixture equation
+fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
+are linearizations of the species mass fluxes, which results in $ns \times ns$
+matrices.  Because there is no interdependence of species, except through the
+chemical source term, all contributions due to linearizing the convective flux
+are purely diagonal $ns \times ns$ matrices.  Via Eq.~(\ref{decomp_jac}), we
+decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
+following linear system:
+%%
+\begin{equation} \label{dc_sys} \begin{pmatrix} \Box &
+    & & & \\ & \ddots & & & \\ & & \Box \\ & & & \ddots & \\ & & & & \Box
+  \end{pmatrix} \begin{pmatrix} \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta
+    \mathbf{\hat{V}}_i \\ \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
+  \end{pmatrix} = \begin{pmatrix} \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\
+    \hat{b}_{nodes} \end{pmatrix} - \begin{pmatrix}
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
+  \end{pmatrix} 
 \end{equation} 
-And from here we can later reference it by simply doing typing 
-\verb^\ref{label}^, which gives \ref{eq:one}.  However, defining and using
-equation and figure reference macros will ensure that the equation
-references are consistent, instead of having Eq.~(1), Equation 3, Eqn 4
-scattered through the thesis.  This template file defines \verb^\eref^
-and \verb^\fref^ for this purpose. You can modify the macros to your liking
-in the \texttt{KyleThompson-thesis.tex} file.
-For example, the command \verb^\eref{label}^ gives \eref{eq:one}.
-
-
-If you don't need to reference an equation you may simply do this 
-\[
-  a^2 + b^2 = c^2.
-\]
-
-For Greek letters you must go to the math enviroments, for example 
-$\alpha$, $\beta$, and $\gamma$.  Let's look at equations that cover 
-multiple lines, none of these equations may be true or mean anything, but so 
-that the reader can get some ideas.  In addition I will use some other useful 
-notations like subscripts, superscripts, fractions, etc.  One important item 
-of note is that one uses the ``ampersand" symbol to line up equations 
-(also look at how I used quotations).
+%%
+where $\Box$ represents a dense $ns \times ns$ matrix, $[\diagdown]$ represents
+a diagonal matrix, and $\delta \mathbf{\hat{V}}_j$  is the decoupled variable
+update on the node $j$ that neighbors node $i$, where $N_{nb}$ is the number of
+nodes neighboring node $i$.  Thus, the non-zero entries in the off-diagonal
+matrix can be reduced from diagonal matrices to vectors.  This results in
+significant savings in both computational cost and memory, as the only quadratic
+operation left in solving the implicit system is dealing with the diagonal
+entries in the Jacobian.  Because the off-diagonal entries significantly
+outnumber the diagonal entries, we can expect nearly linear scaling in cost with
+the number of species.  If compressed row storage\cite{George} is used to
+only store non-zero off-diagonal entries, the relative memory savings in the
+limit of a large number of species for the Jacobian is given by
 %
-\begin{eqnarray}
-\gamma_1 & = & \alpha^{\beta} + \psi_0 \frac{\psi_1}{\psi_2+\psi_3} \label{eq.two} \\
-& = & \beta_1 + \beta_2 + \ldots + \beta_k \nonumber\\
-& \rightarrow & E(\gamma_2) 
-\end{eqnarray}
 
-Alternatively, one can specify a slightly different enviroment if none of 
-the equations need to be numbered.  Remember that if you are planning on 
-referring to them later on, you must use a ``label" statement.
+\begin{equation} \label{mem_req_eq} \begin{split} Relative\ Memory\ Cost &=
+    \frac{size(A_d)}{size(A)} \\ &= \lim_{ns\to\infty}
+    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nz})}{(ns+4)^2(N_{nodes}+N_{nz})} \\
+    &= \frac{N_{nodes}}{N_{nodes} + N_{nz}} \end{split} \end{equation}
 %
-\begin{eqnarray*}
-\gamma_1 & = & n^{-1/2} \displaystyle \sum_{i=1}^n \left[h(X_i,\beta_0)-E\{h(X_i,\beta_0)\}\right]\\
-& \rightarrow & \hat q \pm \frac{\partial \gamma_2}{\partial \beta}. 
-\end{eqnarray*}  
-Lastly there may be times in which you want to use a non-italicized word 
-your formula, such as an indicator function that may look like this 
-$\mbox{I}\{\mu_i(1,\beta)>\mu_i(0,\beta)\}$ , if so just use the 
-``mbox" statement.
+where $N_{nodes}$ is the number of nodes, and $N_{nz}$ is the number of non-zero
+off-diagonal entries stored using compressed row storage. For a structured grid,
+each node has six neighbors in 3D, i.e., $N_{nz} = 6N_{nodes}$; therefore, we can
+expect the Jacobian memory required to decrease by a factor of seven using this
+decoupled scheme. Interestingly, for a grid that is not purely hexahedral,
+$N_{nz} > 6N_{nodes}$; thus, this decoupled scheme provides higher relative
+memory savings on unstructured grids than structured grids when using compressed
+row storage.
 
-
-You could use a multiline equation for long equations.  The environment
-is \texttt{multline}.  Insert \verb^\\^ for line breaks.
-\begin{multline*}
-  \bo \cdot \vec{\nabla} \psi(\vec{r},\bo,E)
-   + \Sigma_t(\vec{r},E)\psi(\vec{r},\bo,E) = \\
-  \int_{4\pi} d\bo' \int_0^{\infty} dE' \, 
-  \Sigma_s(\vec{r},\bo'\to\bo,E'\to E)\psi(\vec{r},\bo',E')
-  + Q(\vec{r},\bo,E),
-\end{multline*}
-we operate with $\displaystyle\int_{0}^{\infty}\left(\,\cdot\,\right) dE$
-to obtain
-\begin{multline*}
-  \bo \cdot \vec{\nabla} \tilde{\psi}(\vec{r},\bo)
-  + \Sigma_t(\vec{r})\tilde{\psi}(\vec{r},\bo) = \\
-  \int_{4\pi} d\bo' \int_0^{\infty} dE' \, \psi(\vec{r},\bo',E')
-  \left [ \int_{0}^{\infty} dE \, \Sigma_s(\vec{r},\bo'\to\bo,E'\to E)
-  \right ] + \tilde{Q}(\vec{r},\bo),
-\end{multline*}

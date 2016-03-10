@@ -9,10 +9,19 @@
 
 \usepackage{booktabs}  % professionally typeset tables
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{textcomp}  % better copyright sign, among other things
 \usepackage{xcolor}
 \usepackage{lipsum}    % filler text
-\usepackage{subfig}    % composite figures
+\usepackage{mathtools}
+\usepackage{newlfont}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{titlesec}
+\usepackage[export]{adjustbox}
+\usepackage[position=b]{subcaption}
+\usepackage{url}
+\urlstyle{same}
 
 
 %%----------------------------------------------------------------------------%%
@@ -119,8 +128,6 @@ with a Title So Long it Needs a Line Break}
 \mainmatter
 
 \include{Chapter-1/Chapter-1}
-\include{Chapter-2/Chapter-2}
-\include{Chapter-3/Chapter-3}
 
 %%---------------------------------------------------------------------------%%
 %%  Bibliography 
@@ -150,10 +157,7 @@ with a Title So Long it Needs a Line Break}
 
 \include{Appendix-A/Appendix-A}
 
-
-
 %%---------------------------------------------------------------------------%%
 \backmatter
-
 
 \end{document}
