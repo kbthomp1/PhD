@@ -3,23 +3,6 @@
 %Predefined definitions
 \usepackage{common}
 
-\usepackage{geometry}
-%\geometry{letterpaper}                   		% ... or a4paper or a5paper or ... 
-\usepackage{graphicx}
-\usepackage{mathtools}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{newlfont}
-\usepackage{caption}
-\usepackage{subcaption}
-\usepackage{environ}
-
-\NewEnviron{myequation}{%
-    \begin{equation}
-    \scalebox{1.1}{$\BODY$}
-    \end{equation}
-    }
-
 \title{Notes Towards PhD}
 \author{Kyle B. Thompson}
 %\date{}							% Activate to display a given date or no date
@@ -53,9 +36,9 @@ To eliminate the dependence of conserved variables $\mq$ on the design
 variables, we solve the adjoint equation
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \label{adjoint}
   \bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T\mathbf{\Lambda}=
   -\frac{\partial f}{\partial \mq}
+  \label{adjoint-main}
 \end{equation}
 %------------------------------------------------------------------------------%
 Where the Lagrange multipliers (also known as costate variables),
@@ -79,7 +62,7 @@ derivative of the Lagrangian becomes
   \label{obj_function}
 \end{equation}
 %------------------------------------------------------------------------------%
-By solving the adjoint equation in eq.~(\ref{adjoint}) to obtain the costate
+By solving the adjoint equation in \eref{adjoint-main}) to obtain the costate
 variable vector, $\mathbf{\Lambda}$, we can now use a non-linear optimizer to
 determine the optimum set of design variables, $\md^*$. This can be done using
 {\bf PORT} or {\bf KSOPT} in FUN3D, as well as a host of other non-linear
@@ -506,4 +489,6 @@ This can be simplified to
   B = \frac{C_{p_2} + C_{p_1}}{(T_2 - T_1)^2}
 \end{gather}
 %------------------------------------------------------------------------------%
+\section{Block Jacobi Adjoint Decoupling}
+\input{adjoint-dc/adjoint-dc.tex}
 \end{document}  
