@@ -6,3 +6,6 @@
 *.lot
 *.log
 *.toc
+*.nav
+*.out
+*.snm
