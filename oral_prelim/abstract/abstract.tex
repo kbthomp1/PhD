@@ -1,0 +1,46 @@
+%        File: abstract.tex
+%     Created: Tue Apr 12 03:00 PM 2016 E
+% Last Change: Tue Apr 12 03:00 PM 2016 E
+%
+\documentclass[a4paper]{article}
+
+\usepackage{newlfont}
+\usepackage{titlesec}
+
+  \title{Aerothermodynamic Design Sensitivities for a Reacting Gas Flow Solver
+  on an Unstructured Mesh Using a Discrete Adjoint Formulation}
+
+  \date{\vspace{-5ex}}
+%\date{}  % Toggle commenting to test
+
+ \author{
+  Kyle B. Thompson%
+    \thanks{NASA Pathways Intern, Aerothermodynamics Branch} \\
+  {\normalsize\itshape NASA Langley Research Center, Hampton, VA} \\
+ }
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+An approach is described to efficiently compute design sensitivities in an
+inviscid, reacting gas flow solver, using a discrete adjoint formulation.  In
+both the primal and adjoint flow solver the species continuity equations are
+decoupled from the mixture continuity, momentum, and total energy equations.
+This decoupling simplifies the implicit system, so that both solvers can be made
+significantly more efficient, with very little penalty on overall scheme
+robustness.  The computational cost of the point implicit relaxation in the
+primal flow solver is shown to scale linearly with the number of species for the
+decoupled system, whereas the fully coupled approach scales quadratically. To
+demonstrate this capability, a hypersonic vehicle with a rcs jet configuration
+is proposed as a design problem in which drag and surface temperature are sought
+to be be optimized by a variety of design parameters related to the rcs jet
+conditions and geometry.
+
+\end{abstract}
+
+\end{document}
+
+
