@@ -13,6 +13,15 @@
 \usepackage{relsize}
 \usepackage{newlfont}
 \usepackage{environ}
+\usepackage[skins,theorems]{tcolorbox}
+
+\usepackage{xcolor}% http://ctan.org/pkg/xcolor
+\newcommand{\mred}[1]{%
+  \ooalign{\hss\makebox[0pt]{\fcolorbox{red!20}{red!20}{$#1$}}\hss\cr\phantom{$#1$}}%
+}
+\newcommand{\mblue}[1]{%
+  \ooalign{\hss\makebox[0pt]{\fcolorbox{green!10}{blue!15}{$#1$}}\hss\cr\phantom{$#1$}}%
+}
 
 %\usepackage{caption}
 %\usepackage{subcaption}
@@ -23,11 +32,25 @@
     \scalebox{1.1}{$\BODY$}
     \end{equation}
     }
+
 \NewEnviron{smallequation}{%
     \begin{equation*}
-    \scalebox{0.8}{$\BODY$}
+    \scalebox{0.7}{$\BODY$}
     \end{equation*}
     }
+
+\NewEnviron{cboxf}[1][black]{%
+  \tcbset{size=fbox}
+  \tcbhighmath[boxrule=2pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
+
+\NewEnviron{cboxn}[1][black]{%
+  \tcbset{size=normal}
+  \tcbhighmath[boxrule=2pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
+
 
 %----------------------- CUSTOM SECTION PAGE BREAK ----------------------------%
 \let\oldsection\section
@@ -39,6 +62,9 @@
 \newcommand{\erefs}[2]{Eq.s~(\ref{#1}-\ref{#2})}
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
+
+% Colored box for equation
+%\newcommand{cbox}[2]{\tcbhighmath[boxrule=2pt,arc=1pt,colback=#1!10!white,colframe=#1, drop fuzzy shadow=red]{#2}}
 
 % residual and its derivatives
 \newcommand{\res}[1]{\vR_{#1}}
