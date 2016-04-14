@@ -6,14 +6,14 @@
 \documentclass{beamer}
 \usetheme{Frankfurt}
 \usepackage{common}
-\usepackage{lmodern}% http://ctan.org/pkg/lm
-\usepackage{mathtools}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{stmaryrd}
-\usepackage{adjustbox}
-\usepackage{subfigure}
-\usepackage{graphicx}
+%\usepackage{lmodern}% http://ctan.org/pkg/lm
+%\usepackage{mathtools}
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{stmaryrd}
+%\usepackage{adjustbox}
+%\usepackage{subfigure}
+%\usepackage{graphicx}
 
   \title{Aerothermodynamic Design Sensitivities for a Reacting Gas Flow Solver
   on an Unstructured Mesh Using a Discrete Adjoint Formulation}
@@ -359,18 +359,177 @@
 
 \section{Adjoint Solver}
 \stepcounter{subsection}
-
+\subsection{Adjoint Solver - Derivation}
 \begin{frame}
+  \frametitle{Adjoint Solver - Derivation}
   \begin{itemize}
     \item The derivation of the adjoint approach to compute design sensitivities
-      begins with forming the Lagrangian as
-      \[
+      begins with forming the Lagrangian and differentiating with respect to the
+      design variables
+      \begin{gather*}
         L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
-        +\mathbf{\Lambda}^T\mr(\md,\mq,\mx)
+        +\mathbf{\Lambda}^T\mr(\md,\mq,\mx) \\
+	\pd{L}{\md} =
+	\Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+	\pd{f}{\mx}\Bigg\} + \bigg[\pd{\mq}{\md}\bigg]^T
+	\Bigg\{\pd{f}{\mq} + \bigg[\pd{\mr}{\mq}\bigg]^T \bLam \Bigg\} \\
+	+ \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+	+ \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam \\
+        \begin{aligned} 
+          \md &= \text{design variables}\quad & f &= \text{cost function} \\
+          \mq &= \text{flow variables}\quad & \mr &= \text{flow residual} \\ 
+          \mx &= \text{computational grid}\quad & \bLam &= \text{costate variables} 
+        \end{aligned}
+      \end{gather*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Adjoint Solver - Derivation}
+    \begin{itemize}
+      \item Need to eliminate flow variable dependence on design variables,
+	$\pd{\mq}{\md}$
+      \item Adjoint equation
+	\[ \bigg[\pd{\mr}{\mq}\bigg]^T\bLam = -\pd{f}{\mq} \]
+      \item Solve for $\bLam$ and compute sensitivity derivatives
+	\[
+	  \pd{L}{\md} =
+	  \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+	  \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+	  + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
+	\]
+    \end{itemize}
+\end{frame}
+
+\subsection{Adjoint Solver - Fully Coupled Iterative Method}
+
+\begin{frame}
+  \frametitle{Adjoint Solver - Fully Coupled Iterative Method}
+  \begin{itemize}
+    \item Adjoint problem is a linear system
+      \begin{equation*}
+        \begin{pmatrix}
+          \rtdiff{\rho_i}{\rho_j} & \rtdiff{\rho_i}{\rho \vu} & 
+          \rtdiff{\rho_i}{\rho E} \\ \\
+          \rtdiff{\rho \vu}{\rho_j} & \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho E} \\ \\
+          \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho E}
+        \end{pmatrix}
+        \begin{pmatrix}
+          \adjlam{\rho_i} \\ \\
+          \adjlam{\rho \vu} \\ \\
+          \adjlam{\rho E}
+        \end{pmatrix}
+        = -
+        \begin{pmatrix}
+          \pd{f}{\rho_i} \\ \\
+          \pd{f}{\rho \vu} \\ \\
+          \pd{f}{\rho E}
+        \end{pmatrix}
+      \end{equation*}
+    \item Can be solved with Krylov method (.i.e GMRES), but time marching
+      similar to flow solver shown to be more robust
+      \begin{equation*}
+        \left( \frac{V}{\Delta t} \mi + \rtdiff{1}{\mq} \right)
+        \Delta \adjlam{}
+        = -\pd{f}{\mq}
+        - \rtdiff{2}{\mq} \adjlam{}
+      \end{equation*}
+    \item Straightforward to formulate, but cost and memory requirements
+      scale quadratically with number of species
+      
+  \end{itemize}
+\end{frame}
+
+\subsection{Adjoint Solver - Decoupled Iterative Method}
+
+\begin{frame}
+  \frametitle{Adjoint Solver - Decoupled Iterative Method}
+  \begin{itemize}
+    \item Rewrite conserved variables similar to flow solver
+      \[
+        \begin{pmatrix}
+          \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & 
+          \rtdiff{\rho}{\rho E} & \rtdiff{\rho}{c_s} \\ \\
+          \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho \vu}{c_s} \\ \\
+          \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho E} & \rtdiff{\rho E}{c_s} \\ \\
+          \rtdiff{\rho_s}{\rho} & \rtdiff{\rho_s}{\rho \vu} & 
+          \rtdiff{\rho_s}{\rho E} & \rtdiff{\rho_s}{c_s}
+        \end{pmatrix}
+        \begin{pmatrix}
+          \adjlam{\rho} \\ \\
+          \adjlam{\rho \vu} \\ \\
+          \adjlam{\rho E} \\ \\
+          \adjlam{c_s}
+        \end{pmatrix}
+        = -
+        \begin{pmatrix}
+          \pd{f}{\rho} \\ \\
+          \pd{f}{\rho \vu} \\ \\
+          \pd{f}{\rho E} \\ \\
+          \pd{f}{c_s}
+        \end{pmatrix}
       \]
-      \begin{align*}
-        f = \text{cost function}
-      \end{align*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Adjoint Solver - Decoupled Iterative Method}
+  \begin{itemize}
+    \item Separate into two systems and solve as block jacobi scheme
+\begin{smallequation}
+  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
+  \adjlam{c_s}
+  = -\pd{f}{c_s}
+  - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
+  - \rtdiff{\rho_s}{\rho} \adjlam{\rho}
+  - \rtdiff{\rho_s}{\rho \vu} \adjlam{\rho \vu}
+  - \rtdiff{\rho_s}{\rho E} \adjlam{\rho E}
+\end{smallequation}
+\begin{smallequation}
+  \begin{split}
+    \left[
+      \frac{V}{\Delta t} \mi +
+      \begin{pmatrix}
+        \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho}{\rho E} \\ \\
+        \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho \vu}{\rho E} \\ \\
+        \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho E}{\rho E}
+      \end{pmatrix}
+    \right]
+    \begin{pmatrix}
+      \Delta \adjlam{\rho} \\ \\
+      \Delta \adjlam{\rho \vu} \\ \\
+      \Delta \adjlam{\rho E}
+    \end{pmatrix}
+    &= \\ -
+    \begin{pmatrix}
+      \pd{f}{\rho} \\ \\
+      \pd{f}{\rho \vu} \\ \\
+      \pd{f}{\rho E}
+    \end{pmatrix}
+    -
+    \begin{pmatrix}
+      \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho}{\rho E} \\ \\
+      \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho \vu}{\rho E} \\ \\
+      \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    &
+    \begin{pmatrix}
+      \adjlam{\rho} \\ \\
+      \adjlam{\rho \vu} \\ \\
+      \adjlam{\rho E}
+    \end{pmatrix}
+    -
+    \begin{pmatrix}
+      \rtdiff{\rho}{c_s} \\ \\
+      \rtdiff{\rho \vu}{c_s} \\ \\
+      \rtdiff{\rho E}{c_s}
+    \end{pmatrix}
+    \adjlam{c_s}
+  \end{split}
+\end{smallequation}
+      
   \end{itemize}
 \end{frame}
 
