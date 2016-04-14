@@ -20,6 +20,7 @@
 
   \author{ Kyle B. Thompson }
 \begin{document}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
 \begin{frame}
   \titlepage
 \end{frame}
@@ -359,9 +360,9 @@
 
 \section{Adjoint Solver}
 \stepcounter{subsection}
-\subsection{Derivation}
+\subsection{Derivation of Discrete Adjoint Formulation}
 \begin{frame}
-  \frametitle{Derivation}
+  \frametitle{Derivation of Discrete Adjoint Formulation}
   \begin{itemize}
     \item The derivation of the adjoint approach to compute design sensitivities
       begins with forming the Lagrangian and differentiating with respect to the
@@ -395,19 +396,19 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-    \frametitle{Derivation}
+    \frametitle{Derivation of Discrete Adjoint Formulation}
     \begin{itemize}
       \item Need to eliminate flow variable dependence on design variables,
 	$\pd{\mq}{\md}$
       \item Adjoint equation
 	\[ \bigg[\pd{\mr}{\mq}\bigg]^T\bLam = -\pd{f}{\mq} \]
       \item Solve for $\bLam$ and compute sensitivity derivatives
-	\[
-	  \pd{L}{\md} =
-	  \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
-	  \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
-	  + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
-	\]
+      	\[
+      	  \pd{L}{\md} =
+      	  \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+      	  \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+      	  + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
+      	\]
     \end{itemize}
 \end{frame}
 
@@ -455,7 +456,7 @@
 \subsection{Decoupled Iterative Method}
 
 \begin{frame}[fragile]
-  \frametitle{- Decoupled Iterative Method}
+  \frametitle{Decoupled Iterative Method}
   \begin{itemize}
     \item Rewrite conserved variables similar to decoupled flow solver
       \only<1>{\begin{equation*}
@@ -787,13 +788,65 @@
 \stepcounter{subsection}
 \begin{frame}
   \frametitle{Design Problem: Hypersonic SRP Vehicle}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.2,trim={0 8cm 0 8cm}]{figures/from_peter/annular_grid}
+         \caption{Annular nozzle mesh}
+         \label{fig:annular_grid}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.2,trim={0 8cm 0 9cm}]{figures/from_peter/T_annular}
+         \caption{Temperature Contour}
+         \label{fig:b}
+     \end{minipage}
+  \end{figure}
+  \begin{itemize}
+    \item Apply adjoint to design Reaction Control System (RCS) jet system to
+      shape shock interation for maximum drag and minimum surface temperature
+    \item This annular nozzle configuration has been shown to have a steady
+      solution for inviscid flow
+  \end{itemize}
 \end{frame}
 
-\section{Conclusions}
+\begin{frame}
+  \frametitle{Design Problem: Parameterization}
+  \begin{itemize}
+    \item Design sensitivities given by
+      \[
+        \pd{L}{\md} =
+        \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+        \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+        + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
+      \]
+    \item Define cost functions $=> f$
+      \begin{itemize}
+        \item Total vehicle drag (with and without jet thrust contribution)
+        \item Total vehicle surface temperature (in lieu of heating, since
+          these are inviscid simulations)
+      \end{itemize}
+    \item Define design parameters $=> \md$
+      \begin{itemize}
+        \item Plenum pressure
+        \item Plenum temperature
+        \item Jet placement and geometry
+      \end{itemize}
+    \item Define mesh parameters $=> \mx$
+      \begin{itemize}
+        \item Custom grid generation utility
+        \item Faciliate all grid dependencies by wrapping in complex variables
+      \end{itemize}
+
+  \end{itemize}
+\end{frame}
+
+\section{Concluding Remarks}
 \stepcounter{subsection}
 
 \begin{frame}
-  \frametitle{Conclusions}
+  \frametitle{Concluding Remarks}
   \begin{itemize}
     \item Decoupling the species equations yield impressive benefits at minimal cost in robustness
       \begin{itemize}
@@ -802,22 +855,27 @@
         \item Convergence issues at very high velocities can be offset by
           scaling source term as solution progresses
       \end{itemize}
-      \item Improvements valuable for adjoint work
+      \item Decoupling appears promising for adjoint work
         \begin{itemize}
           \item Preliminary testing has shown that memory overhead in adjoint is
             significantly reduced with decoupled scheme
           \item Can expect similar speedup in adjoint solve
-          \item Differences between fully-coupled and decoupled method results
-            may impact adjoint and require further study
+        \end{itemize}
+      \item Design problem provides good testbed for a truly unique hypersonic
+        application
+        \begin{itemize}
+          \item Parameterization is well understood and defined
+          \item Non-linearity of design space is a concern
+          \item Optimal steady solution exists?
         \end{itemize}
   \end{itemize}
 \end{frame}
 \begin{frame}
   \frametitle{Acknowledgements}
   \begin{itemize}
-    \item The authors would like to recognize the FUN3D team at NASA
-     Langley Research Center, for their support in integrating aspects of the
-     compressible gas path into the reacting gas path of FUN3D.
+    \item Thanks the FUN3D team at NASA Langley Research Center, for their
+      support in integrating aspects of the compressible gas path into the
+      reacting gas path of FUN3D.
    \item Thanks to the Entry Systems Modeling Project within the NASA
      Game Changing Development Program for their funding and support of this research.  
   \end{itemize}
