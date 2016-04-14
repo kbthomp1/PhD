@@ -32,6 +32,56 @@
 \begin{frame}
   \frametitle{Introduction and Motivation}
   \begin{itemize}
+    \item Exploring design space using high-fidelity CFD is challenging
+    \item zero-order methods (sampling) are prohibitively expensive
+    \item Need to be intelligent about techniques for evaluating sensitivity to
+      design parameters
+    \item Gradient-based optimization much more efficient than sampling, but
+      requires calculating sensitivity derivatives
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction and Motivation}
+  \begin{itemize}
+    \item How to compute sensitivity of design variables?
+    \item Direct differentiation approach
+      \begin{itemize}
+        \item Navier-Stokes equations can be directly differentiated to yield
+          sensitivity derivatives necessary for gradient-based optimization
+        \item Requires a minimum of one flow solution for each design variable
+          sensitivity
+        \item Prohibitively expensive for large number of design parameters
+      \end{itemize}
+  \item Adjoint approach
+    \begin{itemize}
+      \item Solve adjoint equations in addition to Navier Stokes flow equations to
+        obtain sensitivity derivatives
+      \item One flow and adjoint solution needed for each cost function,
+        regardless of number of design variables
+      \item Considerably more efficient than direct differentiation approach for
+        large number of design parameters
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction and Motivation}
+  \begin{itemize}
+    \item Adjoint-based design optimization has recieved considerable attention
+      in compressible, perfect gas CFD solvers, but very little in reacting flow
+      solvers
+    \item Difficulty of adjoint approach lies in implementating exact
+      linearizations for 2nd-order flux construction scheme
+    \item Particularly difficult for reacting flows, due to 
+      \begin{itemize}
+        \item complexity of linearizing the additional equations for
+          multi-species chemical kinetics
+        \item Serious memory and computational cost concerns
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction and Motivation}
+  \begin{itemize}
     \item Reacting gas simulations require solving a large number of conservation
       equations
     \item Memory concerns
@@ -101,7 +151,9 @@
       \end{itemize}
   \end{itemize}
 \end{frame}
-\section{Fully-Coupled Method}
+\section{Flow Solver}
+
+\subsection{Fully-Coupled Method}
 \stepcounter{subsection}
 \begin{frame}
   \frametitle{Fully-Coupled Point Implicit Method}
@@ -149,7 +201,6 @@
 
   \end{itemize}
 \end{frame}
-
 \begin{frame}
   \frametitle{Fully-Coupled Point Implicit Method}
   \begin{itemize}
@@ -195,7 +246,7 @@
   \end{itemize}
 \end{frame}
 
-\section{Decoupled Method}
+\subsection{Decoupled Method}
 \stepcounter{subsection}
 
 \begin{frame}
@@ -303,6 +354,23 @@
       {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
     \end{gather*}
   \item $R_\rho$ is included to preserve $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta c_s}=0$.
+  \end{itemize}
+\end{frame}
+
+\section{Adjoint Solver}
+\stepcounter{subsection}
+
+\begin{frame}
+  \begin{itemize}
+    \item The derivation of the adjoint approach to compute design sensitivities
+      begins with forming the Lagrangian as
+      \[
+        L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
+        +\mathbf{\Lambda}^T\mr(\md,\mq,\mx)
+      \]
+      \begin{align*}
+        f = \text{cost function}
+      \end{align*}
   \end{itemize}
 \end{frame}
 
