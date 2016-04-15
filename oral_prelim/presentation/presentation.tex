@@ -23,7 +23,7 @@
 \section{Introduction}
 \stepcounter{subsection}
 \begin{frame}
-  \frametitle{Introduction and Motivation}
+  \frametitle{Introduction - Design}
   \vspace{-.5cm}
   \begin{figure}[ht]
      \begin{minipage}[b]{0.45\linewidth}
@@ -55,30 +55,35 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation - Design}
+  \frametitle{Introduction - Design}
   \begin{itemize}
-    \item How to compute sensitivity of many design variables?
-    \item Direct differentiation approach
-      \begin{itemize}
-        \item Navier-Stokes equations can be directly differentiated to yield
-          sensitivity derivatives necessary for gradient-based optimization
-        \item Finite difference requires a minimum of one flow solution for each
-          design variable sensitivity
-        \item Prohibitively expensive for large number of design parameters
-      \end{itemize}
-  \item Adjoint approach
+    \item \textbf{$\mathbf{>100}$ design variables} in OM6 wing shape optimization
+    \item<2-> How do you to compute sensitivity of that many DVs?
+  \end{itemize}
+  \only<3>{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black, 
+    title = Direct differentiation approach - Expensive]
+    \begin{itemize}
+      \item Navier-Stokes equations can be directly differentiated to yield
+        sensitivity derivatives necessary for gradient-based optimization
+      \item Finite difference requires a minimum of \textbf{one flow solution
+        for each design variable sensitivity}
+      \item Prohibitively expensive for large number of design parameters
+    \end{itemize}
+  \end{tcolorbox}}
+  \only<4>{\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,
+    title = Adjoint approach - More efficient]
     \begin{itemize}
       \item Solve adjoint equations in addition to Navier Stokes flow equations to
         obtain sensitivity derivatives
-      \item One flow and adjoint solution needed for each cost function,
-        regardless of number of design variables
+      \item \textbf{One flow and adjoint solution needed for each cost function},
+      regardless of number of design variables
       \item Considerably more efficient than direct differentiation approach for
         large number of design parameters
     \end{itemize}
-  \end{itemize}
+  \end{tcolorbox}}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation - Design}
+  \frametitle{Introduction - Design}
   \begin{itemize}
     \item Adjoint-based design optimization has recieved considerable attention
       in compressible, perfect gas CFD solvers, but very little in reacting flow
@@ -96,7 +101,7 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation - Decoupled Approach}
+  \frametitle{Introduction - Decoupled Approach}
   \begin{itemize}
     \item Reacting gas simulations require solving a large number of conservation
       equations
@@ -121,7 +126,7 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation - Decoupled Approach}
+  \frametitle{Introduction - Decoupled Approach}
   \begin{itemize}
     \item Loosely-coupled solvers have become popular in the combustion
       community.
@@ -160,6 +165,26 @@
           Implicit Method for Aerothermodynamics and Reacting Flows.'' \textit{AIAA
           Journal}, Vol. 51, no. 5, pp. 1245-1254.
       \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \vspace{-0.2cm}
+  \frametitle{Introduction - Choice of Code and Implementation}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/fun3d_logo.png}
+    \label{fig:fun3d}
+  \end{figure}
+  \begin{itemize}
+    \item FUN3D chosen as code to facilitate all research presented, because
+      \begin{itemize}
+        \item Excellent infrastructure for adjoint-based design analysis and optimization
+        \item Robust hypersonic flow solver
+        \item NASA Langley Research Center supporting me through the Pathways
+          program
+      \end{itemize}
+    \item Decision to pursue discrete adjoint, rather than continuous adjoint,
+      due to current FUN3D implementation
   \end{itemize}
 \end{frame}
 \section{Flow Solver}
@@ -368,6 +393,198 @@
   \end{itemize}
 \end{frame}
 
+\section{Cost and Memory Savings}
+\stepcounter{subsection}
+\subsection{Cost and Memory Savings of the Decoupled Flow Solver}
+
+\begin{frame}
+  \frametitle{Cost and Memory Savings of the Decoupled Flow Solver}
+\begin{itemize}
+  \item Most significant savings comes from the source term linearization being purely node-based
+    \begin{itemize}
+      \item Convective contributions to block Jacobians are diagonal
+      \item Source term jacobian is dense block Jacobian
+      \item In the global system (w/chemistry), all off-diagonal block jacobians
+        are diagonal
+    \end{itemize}
+  \end{itemize}
+  \[
+    \begin{pmatrix} 
+      \Box & & & & \\ 
+      & \ddots & & & \\ 
+      & & \Box \\ 
+      & & & \ddots & \\ 
+      & & & & \Box
+    \end{pmatrix} \begin{pmatrix} \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta
+      \mathbf{\hat{V}}_i \\ \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
+    \end{pmatrix} = \begin{pmatrix} \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\
+      \hat{b}_{nodes} \end{pmatrix} - \begin{pmatrix}
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
+    \end{pmatrix} 
+  \]
+  \begin{itemize}
+    \item Matrix-vector products $\to$ inner products: $O(ns^2) \to O(ns)$
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Cost and Memory Savings of the Decoupled Flow Solver}
+  \begin{itemize}
+    \item Comparing size of Jacobian systems, using Compressed Row Storage
+  \end{itemize}
+  \begin{align*}
+    \ma_d &= \text{Decoupled system Jacobians} \\
+    \ma &= \text{Fully-coupled system Jacobians}
+  \end{align*}
+  \[
+  \begin{split} Relative\ Memory\ Cost &=
+    \frac{size(\ma_d)}{size(\ma)} \\ &= \lim_{ns\to\infty}
+    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nbrs})}{(ns+4)^2(N_{nodes}+N_{nbrs})} \\
+    &= \frac{N_{nodes}}{N_{nodes} + N_{nbrs}}
+  \end{split}
+  \]
+\end{frame}
+
+\subsection{Numerical Results: 2D Cylinder}
+
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{figure}[h]
+  	\centering
+    \adjincludegraphics[width=0.8\textwidth,trim={0 7cm 0 7cm},clip]{figures/grid}
+  \end{figure}
+  \begin{itemize}
+    \item Fully-coupled and decoupled methods both implemented in the Generic
+      Gas Path of FUN3D
+    \item Tested on 2D cylinder case
+      \begin{itemize}
+        \item $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
+          and $T_\infty = 200\ K$
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{itemize}
+    \item Verification of implementation
+    \begin{itemize}
+      \item 5-species air model: N, $\text{N}_2$, O, $\text{O}_2$, and NO with five reactions
+      \begin{columns}[t]
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_pressure}
+          \end{figure}
+        \end{column}
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_temperature}
+          \end{figure}
+        \end{column}
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/stag_line_mf}
+          \end{figure}
+        \end{column}
+      \end{columns}
+      \vspace{3mm}
+      \item Surface pressure and surface temperature agree discretely to 8 significant
+        figures
+      \item Mass fractions on stagnation line agree to 4 significant figures
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=0.8\textwidth,trim={0 0 1cm 2.5cm}]{figures/mem_req}
+    \end{figure}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.8\textwidth,trim={1cm 0 0 2.5cm}]{figures/speedup} 
+      \end{figure}
+    \end{column}
+  \end{columns}
+  \begin{itemize}
+    \item On structured grids $N_{nbrs} \approx 6 N_{nodes}$
+    \begin{itemize}
+      \item Half precision off-diagonal $N_{nbrs} = \frac{6N_{nodes}}{2}$
+        \[ 
+          Memory\ Cost \approx 
+           \frac{N_{nodes}}{N_{nodes} + N_{nbrs}} =
+           \frac{N_{nodes}}{N_{nodes} + 6N_{nodes}/2} = \frac{1}{4}
+        \]
+      \item Linear speedup in solver: $\frac{O(N^2)}{O(N)} = O(N)$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Numerical Results: Axisymmetric Spherically Capped Cone}
+
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+  \begin{figure}[h]
+  	\centering
+   \adjincludegraphics[width=0.7\textwidth,trim={0 3.5cm 0 3cm},clip]{figures/cone_mesh}
+  \end{figure}
+  \begin{itemize}
+    \item Verify that the decoupled scheme is robust at high velocities
+    \begin{itemize}
+      \item $V_{\infty} = 15000\ m/s$, 
+	$\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
+      \item 11-species air model N, $\text{N}_2$, O,
+      $\text{O}_2$, NO, N$^+$, $\text{N}_2^+$, O$^+$, 
+      $\text{O}_2^+$, NO$^+$, and electrons, with 22 possible reactions.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+    \begin{columns}[t]
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+          \includegraphics[width=\textwidth]{figures/surface_pressure_cone}
+        \end{figure}
+      \end{column}
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+          \includegraphics[width=\textwidth]{figures/surface_temperature_cone}
+        \end{figure}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item Surface pressure and surface temperature agree discretely 
+	to 8 significant figures
+    \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+    \begin{columns}[t]
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+    	  \includegraphics[width=\textwidth]{figures/cone_iteration}
+        \end{figure}
+      \end{column}
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+	  \includegraphics[width=\textwidth]{figures/cone_walltime}
+        \end{figure}
+      \end{column}
+    \end{columns}
+  \begin{itemize}
+    \item Necessary to scale source term magnitude by $0.001 \leq w \leq 1$ 
+      for the first 500 iterations, due to extreme reaction rates
+    \item Both schemes converge in a similar number of iterations
+    \item Decoupled scheme $\approx$ 2x faster
+  \end{itemize}
+\end{frame}
+
 \section{Adjoint Solver}
 \stepcounter{subsection}
 \subsection{Derivation of Discrete Adjoint Formulation}
@@ -380,23 +597,24 @@
       \begin{gather*}
         L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
         +\mathbf{\Lambda}^T\mr(\md,\mq,\mx) \\
+        \uncover<2->{
        	\pd{L}{\md} =
        	\Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
        	\pd{f}{\mx}\Bigg\}\ + 
-        \only<1>{
+        \only<2>{
         \begin{cboxf}[white]
           \bigg[\pd{\mq}{\md}\bigg]^T
        	  \Bigg\{\pd{f}{\mq} + \bigg[\pd{\mr}{\mq}\bigg]^T \bLam \Bigg\}
         \end{cboxf}
         }
-        \only<2>{
+        \only<3>{
         \begin{cboxf}[green]
           \bigg[\pd{\mq}{\md}\bigg]^T
        	  \Bigg\{\pd{f}{\mq} + \bigg[\pd{\mr}{\mq}\bigg]^T \bLam \Bigg\}
         \end{cboxf}
         } \\
        	+ \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
-       	+ \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam \\
+        + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam} \\
         \begin{aligned} 
           \md &= \text{design variables}\quad & f &= \text{cost function} \\
           \mq &= \text{flow variables}\quad & \mr &= \text{flow residual} \\ 
@@ -449,7 +667,7 @@
           \pd{f}{\rho E}
         \end{pmatrix}
       \end{equation*}
-    \item Can be solved with Krylov method (.i.e GMRES), but time marching
+    \item Can be solved with Krylov method (i.e. GMRES), but time marching
       similar to flow solver shown to be more robust
       \begin{equation*}
         \left( \frac{V}{\Delta t} \mi + \rtdiff{1}{\mq} \right)
@@ -602,198 +820,6 @@
   \end{itemize}
 \end{frame}
 
-\section{Cost and Memory Savings}
-\stepcounter{subsection}
-
-\begin{frame}
-  \frametitle{Cost and Memory Savings of the Decoupled Implicit Problem}
-\begin{itemize}
-  \item Most significant savings comes from the source term linearization being purely node-based
-    \begin{itemize}
-      \item Convective contributions to block Jacobians are diagonal
-      \item Source term jacobian is dense block Jacobian
-      \item In the global system (w/chemistry), all off-diagonal block jacobians
-        are diagonal
-    \end{itemize}
-  \end{itemize}
-  \[
-    \begin{pmatrix} 
-      \Box & & & & \\ 
-      & \ddots & & & \\ 
-      & & \Box \\ 
-      & & & \ddots & \\ 
-      & & & & \Box
-    \end{pmatrix} \begin{pmatrix} \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta
-      \mathbf{\hat{V}}_i \\ \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
-    \end{pmatrix} = \begin{pmatrix} \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\
-      \hat{b}_{nodes} \end{pmatrix} - \begin{pmatrix}
-      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
-      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
-      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
-    \end{pmatrix} 
-  \]
-  \begin{itemize}
-    \item Matrix-vector products $\to$ inner products: $O(ns^2) \to O(ns)$
-  \end{itemize}
-\end{frame}
-\begin{frame}
-  \frametitle{Cost and Memory Savings of the Decoupled Implicit Problem}
-  \begin{itemize}
-    \item Comparing size of Jacobian systems, using Compressed Row Storage
-  \end{itemize}
-  \begin{align*}
-    \ma_d &= \text{Decoupled system Jacobians} \\
-    \ma &= \text{Fully-coupled system Jacobians}
-  \end{align*}
-  \[
-  \begin{split} Relative\ Memory\ Cost &=
-    \frac{size(\ma_d)}{size(\ma)} \\ &= \lim_{ns\to\infty}
-    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nbrs})}{(ns+4)^2(N_{nodes}+N_{nbrs})} \\
-    &= \frac{N_{nodes}}{N_{nodes} + N_{nbrs}}
-  \end{split}
-  \]
-\end{frame}
-
-\section{Results}
-\subsection{2D Cylinder}
-
-\begin{frame}
-  \frametitle{Numerical Results: 2D Cylinder}
-  \begin{figure}[h]
-  	\centering
-    \adjincludegraphics[width=0.8\textwidth,trim={0 7cm 0 7cm},clip]{figures/grid}
-  \end{figure}
-  \begin{itemize}
-    \item Fully-coupled and decoupled methods both implemented in the Generic
-      Gas Path of FUN3D
-    \item Tested on 2D cylinder case
-      \begin{itemize}
-        \item $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
-          and $T_\infty = 200\ K$
-      \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Numerical Results: 2D Cylinder}
-  \begin{itemize}
-    \item Verification of implementation
-    \begin{itemize}
-      \item 5-species air model: N, $\text{N}_2$, O, $\text{O}_2$, and NO with five reactions
-      \begin{columns}[t]
-        \begin{column}{0.33\textwidth}
-          \begin{figure}[h!]
-            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_pressure}
-          \end{figure}
-        \end{column}
-        \begin{column}{0.33\textwidth}
-          \begin{figure}[h!]
-            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_temperature}
-          \end{figure}
-        \end{column}
-        \begin{column}{0.33\textwidth}
-          \begin{figure}[h!]
-            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/stag_line_mf}
-          \end{figure}
-        \end{column}
-      \end{columns}
-      \vspace{3mm}
-      \item Surface pressure and surface temperature agree discretely to 8 significant
-        figures
-      \item Mass fractions on stagnation line agree to 4 significant figures
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-\begin{frame}
-  \frametitle{Numerical Results: 2D Cylinder}
-  \begin{columns}[t]
-    \begin{column}{0.5\textwidth}
-    \begin{figure}[h]
-      \centering
-      \includegraphics[width=0.8\textwidth,trim={0 0 1cm 2.5cm}]{figures/mem_req}
-    \end{figure}
-    \end{column}
-    \begin{column}{0.5\textwidth}
-      \begin{figure}[h]
-        \centering
-        \includegraphics[width=0.8\textwidth,trim={1cm 0 0 2.5cm}]{figures/speedup} 
-      \end{figure}
-    \end{column}
-  \end{columns}
-  \begin{itemize}
-    \item On structured grids $N_{nbrs} \approx 6 N_{nodes}$
-    \begin{itemize}
-      \item Half precision off-diagonal $N_{nbrs} = \frac{6N_{nodes}}{2}$
-        \[ 
-          Memory\ Cost \approx 
-           \frac{N_{nodes}}{N_{nodes} + N_{nbrs}} =
-           \frac{N_{nodes}}{N_{nodes} + 6N_{nodes}/2} = \frac{1}{4}
-        \]
-      \item Linear speedup in solver: $\frac{O(N^2)}{O(N)} = O(N)$
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\subsection{Axisymmetric Spherically Capped Cone}
-
-\begin{frame}
-  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
-  \begin{figure}[h]
-  	\centering
-   \adjincludegraphics[width=0.7\textwidth,trim={0 3.5cm 0 3cm},clip]{figures/cone_mesh}
-  \end{figure}
-  \begin{itemize}
-    \item Verify that the decoupled scheme is robust at high velocities
-    \begin{itemize}
-      \item $V_{\infty} = 15000\ m/s$, 
-	$\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
-      \item 11-species air model N, $\text{N}_2$, O,
-      $\text{O}_2$, NO, N$^+$, $\text{N}_2^+$, O$^+$, 
-      $\text{O}_2^+$, NO$^+$, and electrons, with 22 possible reactions.
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-\begin{frame}
-  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
-    \begin{columns}[t]
-      \begin{column}{0.5\textwidth}
-        \begin{figure}[h!]
-          \includegraphics[width=\textwidth]{figures/surface_pressure_cone}
-        \end{figure}
-      \end{column}
-      \begin{column}{0.5\textwidth}
-        \begin{figure}[h!]
-          \includegraphics[width=\textwidth]{figures/surface_temperature_cone}
-        \end{figure}
-      \end{column}
-    \end{columns}
-    \begin{itemize}
-      \item Surface pressure and surface temperature agree discretely 
-	to 8 significant figures
-    \end{itemize}
-\end{frame}
-\begin{frame}
-  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
-    \begin{columns}[t]
-      \begin{column}{0.5\textwidth}
-        \begin{figure}[h!]
-    	  \includegraphics[width=\textwidth]{figures/cone_iteration}
-        \end{figure}
-      \end{column}
-      \begin{column}{0.5\textwidth}
-        \begin{figure}[h!]
-	  \includegraphics[width=\textwidth]{figures/cone_walltime}
-        \end{figure}
-      \end{column}
-    \end{columns}
-  \begin{itemize}
-    \item Necessary to scale source term magnitude by $0.001 \leq w \leq 1$ 
-      for the first 500 iterations, due to extreme reaction rates
-    \item Both schemes converge in a similar number of iterations
-    \item Decoupled scheme $\approx$ 2x faster
-  \end{itemize}
-\end{frame}
-
 \section{Design Problem}
 \stepcounter{subsection}
 \begin{frame}
@@ -813,6 +839,7 @@
          \label{fig:b}
      \end{minipage}
   \end{figure}
+  \vspace{-0.5cm}
   \begin{itemize}
     \item Apply adjoint to design Reaction Control System (RCS) jet system to
       shape shock interation for maximum drag and minimum surface temperature
@@ -851,6 +878,30 @@
 
   \end{itemize}
 \end{frame}
+\begin{frame}
+  \frametitle{Design Problem: Grid Generation and Governing Equations}
+  \begin{itemize}
+    \item Grid generation tool provides straightforward way to get mesh
+      sensitivities
+      \begin{itemize}
+        \item All parameters can be perturbed by a complex source term, and
+          jacobian calculated via frechet derivatives
+        \item Structured mesh generation is fast and robust
+        \item Easy to convert to unstructured grid accepted by FUN3D
+      \end{itemize}
+    \item Propose to limit research to inviscid flow, due to large jump in
+      complexity going to full Navier-Stokes
+      \begin{itemize}
+        \item Decoupled approach changes very little with addition of viscous
+          terms
+        \item Viscous terms considerably more exhausting to implement
+        \item Grid generation process significantly more complicated
+        \item Scope of research is to demonstrate the new decoupled formulation
+          for flow and adjoint solvers
+      \end{itemize}
+  \end{itemize}
+  
+\end{frame}
 
 \section{Concluding Remarks}
 \stepcounter{subsection}
@@ -858,6 +909,13 @@
 \begin{frame}
   \frametitle{Concluding Remarks}
   \begin{itemize}
+      \item Design problem provides good testbed for a truly unique hypersonic
+        application
+        \begin{itemize}
+          \item Parameterization is well defined
+          \item Non-linearity of design space is a concern
+          \item Optimal steady solution exists?
+        \end{itemize}
     \item Decoupling the species equations yield impressive benefits at minimal cost in robustness
       \begin{itemize}
         \item 2 times faster and 1/3 required memory for both 2D Cylinder and
@@ -870,13 +928,6 @@
           \item Preliminary testing has shown that memory overhead in adjoint is
             significantly reduced with decoupled scheme
           \item Can expect similar speedup in adjoint solve
-        \end{itemize}
-      \item Design problem provides good testbed for a truly unique hypersonic
-        application
-        \begin{itemize}
-          \item Parameterization is well understood and defined
-          \item Non-linearity of design space is a concern
-          \item Optimal steady solution exists?
         \end{itemize}
   \end{itemize}
 \end{frame}
