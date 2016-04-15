@@ -6,14 +6,6 @@
 \documentclass{beamer}
 \usetheme{Frankfurt}
 \usepackage{common}
-%\usepackage{lmodern}% http://ctan.org/pkg/lm
-%\usepackage{mathtools}
-%\usepackage{amsmath}
-%\usepackage{amssymb}
-%\usepackage{stmaryrd}
-%\usepackage{adjustbox}
-%\usepackage{subfigure}
-%\usepackage{graphicx}
 
   \title{Aerothermodynamic Design Sensitivities for a Reacting Gas Flow Solver
   on an Unstructured Mesh Using a Discrete Adjoint Formulation}
@@ -32,6 +24,27 @@
 \stepcounter{subsection}
 \begin{frame}
   \frametitle{Introduction and Motivation}
+  \vspace{-.5cm}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.45\linewidth}
+         \centering
+         \begin{cboxt}[white]
+           \includemedia[ activate=pageopen, width=0.85\textwidth, transparent]
+           {\includegraphics{movies/surface_animation.png}}{movies/mesh_animation.swf}
+         \end{cboxt}
+         \caption{Shape Design Mesh Movement}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.45\linewidth}
+         \centering
+         \begin{cboxt}[white]
+           \includemedia[ activate=pageopen, width=0.8\textwidth, transparent]
+           {\includegraphics{movies/obj_fxn.png}}{movies/obj_fxn.swf}
+         \end{cboxt}
+         \caption{Lift/Drag Objective Function}
+     \end{minipage}
+  \end{figure}
+  \vspace{-.5cm}
   \begin{itemize}
     \item Exploring design space using high-fidelity CFD is challenging
     \item zero-order methods (sampling) are prohibitively expensive
@@ -42,9 +55,9 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation}
+  \frametitle{Introduction and Motivation - Design}
   \begin{itemize}
-    \item How to compute sensitivity of design variables?
+    \item How to compute sensitivity of many design variables?
     \item Direct differentiation approach
       \begin{itemize}
         \item Navier-Stokes equations can be directly differentiated to yield
@@ -65,7 +78,7 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation}
+  \frametitle{Introduction and Motivation - Design}
   \begin{itemize}
     \item Adjoint-based design optimization has recieved considerable attention
       in compressible, perfect gas CFD solvers, but very little in reacting flow
@@ -78,10 +91,12 @@
           multi-species chemical kinetics
         \item Serious memory and computational cost concerns
       \end{itemize}
+    \item Decoupling equations can significantly mitigate cost and memory
+      overhead for large number of conservation equations
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation}
+  \frametitle{Introduction and Motivation - Decoupled Approach}
   \begin{itemize}
     \item Reacting gas simulations require solving a large number of conservation
       equations
@@ -106,7 +121,7 @@
   \end{itemize}
 \end{frame}
 \begin{frame}
-  \frametitle{Introduction and Motivation}
+  \frametitle{Introduction and Motivation - Decoupled Approach}
   \begin{itemize}
     \item Loosely-coupled solvers have become popular in the combustion
       community.
@@ -137,11 +152,6 @@
              \boxbslash & \dots      & \dots  & \boxempty
            \end{pmatrix}}
          \]
-    \end{itemize}
-    \item Beneficial for adjoint formulation
-    \begin{itemize}
-      \item Two smaller systems are considerably easier to linearize
-      \item Storing jacobian for adjoint solve becomes practical
     \end{itemize}
       \item Candler, et al. originally derived this for Steger-Warming scheme, this
         work extends to Roe FDS scheme

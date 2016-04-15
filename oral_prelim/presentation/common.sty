@@ -10,6 +10,8 @@
 \usepackage{adjustbox}
 \usepackage{subfigure}
 \usepackage{graphicx}
+\usepackage{media9}
+\usepackage{multimedia}
 \usepackage{relsize}
 \usepackage{newlfont}
 \usepackage{environ}
@@ -38,6 +40,12 @@
     \scalebox{0.7}{$\BODY$}
     \end{equation*}
     }
+
+\NewEnviron{cboxt}[1][black]{%
+  \tcbset{size=tight}
+  \tcbhighmath[boxrule=5pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
 
 \NewEnviron{cboxf}[1][black]{%
   \tcbset{size=fbox}
