@@ -11,6 +11,13 @@
   on an Unstructured Mesh Using a Discrete Adjoint Formulation}
 
   \author{ Kyle B. Thompson }
+  \institute[North Carolina State University and NASA Langley Research Center]{
+    Mechanical and Aerospace Engineering Department \\
+    North Carolina State University
+    \and
+    Aerothermodynamics Branch \\
+    NASA Langley Research Center}
+
 \begin{document}
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
 \begin{frame}
@@ -24,7 +31,7 @@
 \stepcounter{subsection}
 \begin{frame}
   \frametitle{Introduction - Design}
-  \vspace{-.5cm}
+  \vspace{-.6cm}
   \begin{figure}[ht]
      \begin{minipage}[b]{0.45\linewidth}
          \centering
@@ -44,7 +51,7 @@
          \caption{Lift/Drag Objective Function}
      \end{minipage}
   \end{figure}
-  \vspace{-.5cm}
+  \vspace{-.8cm}
   \begin{itemize}
     \item Exploring design space using high-fidelity CFD is challenging
     \item zero-order methods (sampling) are prohibitively expensive
@@ -254,6 +261,7 @@
   \[
     \ma\vu = \vb
   \]
+  \vspace{-0.7cm}
   \begin{align*}
     \ma &\to
     \begin{array}{c}
@@ -366,8 +374,10 @@
 \end{frame}
 \begin{frame}
   \frametitle{Decoupled Point Implicit Method}
+  \vspace{-0.2cm}
   \begin{itemize}
     \item Chemical source term linearized via
+    \vspace{-0.1cm}
     \begin{align*}
       \mathbf{\hat{W}}^{n+1} &= \mathbf{\hat{W}}^n+\frac{\partial
       \mathbf{\hat{W}}}{\partial \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial
@@ -377,6 +387,7 @@
        \mathbf{\hat{V}}}
     \end{align*}
     \item Full system to be solved in step two
+    \vspace{-0.2cm}
     \begin{gather*}
       \begin{split} \rho^{n+1}&\frac{\delta \hat{\mv}^n}{\Delta t}
         +\frac{1}{V}\sum\limits_{f}(\frac{\partial \hat{\vF}^f}{\partial
@@ -386,9 +397,12 @@
         -\frac{1}{V}\sum\limits_{f}(\hat{\vF}^{n,n+1}\cdot\ms)^f +
         \mw^{n, n+1} -\hat{\mv}^n\frac{\delta \rho^n}{\Delta t} - R_\rho 
       \end{split} \\ 
+    \end{gather*}
+    \vspace{-1.4cm}
+    \[
       R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
       {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
-    \end{gather*}
+    \]
   \item $R_\rho$ is included to preserve $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta c_s}=0$.
   \end{itemize}
 \end{frame}
@@ -823,7 +837,7 @@
 \section{Design Problem}
 \stepcounter{subsection}
 \begin{frame}
-  \frametitle{Design Problem: Hypersonic SRP Vehicle}
+  \frametitle{Design Problem: Hypersonic Retro Propulsion Vehicle}
   \begin{figure}[ht]
      \begin{minipage}[b]{0.4\linewidth}
          \centering

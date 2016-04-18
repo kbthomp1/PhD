@@ -17,6 +17,16 @@
 \usepackage{environ}
 \usepackage[skins,theorems]{tcolorbox}
 
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+
+\setbeamercolor{footline}{fg=blue}
+\setbeamerfont{footline}{series=\bfseries}
+
 \usepackage{xcolor}% http://ctan.org/pkg/xcolor
 \newcommand{\mred}[1]{%
   \ooalign{\hss\makebox[0pt]{\fcolorbox{red!20}{red!20}{$#1$}}\hss\cr\phantom{$#1$}}%
