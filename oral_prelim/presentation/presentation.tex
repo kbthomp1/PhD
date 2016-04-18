@@ -18,6 +18,9 @@
     Aerothermodynamics Branch \\
     NASA Langley Research Center}
 
+% This turns off the navigation bar at the bottom of each frame
+\beamertemplatenavigationsymbolsempty
+
 \begin{document}
 \setbeamertemplate{caption}{\raggedright\insertcaption\par}
 \begin{frame}
@@ -39,7 +42,8 @@
            \includemedia[ activate=pageopen, width=0.85\textwidth, transparent]
            {\includegraphics{movies/surface_animation.png}}{movies/mesh_animation.swf}
          \end{cboxt}
-         \caption{Shape Design Mesh Movement}
+         \vspace{-0.4cm}
+         \caption{\tiny Shape Design Mesh Movement\footnotemark}
      \end{minipage}
      \hspace{0.5cm}
      \begin{minipage}[b]{0.45\linewidth}
@@ -48,10 +52,12 @@
            \includemedia[ activate=pageopen, width=0.8\textwidth, transparent]
            {\includegraphics{movies/obj_fxn.png}}{movies/obj_fxn.swf}
          \end{cboxt}
-         \caption{Lift/Drag Objective Function}
+         \vspace{-0.4cm}
+         \caption{\tiny Lift/Drag Objective Function$^1$}
      \end{minipage}
   \end{figure}
-  \vspace{-.8cm}
+  \footcitetext{Credit: FUN3D Tutorial Examples}
+  \vspace{-1.2cm}
   \begin{itemize}
     \item Exploring design space using high-fidelity CFD is challenging
     \item zero-order methods (sampling) are prohibitively expensive
@@ -136,7 +142,7 @@
   \frametitle{Introduction - Decoupled Approach}
   \begin{itemize}
     \item Loosely-coupled solvers have become popular in the combustion
-      community\footcite{Yoon:2004aa}
+      community\fcite{Sankaran}
       \begin{itemize}
         \item Decouple species conservation equations from meanflow equations,
           and solve two smaller systems
@@ -165,13 +171,8 @@
            \end{pmatrix}}
          \]
     \end{itemize}
-      \item Candler, et al. originally derived this for Steger-Warming scheme, this
-        work extends to Roe FDS scheme
-      \begin{itemize}
-        \item Candler, G. V., Subbareddy, P. K., and Nompelis, I. ``Decoupled
-          Implicit Method for Aerothermodynamics and Reacting Flows.'' \textit{AIAA
-          Journal}, Vol. 51, no. 5, pp. 1245-1254.
-      \end{itemize}
+  \item Candler, et al.\fcite{candler} originally derived this for
+    Steger-Warming scheme, this work extends to Roe FDS scheme
   \end{itemize}
 \end{frame}
 \begin{frame}
@@ -955,6 +956,11 @@
      Game Changing Development Program for their funding and support of this research.  
   \end{itemize}
 \end{frame}
+
+\begin{frame} %[t,allowframebreaks]
+  \frametitle{References}
+  \printbibliography
+ \end{frame}
 
 \section*{Backup}
 \begin{frame}

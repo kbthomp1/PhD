@@ -16,17 +16,25 @@
 \usepackage{newlfont}
 \usepackage{environ}
 \usepackage[skins,theorems]{tcolorbox}
-\usepackage[style=verbose]{biblatex}
-\addbibresource{presentation.bib}
 
+%Bibliography-related stuff
+%\usepackage[style=authoryear]{biblatex}
+\usepackage[style=authortitle,firstinits=true]{biblatex}
+\addbibresource{presentation.bib}
+\DeclareNameAlias{sortname}{last-first}
+\renewcommand{\footnotesize}{\tiny}
+\newrobustcmd*{\fcite}{\AtNextCite{\renewbibmacro{title}{}\renewbibmacro{in:}{}}\footfullcite}
+
+\setbeamertemplate{footline}[frame number]
+
+% If we're using the navigation bar, this formats the slide numbers
 \addtobeamertemplate{navigation symbols}{}{%
     \usebeamerfont{footline}%
     \usebeamercolor[fg]{footline}%
     \hspace{1em}%
     \insertframenumber/\inserttotalframenumber
 }
-
-\setbeamercolor{footline}{fg=blue}
+\setbeamercolor{footline}{fg=black}
 \setbeamerfont{footline}{series=\bfseries}
 
 \usepackage{xcolor}% http://ctan.org/pkg/xcolor
