@@ -7,4 +7,4 @@ mkdir -p ${tar_dir}
 
 cp -a presentation.pdf movies ${tar_dir}
 
-tar -czf presentation.tar ${tar_dir}
+tar -czf presentation.tar.gz ${tar_dir}

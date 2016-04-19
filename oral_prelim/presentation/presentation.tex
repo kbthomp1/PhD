@@ -106,9 +106,9 @@
       linearizations for 2nd-order flux construction scheme
     \item Particularly difficult for reacting flows, due to 
       \begin{itemize}
-        \item complexity of linearizing the additional equations for
+        \item Complexity of linearizing the additional equations for
           multi-species chemical kinetics
-        \item Resorting to Automatic Differentiation tools is a performance
+        \item Resorting to Automatic Differentiation tools incurs performance
           overhead that is implementation-specific\fcite{AD-adjoint}
         \item Serious memory and computational cost concerns when simulating a
           large number of species
@@ -1016,7 +1016,7 @@
         \begin{itemize}
           \item Preliminary testing has shown that memory overhead in adjoint is
             significantly reduced with decoupled scheme
-          \item Can expect similar speedup in adjoint solve
+          \item Can expect speedup in adjoint solve similar to flow solve
         \end{itemize}
   \end{itemize}
 \end{frame}
