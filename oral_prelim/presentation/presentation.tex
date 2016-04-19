@@ -99,18 +99,43 @@
   \frametitle{Introduction - Design}
   \begin{itemize}
     \item Adjoint-based design optimization has recieved considerable attention
-      in compressible, perfect gas CFD solvers, but very little in reacting flow
-      solvers
+      in compressible, perfect gas CFD
+      solvers\fcite{Nielsen-adjoint}$^,$\fcite{Peter-Dwight}, but very little in
+      reacting flow solvers
     \item Difficulty of adjoint approach lies in implementating exact
       linearizations for 2nd-order flux construction scheme
     \item Particularly difficult for reacting flows, due to 
       \begin{itemize}
         \item complexity of linearizing the additional equations for
           multi-species chemical kinetics
-        \item Serious memory and computational cost concerns
+        \item Resorting to Automatic Differentiation tools is a performance
+          overhead that is implementation-specific\fcite{AD-adjoint}
+        \item Serious memory and computational cost concerns when simulating a
+          large number of species
       \end{itemize}
-    \item Decoupling equations can significantly mitigate cost and memory
-      overhead for large number of conservation equations
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Improvement to State of the Art}
+  \begin{itemize}
+    \item Current state of the art
+      \begin{itemize}
+        \item Attempts made at both continuous\fcite{Copeland} and
+          discrete\fcite{Lockwood} adjoint formulations
+          for a compressible reacting flow solver
+        \item These attempts suffer from quadratic scaling in memory and
+          computational cost with number of species
+        \item Recent scheme at Barcelona Supercomputing
+          Center\fcite{Esfahani:2016aa} is promising, but only for
+          incompressible reacting flows
+      \end{itemize}
+    \item Proposed improvement to the state of the art
+      \begin{itemize}
+        \item New decoupled scheme for both hypersonic flow solver and adjoint
+          solver that is robust for high-speed flows in chemical non-equilibrium
+        \item New scheme significantly improves scaling in computational cost and
+          memory with number of species
+      \end{itemize}
   \end{itemize}
 \end{frame}
 \begin{frame}
@@ -195,6 +220,14 @@
       due to current FUN3D implementation
   \end{itemize}
 \end{frame}
+
+\AtBeginSection[]
+{
+ \begin{frame}<beamer>
+ \frametitle{Outline}
+ \tableofcontents[currentsection]
+ \end{frame}
+}
 \section{Flow Solver}
 
 \subsection{Fully-Coupled Method}
@@ -477,6 +510,7 @@
         \item $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
           and $T_\infty = 200\ K$
       \end{itemize}
+    \item Inviscid flow, with 1-Temperature model
   \end{itemize}
 \end{frame}
 
@@ -504,9 +538,9 @@
         \end{column}
       \end{columns}
       \vspace{3mm}
-      \item Surface pressure and surface temperature agree discretely to 8 significant
-        figures
-      \item Mass fractions on stagnation line agree to 4 significant figures
+      \item Surface pressure, surface temperature, and mass fractions on
+        stagnation line agree between decoupled and fully coupled
+        implementations
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -535,7 +569,7 @@
            \frac{N_{nodes}}{N_{nodes} + N_{nbrs}} =
            \frac{N_{nodes}}{N_{nodes} + 6N_{nodes}/2} = \frac{1}{4}
         \]
-      \item Linear speedup in solver: $\frac{O(N^2)}{O(N)} = O(N)$
+      \item Linear speedup in solver: $\frac{O(ns^2)}{O(ns)} = O(ns)$
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -574,8 +608,8 @@
       \end{column}
     \end{columns}
     \begin{itemize}
-      \item Surface pressure and surface temperature agree discretely 
-	to 8 significant figures
+      \item Surface pressure and surface temperature agree between decoupled and
+        fully coupled implementations
     \end{itemize}
 \end{frame}
 \begin{frame}
@@ -857,7 +891,9 @@
   \vspace{-0.5cm}
   \begin{itemize}
     \item Apply adjoint to design Reaction Control System (RCS) jet system to
-      shape shock interation for maximum drag and minimum surface temperature
+      shape shock interaction to maintain maximum drag at minimum surface temperature
+    \item Desire a configuration where jet propellent mass is less than
+      equivalent TPS material required
     \item This annular nozzle configuration has been shown to have a steady
       solution for inviscid flow
   \end{itemize}
@@ -949,7 +985,7 @@
 \begin{frame}
   \frametitle{Acknowledgements}
   \begin{itemize}
-    \item Thanks the FUN3D team at NASA Langley Research Center, for their
+    \item Thanks to the FUN3D team at NASA Langley Research Center, for their
       support in integrating aspects of the compressible gas path into the
       reacting gas path of FUN3D.
    \item Thanks to the Entry Systems Modeling Project within the NASA
@@ -957,12 +993,44 @@
   \end{itemize}
 \end{frame}
 
-\begin{frame} %[t,allowframebreaks]
+\begin{frame}[t,allowframebreaks]
   \frametitle{References}
+  %\printbiblist{presentation}
   \printbibliography
- \end{frame}
+\end{frame}
 
 \section*{Backup}
+
+\begin{frame}
+  \frametitle{Design Problem: Hypersonic Retro Propulsion Vehicle}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.15,trim={0 8cm 0 8cm}]{figures/from_peter/annular_grid}
+         \caption{\tiny Annular nozzle mesh}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.15,trim={0 8cm 0 9cm}]{figures/from_peter/T_annular}
+         \caption{\tiny Temperature Contour}
+     \end{minipage}
+  \end{figure}
+  \vspace{-0.5cm}
+  \begin{itemize}
+    \item Benefits of using RCS jet
+      shape shock interaction to maintain maximum drag at minimum surface temperature
+      \begin{itemize}
+        \item \textbf{Lower total mass}: Jet propellent mass is less than
+          equivalent TPS material required
+        \item \textbf{Lower surface temperature}: Jet stream ``shrouds'' surface in
+           cooler pocket
+        \item \textbf{Higher total drag}: Jet could propel combustable gas (i.e.
+           methane) to ignite in shock layer and increase drag
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
 \begin{frame}
   \frametitle{Backup: Derivation}
   \begin{itemize}
