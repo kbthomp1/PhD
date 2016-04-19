@@ -580,16 +580,17 @@
   \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
   \begin{figure}[h]
   	\centering
-   \adjincludegraphics[width=0.7\textwidth,trim={0 3.5cm 0 3cm},clip]{figures/cone_mesh}
+   \adjincludegraphics[width=0.6\textwidth,trim={0 3.5cm 0 3cm},clip]{figures/cone_mesh}
   \end{figure}
   \begin{itemize}
     \item Verify that the decoupled scheme is robust at high velocities
     \begin{itemize}
-      \item $V_{\infty} = 15000\ m/s$, 
-	$\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
+      \item $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
+        $T_\infty = 200\ K$.
       \item 11-species air model N, $\text{N}_2$, O,
-      $\text{O}_2$, NO, N$^+$, $\text{N}_2^+$, O$^+$, 
-      $\text{O}_2^+$, NO$^+$, and electrons, with 22 possible reactions.
+        $\text{O}_2$, NO, N$^+$, $\text{N}_2^+$, O$^+$, 
+        $\text{O}_2^+$, NO$^+$, and electrons, with 22 possible reactions.
+      \item Inviscid flow, with 1-Temperature model
     \end{itemize}
   \end{itemize}
 \end{frame}
@@ -697,11 +698,16 @@
     \item Adjoint problem is a linear system
       \begin{equation*}
         \begin{pmatrix}
-          \rtdiff{\rho_i}{\rho_j} & \rtdiff{\rho_i}{\rho \vu} & 
-          \rtdiff{\rho_i}{\rho E} \\ \\
-          \rtdiff{\rho \vu}{\rho_j} & \rtdiff{\rho \vu}{\rho \vu} & 
-          \rtdiff{\rho \vu}{\rho E} \\ \\
-          \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & 
+          \rtdiff{\rho_i}{\rho_j} & 
+          \rtdiff{\rho \vu}{\rho_j} & 
+          \rtdiff{\rho E}{\rho_j} \\
+          \\
+          \rtdiff{\rho_i}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho \vu} \\
+          \\
+          \rtdiff{\rho_i}{\rho E} &
+          \rtdiff{\rho \vu}{\rho E} &
           \rtdiff{\rho E}{\rho E}
         \end{pmatrix}
         \begin{pmatrix}
@@ -738,14 +744,25 @@
     \item Rewrite conserved variables similar to decoupled flow solver
       \only<1>{\begin{equation*}
         \begin{pmatrix}
-          \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & 
-          \rtdiff{\rho}{\rho E} & \rtdiff{\rho}{c_s} \\ \\
-          \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & 
-          \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho \vu}{c_s} \\ \\
-          \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & 
-          \rtdiff{\rho E}{\rho E} & \rtdiff{\rho E}{c_s} \\ \\
-          \rtdiff{\rho_s}{\rho} & \rtdiff{\rho_s}{\rho \vu} & 
-          \rtdiff{\rho_s}{\rho E} & \rtdiff{\rho_s}{c_s}
+          \rtdiff{\rho}{\rho} &
+          \rtdiff{\rho \vu}{\rho} &
+          \rtdiff{\rho E}{\rho} &
+          \rtdiff{\rho_s}{\rho} \\
+          \\
+          \rtdiff{\rho}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho \vu} &
+          \rtdiff{\rho_s}{\rho \vu} \\
+          \\
+          \rtdiff{\rho}{\rho E} &
+          \rtdiff{\rho \vu}{\rho E} &
+          \rtdiff{\rho E}{\rho E} &
+          \rtdiff{\rho_s}{\rho E} \\
+          \\
+          \rtdiff{\rho}{c_s} &
+          \rtdiff{\rho \vu}{c_s} &
+          \rtdiff{\rho E}{c_s} &
+          \rtdiff{\rho_s}{c_s}
         \end{pmatrix}
         \begin{pmatrix}
           \adjlam{\rho} \\ \\
@@ -765,20 +782,23 @@
       \only<2>{\begin{equation*}
         \left( \begin{array}{*6{c}}
           \mred{\rtdiff{\rho}{\rho}} & 
-          \mred{\rtdiff{\rho}{\rho \vu}} & 
-          \mred{\rtdiff{\rho}{\rho E}} & 
-          \mblue{\rtdiff{\rho}{c_s}} \\ \\
           \mred{\rtdiff{\rho \vu}{\rho}} & 
-          \mred{\rtdiff{\rho \vu}{\rho \vu}} & 
-          \mred{\rtdiff{\rho \vu}{\rho E}} & 
-          \mblue{\rtdiff{\rho \vu}{c_s}} \\ \\
           \mred{\rtdiff{\rho E}{\rho}} & 
+          \mblue{\rtdiff{\rho_s}{\rho}} \\
+          \\
+          \mred{\rtdiff{\rho}{\rho \vu}} & 
+          \mred{\rtdiff{\rho \vu}{\rho \vu}} & 
           \mred{\rtdiff{\rho E}{\rho \vu}} & 
+          \mblue{\rtdiff{\rho_s}{\rho \vu}} \\
+          \\
+          \mred{\rtdiff{\rho}{\rho E}} & 
+          \mred{\rtdiff{\rho \vu}{\rho E}} & 
           \mred{\rtdiff{\rho E}{\rho E}} & 
-          \mblue{\rtdiff{\rho E}{c_s}} \\ \\
-          \mblue{\rtdiff{\rho_s}{\rho}} & 
-          \mblue{\rtdiff{\rho_s}{\rho \vu}} & 
-          \mblue{\rtdiff{\rho_s}{\rho E}} &
+          \mblue{\rtdiff{\rho_s}{\rho E}} \\
+          \\
+          \mblue{\rtdiff{\rho}{c_s}} &
+          \mblue{\rtdiff{\rho \vu}{c_s}} &
+          \mblue{\rtdiff{\rho E}{c_s}} &
           \mblue{\rtdiff{\rho_s}{c_s}}
         \end{array} \right)
         \begin{pmatrix}
@@ -892,8 +912,6 @@
   \begin{itemize}
     \item Apply adjoint to design Reaction Control System (RCS) jet system to
       shape shock interaction to maintain maximum drag at minimum surface temperature
-    \item Desire a configuration where jet propellent mass is less than
-      equivalent TPS material required
     \item This annular nozzle configuration has been shown to have a steady
       solution for inviscid flow
   \end{itemize}
@@ -956,7 +974,26 @@
 
 \section{Concluding Remarks}
 \stepcounter{subsection}
-
+\begin{frame}
+  \frametitle{Concluding Remarks - Summary of work}
+  \begin{itemize}
+    \item \color<1->[rgb]{0,0,1.0}Completed work
+      \begin{itemize}\color<1->[rgb]{0,0,1.0}
+        \item Derivation of decoupled method for Roe FDS in adjoint and flow solver
+        \item Implementation/verification of decoupled scheme in flow solver
+        \item Exact linearization of 2nd-order Roe FDS scheme and chemical
+          source term for both fully coupled and decoupled methods
+        \item Implementation of fully coupled adjoint scheme for inviscid flow
+      \end{itemize}
+    \item \color<1->[rgb]{1.0,0,0}Proposed work
+      \begin{itemize}\color<1->[rgb]{1.0,0.2,0}
+        \item Implementation of decoupled adjoint scheme
+        \item Optimization of Hypersonic Retro Propulsion configuration
+          using fully coupled and decoupled schemes for inviscid flow and
+          adjoint solvers
+      \end{itemize}
+  \end{itemize}
+\end{frame}
 \begin{frame}
   \frametitle{Concluding Remarks}
   \begin{itemize}
@@ -974,7 +1011,8 @@
         \item Convergence issues at very high velocities can be offset by
           scaling source term as solution progresses
       \end{itemize}
-      \item Decoupling appears promising for adjoint work
+      \item Decoupled adjoint approach is a significant improvement to the
+        state of the art
         \begin{itemize}
           \item Preliminary testing has shown that memory overhead in adjoint is
             significantly reduced with decoupled scheme
