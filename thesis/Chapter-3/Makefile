@@ -1,2 +1,1 @@
-pdf:
-	cd .. && $(MAKE) pdf
+../chapter-makefile
