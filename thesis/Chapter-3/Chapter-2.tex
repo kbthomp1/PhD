@@ -1,0 +1,39 @@
+\chapter{Design Optimization}
+\label{chapter-three}
+
+\section{Introduction}
+
+Design optimization is a wide field that encompasses methods generally falling into
+two categories: local gradient-based optimization, and heuristic global
+optimization.  Local gradient-based optimization techniques focus on the
+determining an optimality condition by evaluating a function and its gradients.
+Provided certain conditions are met, it can be proven that the optimization
+procedure will find a local minimum or maximum on a bounded domain.  Examples of
+local gradient-based optimization methods include steepest-descent[cite??],
+conjugate-gradient[cite??], and Augmented Lagrangian Method [cite??].  A
+heuristic global optimization seeks to find the global extrema of a function.
+Although these methods are powerful, because of their heuristic nature they are
+not guaranteed to find the absolute optimum condition and are not the focus this
+research.
+
+In the field of optimization, the function of interest is referred to as the
+``cost function'' or ``objective function''.  Optimization methods seek to
+minimize this function; therefore, if the intent is to find the maximum value
+of the function, it should be formulated as the negative of the original.
+
+\section{Cost Function Definition}
+
+The cost function (or objective function) as formulated in FUN3D is a composite,
+weighted function
+%
+\begin{equation}
+  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
+  \label{generic_cost_function}
+\end{equation}
+%
+Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
+function component $j$.  $C_j$ is the component value, which is evaluated at
+each flow solution.  Examples of component values include integrated
+aerodynamic or aero-thermodynamic quantities.  
+
+
