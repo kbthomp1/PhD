@@ -1,10 +1,22 @@
 \chapter{Adjoint Solver}
 \label{chapter-two}
 
-\section{Adjoint Derivation}
+This section details the derivation of the adjoint equations to be solved in
+conjuction with the primal flow equations.  The primary goal of this research is
+to compute sensitivities of aerodynamic and aerothermodynamic quantities to
+design variables.  To achieve this, the sensitivity to the primal flow equation
+formulation must first be solved.  For a discrete adjoint formulation, this
+requires a solution of costate variables, relating a change in the flow equation
+residual to a change in the function of interest.  Because of the large number
+of equations required in a reacting gas solver, the adjoint solver will suffer
+from the quadratic scaling in computational cost and memory required similarly
+to the primal flow solver.  To mitigate this, a decoupled scheme is derived that
+is consistent with the decoupled flow solver.
 
-The FUN3D adjoint derivation is given in Eric Nielson's PhD Thesis[cite??].
-Starting with forming the Lagrangian as
+\section{Discrete Adjoint Derivation}
+
+%The FUN3D adjoint derivation is given in Eric Nielson's PhD Thesis[cite??].
+The derivation for the discrete adjoint begins with forming the Lagrangian as
 %------------------------------------------------------------------------------%
 \begin{equation}
   L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
@@ -57,13 +69,16 @@ derivative of the Lagrangian becomes
 By solving the adjoint equation in \eref{adjoint-main}) to obtain the costate
 variable vector, $\mathbf{\Lambda}$, we can now use a non-linear optimizer to
 determine the optimum set of design variables, $\md^*$. This can be done using
-{\bf PORT} or {\bf KSOPT} in FUN3D, as well as a host of other non-linear
+{\bf SNOPT\cite{snopt-manual}}, {\bf KSOPT\cite{KSOPT}}, or {\bf
+  NPSOL\cite{npsol-manual}} in FUN3D, as well as a host of other non-linear
 optimizers.
 
 \section{Block Jacobi Adjoint Decoupling}
 
-The primal flow equations are solved using the decoupled scheme based on the
-work by Candler, et. al.  In doing this the conserved variables are split from
+It is possible to decoupled the adjoint equations in a fashion similiar to that
+done to the primal flow equations.  In this decoupled adjoint formulation, the
+conserved variables are split identically to flow equations, with the
+fully-coupled vector of conserved variables
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\vU =
@@ -71,23 +86,19 @@ work by Candler, et. al.  In doing this the conserved variables are split from
  		\rho_1    \\
 		\vdots    \\
 		\rho_{ns} \\
-		\rho u    \\
-		\rho v    \\
-		\rho w    \\
+    \rho \vu  \\
 		\rho E    \\
 	\end{pmatrix}
   \label{all-vars}
  \end{equation}
 %------------------------------------------------------------------------------%
- into
+ split into
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\begin{matrix}
 		\mathbf{U}'=\begin{pmatrix}
 			\rho \\
-			\rho u \\
-			\rho v \\
-			\rho w \\
+			\rho \vu \\
 			\rho E
 		\end{pmatrix},\quad &
 		\mathbf{\hat{U}}=\begin{pmatrix}
@@ -99,9 +110,8 @@ work by Candler, et. al.  In doing this the conserved variables are split from
   \label{dc-vars}
 \end{equation}
 %------------------------------------------------------------------------------%
-By doing this, the flow equations can be solved implicitly using an approximate,
-first-order jacobian to drive the flow solution to a converged steady-state.  In
-practice, this is done by essentially formulating
+With this splitting, the mixture equations for single point in the global system
+of the decoupled flow solve can be written as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{V}{\Delta t}\mi + 
@@ -124,7 +134,7 @@ practice, this is done by essentially formulating
   \label{approx-jac}
 \end{equation}
 %------------------------------------------------------------------------------%
-to solve for the mixture flow variables, and formulating
+Likewise, the species mass equations for a single point can be written as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{V}{\Delta t}\mi + 
@@ -147,25 +157,17 @@ to solve for the mixture flow variables, and formulating
   \label{approx-jac-dc}
 \end{equation}
 %------------------------------------------------------------------------------%
-Note that the correction terms required to maintain $\lsum{s=1}{ns}{c_s} = 1$
-and $\lsum{s=1}{ns}{\delta c_s} = 0$ are omitted in \eref{approx-jac-dc} only
-for brevity in this explanation.  Examining \erefs{approx-jac}{approx-jac-dc}
-shows that there are clearly some physical dependencies being omitted, namely
-$\rdiff{\rho_s}{\rho}$, $\rdiff{\rho}{c_s}$, $\rdiff{\rho \vu}{c_s}$, and 
-$\rdiff{\rho E}{c_s}$.  It has been demonstrated that omitting this dependencies
-does not hinder convergence the primal solver; however, the adjoint requires an
-exact linearization of the converged steady-state solution.
+Examining \erefs{approx-jac}{approx-jac-dc} shows that there are clearly some
+physical dependencies being omitted, namely $\rdiff{\rho_s}{\rho}$,
+$\rdiff{\rho}{c_s}$, $\rdiff{\rho \vu}{c_s}$, and $\rdiff{\rho E}{c_s}$.  It has
+been found[cite??] that omitting this dependencies does not hinder convergence
+the primal flow solver; however, because the adjoint requires an exact
+linearization of the converged steady-state solution, these must be accounted
+for in the decoupled adjoint formulation.
 
-The discrete adjoint formulation is given as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \bigg[\rdiff{}{\mq}\bigg]^T\mathbf{\Lambda}= -\pd{f}{\mq}
-  \label{adjoint}
-\end{equation}
-%------------------------------------------------------------------------------%
-where $\mq$ is a vector of conserved variables, and $f$ is the cost function (i.e.
-lift, drag, etc.). There is now an apparent need to reconcile the two sets of
-conserved variables in \eref{dc-vars} with $\mq$.  The most intuitive and
+The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
+$\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
+adjoint formulation given in \eref{adjoint-main}. The most intuitive and
 staightforward way to do this is to forgo solving for the species mass $\rho_s$
 in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
 %------------------------------------------------------------------------------%
@@ -184,21 +186,21 @@ in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
   \label{q-vec}
 \end{equation}
 %------------------------------------------------------------------------------%
-This allows the linearizations derived in \erefs{approx-jac}{approx-jac-dc} to
-be used in the adjoint formulation, by augmenting them with the previously
-omitted linearizations.  Replacing $\rdiff{}{\mq}$ with the fully system, the
+This allows the linearizations in \erefs{approx-jac}{approx-jac-dc} to be used
+in the adjoint formulation, by augmenting them with the previously omitted
+linearizations.  Replacing $\rdiff{}{\mq}$ with the fully-coupled system, the
 adjoint system becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{pmatrix}
-    \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & 
-    \rtdiff{\rho}{\rho E} & \rtdiff{\rho}{c_s} \\ \\
-    \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & 
-    \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho \vu}{c_s} \\ \\
-    \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & 
-    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho E}{c_s} \\ \\
-    \rtdiff{\rho_s}{\rho} & \rtdiff{\rho_s}{\rho \vu} & 
-    \rtdiff{\rho_s}{\rho E} & \rtdiff{\rho_s}{c_s}
+    \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & 
+    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_s}{\rho} \\ \\
+    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & 
+    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_s}{\rho \vu} \\ \\
+    \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & 
+    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_s}{\rho E} \\ \\
+    \rtdiff{\rho}{c_s} & \rtdiff{\rho \vu}{c_s} & 
+    \rtdiff{\rho E}{c_s} & \rtdiff{\rho_s}{c_s}
   \end{pmatrix}
   \begin{pmatrix}
     \adjlam{\rho} \\ \\
@@ -217,17 +219,18 @@ adjoint system becomes
 \end{equation}
 %------------------------------------------------------------------------------%
 Thus the jacobian in \eref{full-adjoint} is the completed one of
-\erefs{approx-jac}{approx-jac-dc}.  While this is useful, the point of
+\erefs{approx-jac}{approx-jac-dc}.  While this is useful, the advantage of
 decoupling the species equations from the mixture equations was to speed up the
-linear solver and save memory.  Solving \eref{full-adjoint} undermines both of
-these goals, so an alternative solution strategy must be formulated.  If a block
-jacobi scheme is employed, the system can be decoupled once again as
+linear solver and save memory.  Solving \eref{full-adjoint} is roughly
+equivalent to solving the fully-coupled system of equations, which undermines
+both of these goals; so, an alternative solution strategy must be formulated.  If
+a block jacobi scheme is employed, the system can be decoupled once again as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{pmatrix}
-    \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho}{\rho E} \\ \\
-    \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho \vu}{\rho E} \\ \\
-    \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho E}{\rho E}
+    \rtdiff{\rho}{\rho}     & \rtdiff{\rho \vu}{\rho}     & \rtdiff{\rho E}{\rho} \\ \\
+    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+    \rtdiff{\rho}{\rho E}   & \rtdiff{\rho \vu}{\rho E}   & \rtdiff{\rho E}{\rho E}
   \end{pmatrix}
   \begin{pmatrix}
     \adjlam{\rho} \\ \\
@@ -242,9 +245,9 @@ jacobi scheme is employed, the system can be decoupled once again as
   \end{pmatrix}
   -
   \begin{pmatrix}
-    \rtdiff{\rho}{c_s} \\ \\
-    \rtdiff{\rho \vu}{c_s} \\ \\
-    \rtdiff{\rho E}{c_s}
+    \rtdiff{\rho_s}{\rho} \\ \\
+    \rtdiff{\rho_s}{\rho \vu} \\ \\
+    \rtdiff{\rho_s}{\rho E}
   \end{pmatrix}
   \adjlam{c_s}
   \label{dc-adjoint-1}
@@ -254,14 +257,15 @@ jacobi scheme is employed, the system can be decoupled once again as
   \rtdiff{\rho_s}{c_s}
   \adjlam{c_s}
   = -\pd{f}{c_s}
-  - \rtdiff{\rho_s}{\rho} \adjlam{\rho}
-  - \rtdiff{\rho_s}{\rho \vu} \adjlam{\rho \vu}
-  - \rtdiff{\rho_s}{\rho E} \adjlam{\rho E}
+  - \rtdiff{\rho}{c_s} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
   \label{dc-adjoint-2}
 \end{equation}
 %------------------------------------------------------------------------------%
-If a time-like derivative is added to the adjoint, the solution of the costate
-variables, $\Lambda$, can be time marched similar to the primal flow solver
+Adding a time-like derivative to the adjoint equations, the solution of the
+costate variables, $\Lambda$, can be time marched similar to the primal flow
+solver
 %------------------------------------------------------------------------------%
 \begin{equation}
   \left[ \frac{V}{\Delta t} \mi + \rtdiff{}{\mq} \right] \Delta
@@ -270,16 +274,16 @@ variables, $\Lambda$, can be time marched similar to the primal flow solver
   \label{adj-dc-time-general}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus, the first system in \eref{dc-adjoint-1} becomes
+Thus, the first system of equations in \eref{dc-adjoint-1} becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{split}
     \left[
       \frac{V}{\Delta t} \mi +
       \begin{pmatrix}
-        \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho}{\rho E} \\ \\
-        \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho \vu}{\rho E} \\ \\
-        \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho E}{\rho E}
+        \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
+        \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+        \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
       \end{pmatrix}
     \right]
     \begin{pmatrix}
@@ -295,9 +299,9 @@ Thus, the first system in \eref{dc-adjoint-1} becomes
     \end{pmatrix}
     -
     \begin{pmatrix}
-      \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho}{\rho E} \\ \\
-      \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho \vu}{\rho E} \\ \\
-      \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho E}{\rho E}
+      \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
+      \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+      \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
     \end{pmatrix}
     &
     \begin{pmatrix}
@@ -307,9 +311,9 @@ Thus, the first system in \eref{dc-adjoint-1} becomes
     \end{pmatrix}
     -
     \begin{pmatrix}
-      \rtdiff{\rho}{c_s} \\ \\
-      \rtdiff{\rho \vu}{c_s} \\ \\
-      \rtdiff{\rho E}{c_s}
+      \rtdiff{\rho_s}{\rho} \\ \\
+      \rtdiff{\rho_s}{\rho \vu} \\ \\
+      \rtdiff{\rho_s}{\rho E}
     \end{pmatrix}
     \adjlam{c_s}
   \end{split}
@@ -323,14 +327,14 @@ and the second system in \eref{dc-adjoint-2} becomes
   \adjlam{c_s}
   = \\ -\pd{f}{c_s}
   - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
-  - \rtdiff{\rho_s}{\rho} \adjlam{\rho}
-  - \rtdiff{\rho_s}{\rho \vu} \adjlam{\rho \vu}
-  - \rtdiff{\rho_s}{\rho E} \adjlam{\rho E}
+  - \rtdiff{\rho}{c_s} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
   \label{adj-dc-time2}
 \end{equation}
 %------------------------------------------------------------------------------%
-This is advantageous, because the jacobians on the left hand side (LHS) can be
-the first-order approximate jacobians that were used to solve the primal flow
-equations; hence, all of the benefits of the diagonal block matricies that are
-exploited to reduce the linear solver cost and overall memory now apply to the
-adjoint.
+The LHS of \erefs{adj-dc-time1}{adj-dc-time2} are the same first-order
+approximate jacobians that were used to solve the primal flow equations;
+therefore, all of the benefits of the diagonal block matricies that are
+exploited in the primal flow solver to reduce the linear solver cost and overall
+memory now apply to the adjoint.

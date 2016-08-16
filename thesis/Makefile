@@ -16,4 +16,8 @@ $(NAME).pdf : $(NAME).tex $(NAME).bib front.tex $(CHAPTERS) ncsuthesis.cls optio
 	$(pdflatex) $(NAME)
 
 clean :
-	rm $(AUX) $(INTERMEDIATES)
+	rm -rf $(AUX) $(INTERMEDIATES)
+
+veryclean :
+	rm -rf $(AUX) $(INTERMEDIATES)
+	rm -rf $(NAME).pdf

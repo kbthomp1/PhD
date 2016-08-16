@@ -1,8 +1,22 @@
 %% ------------------------------ Abstract ---------------------------------- %%
 \begin{abstract}
 
-  This is my abstract.
+  Approach is described to efficiently compute aerothermodynamic design
+sensitivities using a decoupled approach.  In this approach, the species
+continuity equations are decoupled from the mixture continuity, momentum, and
+total energy equations for the Roe flux difference splitting scheme in both the
+flow and adjoint solvers. This decoupling simplifies the implicit system, so
+that the flow solver can be made significantly more efficient, with very little
+penalty on overall scheme robustness.  Most importantly, the computational cost
+of the point implicit relaxation is shown to scale linearly with the number of
+species for the decoupled system, whereas the fully coupled approach scales
+quadratically. Also, the decoupled method significantly reduces the cost in wall
+time and memory in comparison to the fully coupled approach. 
 
+A design optimization of a re-entry vehicle with a annular nozzle on the
+forebody is completed based on this approach.  The sensitivities of the drag
+coefficient and surface temperature with respect to a plenum inboard the vehicle
+were computed and verified against complex-variable finite-difference.
 \end{abstract}
 
 
@@ -20,12 +34,26 @@
 
 %% -------------------------------- Biography ------------------------------- %%
 \begin{biography}
-The author was born in a small town \ldots
+The author was born on December 11th, 1990, in Willow Springs, North Carolina.
+He recieved a BS in Aerospace Engineering from North Carolina State University
+in 2012, and subsequently recieved his MS in Aerospace Engineering from North
+Carolina State University in 2014.  After recieving he MS, he began work in the
+Aerothermodynamics branch of NASA Langley Research Center, via the Pathways
+program.  He completed this disseration on adjoint-based optimization while
+working at NASA Langley Research Center.
 \end{biography}
 
 %% ----------------------------- Acknowledgements --------------------------- %%
 \begin{acknowledgements}
-I would like to thank my advisor for his help.
+I would like thank my parents for all of their encouragement over the years, and
+their commitment to seeing I be given the best opportunity to make the most of
+myself.  I would like to thank my advisor for instilling in me a diligence to
+improve myself and for mentoring me through many challenges.  I would like to
+thank the Entry Systems Modeling Project within NASA's Game Changing Development
+Program for their funding and support of this research.  Finally, I would
+like to recognize the FUN3D team at NASA Langley Research Center, for their
+support and availability to discuss many challenging problems I have encountered
+during the course of my time at NASA.
 \end{acknowledgements}
 
 
