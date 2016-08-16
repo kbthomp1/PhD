@@ -1,340 +1,298 @@
-\chapter{Adjoint Solver}
-\label{chapter-two}
+\chapter{Numerical Solution of Flow Equations}
+\label{chap-one}
 
-This section details the derivation of the adjoint equations to be solved in
-conjuction with the primal flow equations.  The primary goal of this research is
-to compute sensitivities of aerodynamic and aerothermodynamic quantities to
-design variables.  To achieve this, the sensitivity to the primal flow equation
-formulation must first be solved.  For a discrete adjoint formulation, this
-requires a solution of costate variables, relating a change in the flow equation
-residual to a change in the function of interest.  Because of the large number
-of equations required in a reacting gas solver, the adjoint solver will suffer
-from the quadratic scaling in computational cost and memory required similarly
-to the primal flow solver.  To mitigate this, a decoupled scheme is derived that
-is consistent with the decoupled flow solver.
+\section{Fully-Coupled Point Implicit Method}
 
-\section{Discrete Adjoint Derivation}
-
-%The FUN3D adjoint derivation is given in Eric Nielson's PhD Thesis[cite??].
-The derivation for the discrete adjoint begins with forming the Lagrangian as
+All work presented here is for the inviscid conservation equations, but it can be
+extended to include viscous terms.  For an inviscid, multi-species mixture, the
+governing equations in vector form are:
 %------------------------------------------------------------------------------%
 \begin{equation}
-  L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
-  +\mathbf{\Lambda}^T\mr(\md,\mq,\mx)
+	\label{inv_flux_vec}
+	\frac{\partial \mathbf{U}}{\partial t}
+	+ \nabla\cdot \mathbf{F} = \mathbf{W}
 \end{equation}
 %------------------------------------------------------------------------------%
-Where $\mr$ is the residual of the flow equations.  Differentiating with respect
-to the design variables $\md$ yields
+ or, in semi-discrete form,
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{\partial L}{\partial \md}=
-  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
-  +\bigg[\frac{\partial \mq}{\partial \md}\bigg]^T
-  \Bigg\{\frac{\partial f}{\partial \mq}+\bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T \mathbf{\Lambda}\Bigg\}
-  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
-  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
-  \label{dL}
-\end{equation}
-%------------------------------------------------------------------------------%
-To eliminate the dependence of conserved variables $\mq$ on the design
-variables, we solve the adjoint equation
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T\mathbf{\Lambda}=
-  -\frac{\partial f}{\partial \mq}
-  \label{adjoint-main}
-\end{equation}
-%------------------------------------------------------------------------------%
-Where the Lagrange multipliers (also known as costate variables),
-$\mathbf{\Lambda}$ are the cost function dependence on the residual
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \mathbf{\Lambda}=-\frac{\partial f}{\partial \mr}
-\end{equation}
-%------------------------------------------------------------------------------%
-This can ultimately be used to error estimation and sensitivity analysis for
-design optimization.  With the second term in eq.~(\ref{dL}) eliminated, the
-derivative of the Lagrangian becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \frac{\partial L}{\partial \md}=
-  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial
-  \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
-  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
-  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial
-  \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
-  \label{obj_function}
-\end{equation}
-%------------------------------------------------------------------------------%
-By solving the adjoint equation in \eref{adjoint-main}) to obtain the costate
-variable vector, $\mathbf{\Lambda}$, we can now use a non-linear optimizer to
-determine the optimum set of design variables, $\md^*$. This can be done using
-{\bf SNOPT\cite{snopt-manual}}, {\bf KSOPT\cite{KSOPT}}, or {\bf
-  NPSOL\cite{npsol-manual}} in FUN3D, as well as a host of other non-linear
-optimizers.
-
-\section{Block Jacobi Adjoint Decoupling}
-
-It is possible to decoupled the adjoint equations in a fashion similiar to that
-done to the primal flow equations.  In this decoupled adjoint formulation, the
-conserved variables are split identically to flow equations, with the
-fully-coupled vector of conserved variables
-%------------------------------------------------------------------------------%
-\begin{equation}
-	\vU =
-  \begin{pmatrix}
- 		\rho_1    \\
-		\vdots    \\
-		\rho_{ns} \\
-    \rho \vu  \\
-		\rho E    \\
-	\end{pmatrix}
-  \label{all-vars}
+	\label{inv_flux_fv}
+	\frac{\partial \mathbf{U}}{\partial t}
+	 + \frac{1}{V}\sum\limits_{f}(\mathbf{F}\cdot\mathbf{S})^f = \mathbf{W}
  \end{equation}
 %------------------------------------------------------------------------------%
- split into
+summing over all faces, $f$, in the domain, where V is the cell volume, 
+$\mathbf{W}$ is the chemical source term vector, and $\mathbf{S}$ is the face
+outward normal vector.  The vectors of conserved variables and fluxes are:
+%------------------------------------------------------------------------------%
+\begin{equation}
+	\begin{matrix}
+	\mathbf{U}=\begin{pmatrix}
+   		\rho_1\\
+		\vdots \\
+		\rho_{ns} \\
+		\rho u \\
+		\rho v \\
+		\rho w \\
+		\rho E \\
+	\end{pmatrix},      &
+ 	\mathbf{F} = \begin{pmatrix}
+		\rho_1  \overline{U} \\
+		\vdots \\
+		\rho_{ns} \overline{U} \\
+		\rho u \overline{U} + p s_x\\
+		\rho u \overline{U} + p s_y\\
+		\rho u \overline{U} + p s_z\\
+		(\rho E + p) \overline{U} \\
+	\end{pmatrix}
+	\end{matrix}
+ \end{equation}
+%------------------------------------------------------------------------------%
+where $\overline{U}$ is the outward pointing normal velocity, and $E$ is
+the total energy of the mixture per unit mass, defined as: 
+%------------------------------------------------------------------------------%
+\begin{equation} E = \sum{c_s e_s}
+   + \frac{u^2+v^2+w^2}{2} 
+\end{equation}
+%------------------------------------------------------------------------------%
+where $e_s$ is the internal energy of species $s$.  By using the Roe FDS scheme,
+%------------------------------------------------------------------------------%
+\begin{equation}
+	\begin{matrix}
+		\mathbf{F}^{n+1} \approx \mathbf{F}^n+\frac{\partial \mathbf{F}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
+		\\
+		\mathbf{W}^{n+1} \approx \mathbf{W}^n+\frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
+	\end{matrix}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  By using an implicit time integration, the implicit scheme becomes:
+%------------------------------------------------------------------------------%
+\begin{equation}
+	\frac{\mathbf{\delta U}^n}{\Delta t}+\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^L}}\delta\mathbf{U}^L
+	+\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^R}}\delta\mathbf{U}^R)^n \mathbf{S}^f
+	- \frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n
+	= -\frac{1}{V}\sum\limits_{f}(\mathbf{F}^f\cdot\mathbf{S}^f)^n + \mathbf{W}^n
+\end {equation}
+%
+or, put more simply:
+%
+\begin{equation}
+	A\delta\mathbf{U}^n = \mathbf{b}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $A$ is the Jacobian matrix of the fully coupled system, and $\mathbf{b}$
+is the residual vector.  For a point implicit relaxation scheme, the Jacobian
+matrix can be split into its diagonal and off-diagonal elements, with the latter
+moved to the RHS:
+%------------------------------------------------------------------------------%
+\begin{equation}
+\label{decomp_jac}
+	A=O+D
+\end{equation}
+%------------------------------------------------------------------------------%
+Each matrix element is a square $(ns+4)\times(ns+4)$ matrix.  One method of
+solving this system is a Red-Black Gauss-Seidel scheme\cite{red-black}, where
+matrix coefficients with even indices are updated first and, subsequently, the
+coefficients with odd indices are updated.  This red-black ordering enables
+better vectorization in solving the linear system.  The computational work for
+the Gauss-Seidel scheme is dominated by matrix-vector multiplications of
+elements of $O$ with $\delta\mathbf{U}$, which are $O(N^2)$ operations, where
+$N=ns+4$.  In the next section, it is shown that decoupling the system reduces
+these matrix-vector multiplications to $O(N^2 + M)$ operations, where $N=ns$ and
+$M=ns$.
+
+\section{Decoupled Point Implicit Method}
+
+If the species mass equations are replaced by a single mixture mass equation,
+the mixture equations can be separated from the species mass
+equations and the conserved variables become
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\begin{matrix}
 		\mathbf{U}'=\begin{pmatrix}
 			\rho \\
-			\rho \vu \\
+			\rho u \\
+			\rho v \\
+			\rho w \\
 			\rho E
-		\end{pmatrix},\quad &
+		\end{pmatrix} &
 		\mathbf{\hat{U}}=\begin{pmatrix}
 			\rho_1 \\
 			\vdots \\
 			\rho_{ns}
 		\end{pmatrix}
 	\end{matrix}
-  \label{dc-vars}
+  \label{dc-variables}
 \end{equation}
 %------------------------------------------------------------------------------%
-With this splitting, the mixture equations for single point in the global system
-of the decoupled flow solve can be written as
+Solving the flux vector is performed in two sequential steps.  The mixture
+fluxes are first solved as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{V}{\Delta t}\mi + 
-  \begin{pmatrix}
-    \rdiff{\rho}{\rho} & \rdiff{\rho}{\rho \vu} & \rdiff{\rho}{\rho E} \\ \\
-    \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho \vu}{\rho E} \\ \\
-    \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho E}{\rho E}
-  \end{pmatrix}
-  \begin{pmatrix}
-    \Delta \rho \\ \\
-    \Delta \rho \vu \\ \\
-    \Delta \rho E
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    \res{\rho} \\ \\
-    \res{\rho \vu} \\ \\
-    \res{\rho E}
-  \end{pmatrix}
-  \label{approx-jac}
+  \frac{\partial \mathbf{{U}'}}{\partial t} +
+  \frac{1}{V}\sum\limits_{f}(\mathbf{F}'\cdot\mathbf{S})^f = 0
 \end{equation}
 %------------------------------------------------------------------------------%
-Likewise, the species mass equations for a single point can be written as
+followed by the species fluxes as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{V}{\Delta t}\mi + 
-  \begin{pmatrix}
-    \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\ \\
-    \vdots & \ddots & \vdots \\ \\
-    \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
-  \end{pmatrix}
-  \begin{pmatrix}
-    \Delta c_1 \\ \\
-    \vdots \\ \\
-    \Delta c_{ns}
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    \res{\rho_1} \\ \\
-    \vdots \\ \\
-    \res{\rho_{ns}}
-  \end{pmatrix}
-  \label{approx-jac-dc}
+  \frac{\partial \mathbf{\hat{U}}}{\partial t} +
+  \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot\mathbf{S})^f =
+  \mathbf{\hat{W}}
 \end{equation}
 %------------------------------------------------------------------------------%
-Examining \erefs{approx-jac}{approx-jac-dc} shows that there are clearly some
-physical dependencies being omitted, namely $\rdiff{\rho_s}{\rho}$,
-$\rdiff{\rho}{c_s}$, $\rdiff{\rho \vu}{c_s}$, and $\rdiff{\rho E}{c_s}$.  It has
-been found[cite??] that omitting this dependencies does not hinder convergence
-the primal flow solver; however, because the adjoint requires an exact
-linearization of the converged steady-state solution, these must be accounted
-for in the decoupled adjoint formulation.
+Point relaxation uses Red-Black Gauss-Seidel to update the conserved
+variables in $\mathbf{U}'$ and all associated auxiliary variables, such as
+temperature, pressure, speed of sound, etc.  This is done by holding the
+thermo-chemical state constant, and will always result in the relaxation of a
+five-equation system.  This does trade an implicit relationship between the mixture
+and species equations for an explicit one; thus, this decoupling can have an
+impact on the stability of the scheme, especially due to the non-linearity of
+the chemical source term\cite{park}.
+ 
+The solution of the species mass equations takes a different form.  Based on the
+work of Candler et al.\cite{candler}, the decoupled variables can be rewritten
+in terms of mass fraction, as follows:
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \delta \mathbf{\hat{U}}^n =
+  \rho^{n+1}\mathbf{\hat{V}}^{n+1}-\rho^n\mathbf{\hat{V}}^n = \rho^{n+1} \delta
+  \mathbf{\hat{V}}^n + \mathbf{\hat{V}}^n \delta \rho^n 
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T$, and $c_s=\rho_s/\rho$ the mass
+fraction of species $s$.  While the derivation of the species mass equations is
+different for the Roe FVS scheme from that of Steger-Warming proposed by Candler
+et al.\cite{candler}, the final result takes a similar form: 
+%------------------------------------------------------------------------------%
+\begin{gather}
+  \hat{F}_{\rho_s} = c_s F'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
+  + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
+  \label{dc_flux}
+\end{gather}
+%------------------------------------------------------------------------------%
+where $F_\rho'$ is the total mass flux computed previously using all
+$\mathbf{U}'$ variables, and $\tilde{}$ denotes a Roe-averaged quantity.
+Likewise, linearizing the species mass fluxes with respect to the
+$\mathbf{\hat{V}}$ variables yields
+%------------------------------------------------------------------------------%
+\begin{align} 
+  \mathbf{\hat{F}}^{n+1} &= \mathbf{\hat{F}}^n +\frac{\partial
+  \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^L}\delta \mathbf{\hat{V}}^L
+  +\frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R}\delta
+  \mathbf{\hat{V}}^R \\ \frac{\partial \mathbf{\hat{F}}}{\partial
+  \mathbf{\hat{V}}^L} &= wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\
+  \frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R} &=
+  (1-w)F_\rho+(w-1)\rho^L\lambda^+ + w\rho^R\lambda^-
+  \label{d_last}
+\end{align}
+%------------------------------------------------------------------------------%
+A full derivation of Eqs.~(\ref{dc_flux}-\ref{d_last}), along with the
+definition of $w$, is included in Appendix A.  The chemical source term is
+linearized in the same manner as the fully coupled scheme; however, the updated
+$\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
+applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
+fractions:
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mathbf{\hat{W}}^{n+1} = \mathbf{\hat{W}}^n+\frac{\partial
+  \mathbf{\hat{W}}}{\partial \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial
+  \mathbf{U}}{\partial \mathbf{\hat{V}}} 
+\end{equation}
+%------------------------------------------------------------------------------%
+For simplicity of notation, we define
+%------------------------------------------------------------------------------%
+\begin{equation}
+  C = \frac{\partial \mathbf{\hat{W}}}{\partial
+  \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial \mathbf{U}}{\partial
+  \mathbf{\hat{V}}}
+\end{equation}
+%------------------------------------------------------------------------------%
+The decoupled system to be solved becomes:
+%------------------------------------------------------------------------------%
+\begin{gather} 
+  \begin{split}
+    \rho^{n+1}&\frac{\mathbf{\delta \hat{V}}^n}{\Delta t}
+    +\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{\hat{F}}^f}{\partial
+    \mathbf{\hat{V}}^L}\delta	\mathbf{\hat{V}}^L
+    +\frac{\partial \mathbf{\hat{F}}^f}{\partial \mathbf{\hat{V}}^R}\delta
+    \mathbf{\hat{V}}^R)^{n, n+1}\mathbf{S}^f - C^{n, n+1}\delta\mathbf{V}^n \\
+    &= -\frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}^{n,n+1}\cdot\mathbf{S})^f +
+    \mathbf{W}^{n, n+1} -\mathbf{\hat{V}}^n\frac{\delta \rho^n}{\Delta t} -
+    R_\rho
+  \end{split} \\ 
+  R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
+  {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
+\end{gather}
+%------------------------------------------------------------------------------%
+where $R_\rho$ is included to preserve the constraint that the mass fractions
+sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta
+c_s}=0$.
 
-The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
-$\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
-adjoint formulation given in \eref{adjoint-main}. The most intuitive and
-staightforward way to do this is to forgo solving for the species mass $\rho_s$
-in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
+\section{Cost and Memory Savings of the Decoupled Implicit Problem}
+
+In decoupling the species equations, the most significant savings comes from the
+source term linearization being purely node-based\cite{gnoffo-tp}.  Solving the
+mean flow equations is conducted in the same manner as the fully coupled system.
+All entries in the Jacobian $A_m$ are linearizations of the mixture equation
+fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
+are linearizations of the species mass fluxes, which results in $ns \times ns$
+matrices.  Because there is no interdependence of species, except through the
+chemical source term, all contributions due to linearizing the convective flux
+are purely diagonal $ns \times ns$ matrices.  Via Eq.~(\ref{decomp_jac}), we
+decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
+following linear system:
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \mq =
-  \begin{pmatrix}
-  	\rho \\
-  	\rho u \\
-  	\rho v \\
-  	\rho w \\
-  	\rho E \\
-    c_1 \\
-    \vdots \\
-    c_{ns}
-  \end{pmatrix}
-  \label{q-vec}
-\end{equation}
-%------------------------------------------------------------------------------%
-This allows the linearizations in \erefs{approx-jac}{approx-jac-dc} to be used
-in the adjoint formulation, by augmenting them with the previously omitted
-linearizations.  Replacing $\rdiff{}{\mq}$ with the fully-coupled system, the
-adjoint system becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{pmatrix}
-    \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & 
-    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_s}{\rho} \\ \\
-    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & 
-    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_s}{\rho \vu} \\ \\
-    \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & 
-    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_s}{\rho E} \\ \\
-    \rtdiff{\rho}{c_s} & \rtdiff{\rho \vu}{c_s} & 
-    \rtdiff{\rho E}{c_s} & \rtdiff{\rho_s}{c_s}
+  \label{dc_sys} 
+  \begin{pmatrix} 
+    \Box & & & & \\ & \ddots & & & \\ & & \Box \\ & & & \ddots & \\ & & & & \Box
   \end{pmatrix}
   \begin{pmatrix}
-    \adjlam{\rho} \\ \\
-    \adjlam{\rho \vu} \\ \\
-    \adjlam{\rho E} \\ \\
-    \adjlam{c_s}
+    \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta \mathbf{\hat{V}}_i \\ 
+    \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
   \end{pmatrix}
-  = -
+  =
   \begin{pmatrix}
-    \pd{f}{\rho} \\ \\
-    \pd{f}{\rho \vu} \\ \\
-    \pd{f}{\rho E} \\ \\
-    \pd{f}{c_s}
-  \end{pmatrix}
-  \label{full-adjoint}
-\end{equation}
-%------------------------------------------------------------------------------%
-Thus the jacobian in \eref{full-adjoint} is the completed one of
-\erefs{approx-jac}{approx-jac-dc}.  While this is useful, the advantage of
-decoupling the species equations from the mixture equations was to speed up the
-linear solver and save memory.  Solving \eref{full-adjoint} is roughly
-equivalent to solving the fully-coupled system of equations, which undermines
-both of these goals; so, an alternative solution strategy must be formulated.  If
-a block jacobi scheme is employed, the system can be decoupled once again as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{pmatrix}
-    \rtdiff{\rho}{\rho}     & \rtdiff{\rho \vu}{\rho}     & \rtdiff{\rho E}{\rho} \\ \\
-    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-    \rtdiff{\rho}{\rho E}   & \rtdiff{\rho \vu}{\rho E}   & \rtdiff{\rho E}{\rho E}
-  \end{pmatrix}
-  \begin{pmatrix}
-    \adjlam{\rho} \\ \\
-    \adjlam{\rho \vu} \\ \\
-    \adjlam{\rho E}
-  \end{pmatrix}
-  = -
-  \begin{pmatrix}
-    \pd{f}{\rho} \\ \\
-    \pd{f}{\rho \vu} \\ \\
-    \pd{f}{\rho E}
+    \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\ \hat{b}_{nodes} 
   \end{pmatrix}
   -
   \begin{pmatrix}
-    \rtdiff{\rho_s}{\rho} \\ \\
-    \rtdiff{\rho_s}{\rho \vu} \\ \\
-    \rtdiff{\rho_s}{\rho E}
-  \end{pmatrix}
-  \adjlam{c_s}
-  \label{dc-adjoint-1}
-\end{equation}
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
+    (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
+  \end{pmatrix} 
+\end{equation} 
+%------------------------------------------------------------------------------%
+where $\Box$ represents a dense $ns \times ns$ matrix, $[\diagdown]$ represents
+a diagonal matrix, and $\delta \mathbf{\hat{V}}_j$  is the decoupled variable
+update on the node $j$ that neighbors node $i$, where $N_{nb}$ is the number of
+nodes neighboring node $i$.  Thus, the non-zero entries in the off-diagonal
+matrix can be reduced from diagonal matrices to vectors.  This results in
+significant savings in both computational cost and memory, as the only quadratic
+operation left in solving the implicit system is dealing with the diagonal
+entries in the Jacobian.  Because the off-diagonal entries significantly
+outnumber the diagonal entries, we can expect nearly linear scaling in cost with
+the number of species.  If compressed row storage\cite{George} is used to
+only store non-zero off-diagonal entries, the relative memory savings in the
+limit of a large number of species for the Jacobian is given by
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \rtdiff{\rho_s}{c_s}
-  \adjlam{c_s}
-  = -\pd{f}{c_s}
-  - \rtdiff{\rho}{c_s} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
-  \label{dc-adjoint-2}
-\end{equation}
-%------------------------------------------------------------------------------%
-Adding a time-like derivative to the adjoint equations, the solution of the
-costate variables, $\Lambda$, can be time marched similar to the primal flow
-solver
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left[ \frac{V}{\Delta t} \mi + \rtdiff{}{\mq} \right] \Delta
-  \adjlam{}
-  = -\pd{f}{\mq} - \rtdiff{}{\mq} \adjlam{}
-  \label{adj-dc-time-general}
-\end{equation}
-%------------------------------------------------------------------------------%
-Thus, the first system of equations in \eref{dc-adjoint-1} becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{split}
-    \left[
-      \frac{V}{\Delta t} \mi +
-      \begin{pmatrix}
-        \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
-        \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-        \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
-      \end{pmatrix}
-    \right]
-    \begin{pmatrix}
-      \Delta \adjlam{\rho} \\ \\
-      \Delta \adjlam{\rho \vu} \\ \\
-      \Delta \adjlam{\rho E}
-    \end{pmatrix}
-    &= \\ -
-    \begin{pmatrix}
-      \pd{f}{\rho} \\ \\
-      \pd{f}{\rho \vu} \\ \\
-      \pd{f}{\rho E}
-    \end{pmatrix}
-    -
-    \begin{pmatrix}
-      \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
-      \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-      \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
-    \end{pmatrix}
-    &
-    \begin{pmatrix}
-      \adjlam{\rho} \\ \\
-      \adjlam{\rho \vu} \\ \\
-      \adjlam{\rho E}
-    \end{pmatrix}
-    -
-    \begin{pmatrix}
-      \rtdiff{\rho_s}{\rho} \\ \\
-      \rtdiff{\rho_s}{\rho \vu} \\ \\
-      \rtdiff{\rho_s}{\rho E}
-    \end{pmatrix}
-    \adjlam{c_s}
+  \label{mem_req_eq}
+  \begin{split} 
+    Relative\ Memory\ Cost &=
+    \frac{size(A_d)}{size(A)} \\ &= \lim_{ns\to\infty}
+    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nz})}{(ns+4)^2(N_{nodes}+N_{nz})} \\
+    &= \frac{N_{nodes}}{N_{nodes} + N_{nz}}
   \end{split}
-  \label{adj-dc-time1}
 \end{equation}
 %------------------------------------------------------------------------------%
-and the second system in \eref{dc-adjoint-2} becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
-  \adjlam{c_s}
-  = \\ -\pd{f}{c_s}
-  - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
-  - \rtdiff{\rho}{c_s} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
-  \label{adj-dc-time2}
-\end{equation}
-%------------------------------------------------------------------------------%
-The LHS of \erefs{adj-dc-time1}{adj-dc-time2} are the same first-order
-approximate jacobians that were used to solve the primal flow equations;
-therefore, all of the benefits of the diagonal block matricies that are
-exploited in the primal flow solver to reduce the linear solver cost and overall
-memory now apply to the adjoint.
+where $N_{nodes}$ is the number of nodes, and $N_{nz}$ is the number of non-zero
+off-diagonal entries stored using compressed row storage. For a structured grid,
+each node has six neighbors in 3D, i.e., $N_{nz} = 6N_{nodes}$; therefore, we can
+expect the Jacobian memory required to decrease by a factor of seven using this
+decoupled scheme. Interestingly, for a grid that is not purely hexahedral,
+$N_{nz} > 6N_{nodes}$; thus, this decoupled scheme provides higher relative
+memory savings on unstructured grids than structured grids when using compressed
+row storage.
+
