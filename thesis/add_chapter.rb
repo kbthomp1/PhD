@@ -45,7 +45,10 @@ def make_new_chapter(new_chapter)
   new_dir = "Chapter-#{new_chapter}"
   FileUtils.mkdir(new_dir)
   FileUtils.ln_s("chapter-makefile","#{new_dir}/Makefile")
-  FileUtils.touch("#{new_dir}/Chapter-#{new_chapter}.tex")
+  File.open("#{new_dir}/Chapter-#{new_chapter}.tex",'w') do |f|
+    f.puts "\\chapter{New Chapter}"
+    f.puts "\\label{chapter-#{new_chapter.to_word}}"
+  end
 end
 
 new_chapter = ARGV[0]
