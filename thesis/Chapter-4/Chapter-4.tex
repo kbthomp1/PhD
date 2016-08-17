@@ -1,73 +1,340 @@
-\chapter{Design Optimization}
+\chapter{Numerical Solution of Adjoint Equations}
 \label{chapter-four}
 
-Design optimization is a wide field that encompasses methods generally falling into
-two categories: local gradient-based optimization, and heuristic global
-optimization.  Local gradient-based optimization techniques focus on the
-determining an optimality condition by evaluating a function and its gradients.
-Provided certain conditions are met, it can be proven that the optimization
-procedure will find a local minimum or maximum on a bounded domain.  Examples of
-local gradient-based optimization methods include steepest-descent[cite??],
-conjugate-gradient[cite??], and Augmented Lagrangian Method [cite??].  A
-heuristic global optimization seeks to find the global extrema of a function.
-Although these methods are powerful, because of their heuristic nature they are
-not guaranteed to find the absolute optimum condition and are not the focus this
-research.
+This section details the derivation of the adjoint equations to be solved in
+conjuction with the primal flow equations.  The primary goal of this research is
+to compute sensitivities of aerodynamic and aerothermodynamic quantities to
+design variables.  To achieve this, the sensitivity to the primal flow equation
+formulation must first be solved.  For a discrete adjoint formulation, this
+requires a solution of costate variables, relating a change in the flow equation
+residual to a change in the function of interest.  Because of the large number
+of equations required in a reacting gas solver, the adjoint solver will suffer
+from the quadratic scaling in computational cost and memory required similarly
+to the primal flow solver.  To mitigate this, a decoupled scheme is derived that
+is consistent with the decoupled flow solver.
 
-In the field of optimization, the function of interest is referred to as the
-``cost function'' or ``objective function''.  Optimization methods seek to
-minimize this function; therefore, if the intent is to find the maximum value
-of the function, it should be formulated as the negative of the original.  This
-section focuses on the implementation of the cost function components and design
-variables used in the optimization, as well as the implementation of the
-optimizer that is used.
+\section{Discrete Adjoint Derivation}
 
-\section{Cost Function Definition}
-
-The cost function (or objective function) as formulated in FUN3D is a composite,
-weighted function
+%The FUN3D adjoint derivation is given in Eric Nielson's PhD Thesis[cite??].
+The derivation for the discrete adjoint begins with forming the Lagrangian as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
-  \label{generic-cost-function}
+  L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
+  +\mathbf{\Lambda}^T\mr(\md,\mq,\mx)
 \end{equation}
 %------------------------------------------------------------------------------%
-Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
-function component $j$.  $C_j$ is the component value, which is evaluated at
-each flow solution.  For this particular optimization problem the cost function
-is defined as 
+Where $\mr$ is the residual of the flow equations.  Differentiating with respect
+to the design variables $\md$ yields
 %------------------------------------------------------------------------------%
 \begin{equation}
-  f = w_1\left( T_{RMS} \right)^{2} + w_2\left( C_{D} - C_{D}^{*} \right)^2
-  \label{cd-tt-cost-function}
+  \frac{\partial L}{\partial \md}=
+  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
+  +\bigg[\frac{\partial \mq}{\partial \md}\bigg]^T
+  \Bigg\{\frac{\partial f}{\partial \mq}+\bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T \mathbf{\Lambda}\Bigg\}
+  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
+  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
+  \label{dL}
 \end{equation}
 %------------------------------------------------------------------------------%
-The component weights were determined heuristically, to normalize the changes in
-drag coefficient, $C_D$, and surface temperature Root-Mean-Square (RMS) $T_{RMS}$.
-The drag coefficient is defined as
+To eliminate the dependence of conserved variables $\mq$ on the design
+variables, we solve the adjoint equation
 %------------------------------------------------------------------------------%
 \begin{equation}
-  C_D = \sum_{i}^{N_{faces}}
-        \frac{2\left( p_i - p_\infty \right)n_{x_{i}}}
-        {\rho_{\infty} V_{\infty}S_{ref}}
-  \label{drag-coef-def}
+  \bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T\mathbf{\Lambda}=
+  -\frac{\partial f}{\partial \mq}
+  \label{adjoint-main}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $p_i$ is the average pressure at face $i$.  RMS of surface temperature is
-defined as
+Where the Lagrange multipliers (also known as costate variables),
+$\mathbf{\Lambda}$ are the cost function dependence on the residual
+%------------------------------------------------------------------------------%
 \begin{equation}
-  \sqrt{
-    \frac{\sum_{i}^{N_{faces}}\left( T_{RMS} A_i \right)^2}
-       {\sum_{i}^{N_{faces}}\left( A_i \right)^2}
-     }
-  \label{tt-rms-def}
+  \mathbf{\Lambda}=-\frac{\partial f}{\partial \mr}
 \end{equation}
-The area-weighted RMS of surface temperature was chosen over a simple
-area-weighted average of surface temperature, because the stagnation temperature
-is generally much higher than temperature elsewhere on a vehicle forebody in
-hypersonic flows.  The squaring of temperature in the RMS will therefore give
-greater weight to the stagnation temperature in the design.
+%------------------------------------------------------------------------------%
+This can ultimately be used to error estimation and sensitivity analysis for
+design optimization.  With the second term in eq.~(\ref{dL}) eliminated, the
+derivative of the Lagrangian becomes
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{\partial L}{\partial \md}=
+  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial
+  \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
+  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
+  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial
+  \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
+  \label{obj_function}
+\end{equation}
+%------------------------------------------------------------------------------%
+By solving the adjoint equation in \eref{adjoint-main}) to obtain the costate
+variable vector, $\mathbf{\Lambda}$, we can now use a non-linear optimizer to
+determine the optimum set of design variables, $\md^*$. This can be done using
+{\bf SNOPT\cite{snopt-manual}}, {\bf KSOPT\cite{KSOPT}}, or {\bf
+  NPSOL\cite{npsol-manual}} in FUN3D, as well as a host of other non-linear
+optimizers.
 
+\section{Block Jacobi Adjoint Decoupling}
 
+It is possible to decoupled the adjoint equations in a fashion similiar to that
+done to the primal flow equations.  In this decoupled adjoint formulation, the
+conserved variables are split identically to flow equations, with the
+fully-coupled vector of conserved variables
+%------------------------------------------------------------------------------%
+\begin{equation}
+	\vU =
+  \begin{pmatrix}
+ 		\rho_1    \\
+		\vdots    \\
+		\rho_{ns} \\
+    \rho \vu  \\
+		\rho E    \\
+	\end{pmatrix}
+  \label{all-vars}
+ \end{equation}
+%------------------------------------------------------------------------------%
+ split into
+%------------------------------------------------------------------------------%
+\begin{equation}
+	\begin{matrix}
+		\mathbf{U}'=\begin{pmatrix}
+			\rho \\
+			\rho \vu \\
+			\rho E
+		\end{pmatrix},\quad &
+		\mathbf{\hat{U}}=\begin{pmatrix}
+			\rho_1 \\
+			\vdots \\
+			\rho_{ns}
+		\end{pmatrix}
+	\end{matrix}
+  \label{dc-vars}
+\end{equation}
+%------------------------------------------------------------------------------%
+With this splitting, the mixture equations for single point in the global system
+of the decoupled flow solve can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{V}{\Delta t}\mi + 
+  \begin{pmatrix}
+    \rdiff{\rho}{\rho} & \rdiff{\rho}{\rho \vu} & \rdiff{\rho}{\rho E} \\ \\
+    \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho \vu}{\rho E} \\ \\
+    \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho E}{\rho E}
+  \end{pmatrix}
+  \begin{pmatrix}
+    \Delta \rho \\ \\
+    \Delta \rho \vu \\ \\
+    \Delta \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho} \\ \\
+    \res{\rho \vu} \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{approx-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+Likewise, the species mass equations for a single point can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{V}{\Delta t}\mi + 
+  \begin{pmatrix}
+    \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\ \\
+    \vdots & \ddots & \vdots \\ \\
+    \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
+  \end{pmatrix}
+  \begin{pmatrix}
+    \Delta c_1 \\ \\
+    \vdots \\ \\
+    \Delta c_{ns}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1} \\ \\
+    \vdots \\ \\
+    \res{\rho_{ns}}
+  \end{pmatrix}
+  \label{approx-jac-dc}
+\end{equation}
+%------------------------------------------------------------------------------%
+Examining \erefs{approx-jac}{approx-jac-dc} shows that there are clearly some
+physical dependencies being omitted, namely $\rdiff{\rho_s}{\rho}$,
+$\rdiff{\rho}{c_s}$, $\rdiff{\rho \vu}{c_s}$, and $\rdiff{\rho E}{c_s}$.  It has
+been found\cite{candler} that omitting this dependencies does not hinder convergence
+the primal flow solver; however, because the adjoint requires an exact
+linearization of the converged steady-state solution, these must be accounted
+for in the decoupled adjoint formulation.
 
-
+The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
+$\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
+adjoint formulation given in \eref{adjoint-main}. The most intuitive and
+staightforward way to do this is to forgo solving for the species mass $\rho_s$
+in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mq =
+  \begin{pmatrix}
+  	\rho \\
+  	\rho u \\
+  	\rho v \\
+  	\rho w \\
+  	\rho E \\
+    c_1 \\
+    \vdots \\
+    c_{ns}
+  \end{pmatrix}
+  \label{q-vec}
+\end{equation}
+%------------------------------------------------------------------------------%
+This allows the linearizations in \erefs{approx-jac}{approx-jac-dc} to be used
+in the adjoint formulation, by augmenting them with the previously omitted
+linearizations.  Replacing $\rdiff{}{\mq}$ with the fully-coupled system, the
+adjoint system becomes
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{pmatrix}
+    \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & 
+    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_s}{\rho} \\ \\
+    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & 
+    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_s}{\rho \vu} \\ \\
+    \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & 
+    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_s}{\rho E} \\ \\
+    \rtdiff{\rho}{c_s} & \rtdiff{\rho \vu}{c_s} & 
+    \rtdiff{\rho E}{c_s} & \rtdiff{\rho_s}{c_s}
+  \end{pmatrix}
+  \begin{pmatrix}
+    \adjlam{\rho} \\ \\
+    \adjlam{\rho \vu} \\ \\
+    \adjlam{\rho E} \\ \\
+    \adjlam{c_s}
+  \end{pmatrix}
+  = -
+  \begin{pmatrix}
+    \pd{f}{\rho} \\ \\
+    \pd{f}{\rho \vu} \\ \\
+    \pd{f}{\rho E} \\ \\
+    \pd{f}{c_s}
+  \end{pmatrix}
+  \label{full-adjoint}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus the jacobian in \eref{full-adjoint} is the completed one of
+\erefs{approx-jac}{approx-jac-dc}.  While this is useful, the advantage of
+decoupling the species equations from the mixture equations was to speed up the
+linear solver and save memory.  Solving \eref{full-adjoint} is roughly
+equivalent to solving the fully-coupled system of equations, which undermines
+both of these goals; so, an alternative solution strategy must be formulated.  If
+a block jacobi scheme is employed, the system can be decoupled once again as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{pmatrix}
+    \rtdiff{\rho}{\rho}     & \rtdiff{\rho \vu}{\rho}     & \rtdiff{\rho E}{\rho} \\ \\
+    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+    \rtdiff{\rho}{\rho E}   & \rtdiff{\rho \vu}{\rho E}   & \rtdiff{\rho E}{\rho E}
+  \end{pmatrix}
+  \begin{pmatrix}
+    \adjlam{\rho} \\ \\
+    \adjlam{\rho \vu} \\ \\
+    \adjlam{\rho E}
+  \end{pmatrix}
+  = -
+  \begin{pmatrix}
+    \pd{f}{\rho} \\ \\
+    \pd{f}{\rho \vu} \\ \\
+    \pd{f}{\rho E}
+  \end{pmatrix}
+  -
+  \begin{pmatrix}
+    \rtdiff{\rho_s}{\rho} \\ \\
+    \rtdiff{\rho_s}{\rho \vu} \\ \\
+    \rtdiff{\rho_s}{\rho E}
+  \end{pmatrix}
+  \adjlam{c_s}
+  \label{dc-adjoint-1}
+\end{equation}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \rtdiff{\rho_s}{c_s}
+  \adjlam{c_s}
+  = -\pd{f}{c_s}
+  - \rtdiff{\rho}{c_s} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
+  \label{dc-adjoint-2}
+\end{equation}
+%------------------------------------------------------------------------------%
+Adding a time-like derivative to the adjoint equations, the solution of the
+costate variables, $\Lambda$, can be time marched similar to the primal flow
+solver
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left[ \frac{V}{\Delta t} \mi + \rtdiff{}{\mq} \right] \Delta
+  \adjlam{}
+  = -\pd{f}{\mq} - \rtdiff{}{\mq} \adjlam{}
+  \label{adj-dc-time-general}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus, the first system of equations in \eref{dc-adjoint-1} becomes
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{split}
+    \left[
+      \frac{V}{\Delta t} \mi +
+      \begin{pmatrix}
+        \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
+        \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+        \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
+      \end{pmatrix}
+    \right]
+    \begin{pmatrix}
+      \Delta \adjlam{\rho} \\ \\
+      \Delta \adjlam{\rho \vu} \\ \\
+      \Delta \adjlam{\rho E}
+    \end{pmatrix}
+    &= \\ -
+    \begin{pmatrix}
+      \pd{f}{\rho} \\ \\
+      \pd{f}{\rho \vu} \\ \\
+      \pd{f}{\rho E}
+    \end{pmatrix}
+    -
+    \begin{pmatrix}
+      \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
+      \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
+      \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    &
+    \begin{pmatrix}
+      \adjlam{\rho} \\ \\
+      \adjlam{\rho \vu} \\ \\
+      \adjlam{\rho E}
+    \end{pmatrix}
+    -
+    \begin{pmatrix}
+      \rtdiff{\rho_s}{\rho} \\ \\
+      \rtdiff{\rho_s}{\rho \vu} \\ \\
+      \rtdiff{\rho_s}{\rho E}
+    \end{pmatrix}
+    \adjlam{c_s}
+  \end{split}
+  \label{adj-dc-time1}
+\end{equation}
+%------------------------------------------------------------------------------%
+and the second system in \eref{dc-adjoint-2} becomes
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
+  \adjlam{c_s}
+  = \\ -\pd{f}{c_s}
+  - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
+  - \rtdiff{\rho}{c_s} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
+  \label{adj-dc-time2}
+\end{equation}
+%------------------------------------------------------------------------------%
+The LHS of \erefs{adj-dc-time1}{adj-dc-time2} are the same first-order
+approximate jacobians that were used to solve the primal flow equations;
+therefore, all of the benefits of the diagonal block matricies that are
+exploited in the primal flow solver to reduce the linear solver cost and overall
+memory now apply to the adjoint.

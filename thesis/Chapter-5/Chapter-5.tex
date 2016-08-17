@@ -1,0 +1,73 @@
+\chapter{Design Optimization}
+\label{chapter-five}
+
+Design optimization is a wide field that encompasses methods generally falling into
+two categories: local gradient-based optimization, and heuristic global
+optimization.  Local gradient-based optimization techniques focus on the
+determining an optimality condition by evaluating a function and its gradients.
+Provided certain conditions are met, it can be proven that the optimization
+procedure will find a local minimum or maximum on a bounded domain.  Examples of
+local gradient-based optimization methods include steepest-descent[cite??],
+conjugate-gradient[cite??], and Augmented Lagrangian Method [cite??].  A
+heuristic global optimization seeks to find the global extrema of a function.
+Although these methods are powerful, because of their heuristic nature they are
+not guaranteed to find the absolute optimum condition and are not the focus this
+research.
+
+In the field of optimization, the function of interest is referred to as the
+``cost function'' or ``objective function''.  Optimization methods seek to
+minimize this function; therefore, if the intent is to find the maximum value
+of the function, it should be formulated as the negative of the original.  This
+section focuses on the implementation of the cost function components and design
+variables used in the optimization, as well as the implementation of the
+optimizer that is used.
+
+\section{Cost Function Definition}
+
+The cost function (or objective function) as formulated in FUN3D is a composite,
+weighted function
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
+  \label{generic-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
+function component $j$.  $C_j$ is the component value, which is evaluated at
+each flow solution.  For this particular optimization problem the cost function
+is defined as 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( T_{RMS} \right)^{2} + w_2\left( C_{D} - C_{D}^{*} \right)^2
+  \label{cd-tt-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+The component weights were determined heuristically, to normalize the changes in
+drag coefficient, $C_D$, and surface temperature Root-Mean-Square (RMS) $T_{RMS}$.
+The drag coefficient is defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  C_D = \sum_{i}^{N_{faces}}
+        \frac{2\left( p_i - p_\infty \right)n_{x_{i}}}
+        {\rho_{\infty} V_{\infty}S_{ref}}
+  \label{drag-coef-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $p_i$ is the average pressure at face $i$.  RMS of surface temperature is
+defined as
+\begin{equation}
+  \sqrt{
+    \frac{\sum_{i}^{N_{faces}}\left( T_{RMS} A_i \right)^2}
+       {\sum_{i}^{N_{faces}}\left( A_i \right)^2}
+     }
+  \label{tt-rms-def}
+\end{equation}
+The area-weighted RMS of surface temperature was chosen over a simple
+area-weighted average of surface temperature, because the stagnation temperature
+is generally much higher than temperature elsewhere on a vehicle forebody in
+hypersonic flows.  The squaring of temperature in the RMS will therefore give
+greater weight to the stagnation temperature in the design.
+
+
+
+

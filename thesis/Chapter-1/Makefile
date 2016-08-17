@@ -1,1 +1,1 @@
-../chapter-makefile
+chapter-makefile
