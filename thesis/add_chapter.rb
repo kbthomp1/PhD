@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'fileutils'
+require_relative "./integer_to_word.rb"
 
 def find_max_chapter()
   chapter_dirs = Dir.glob("Chapter-*")
@@ -15,15 +16,29 @@ def find_max_chapter()
 end
 
 def move_chapter(chapter)
+  new_chapter = chapter+1
   old_chapter_dir = "Chapter-#{chapter}"
-  new_chapter_dir = "Chapter-#{chapter+1}"
+  new_chapter_dir = "Chapter-#{new_chapter}"
   old_tex = "#{old_chapter_dir}/Chapter-#{chapter}.tex"
-  new_tex = "#{old_chapter_dir}/Chapter-#{chapter+1}.tex"
+  new_tex = "#{old_chapter_dir}/Chapter-#{new_chapter}.tex"
 
   clean_cmd = "(cd #{old_chapter_dir} && make clean)"
   system clean_cmd
+
   puts "moving #{old_tex} to #{new_tex}"
+  File.open(new_tex,'w') do |f|
+    lines = IO.readlines(old_tex)
+    while line = lines.shift
+      if line.match(/\\label{chapter-.*}/)
+        line = "\\label{chapter-#{new_chapter.to_word}}"
+      end
+      f.puts line
+    end
+  end
+  FileUtils.rm(old_tex)
+
   puts "moving #{old_chapter_dir} to #{new_chapter_dir}"
+  FileUtils.mv(old_chapter_dir,new_chapter_dir)
 end
 
 def make_new_chapter(new_chapter)
