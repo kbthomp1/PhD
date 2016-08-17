@@ -4,4 +4,4 @@ pdf:
 .PHONY: clean
 
 clean:
-	rm *.aux
+	rm -rf *.aux
