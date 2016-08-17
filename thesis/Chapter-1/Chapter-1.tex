@@ -1,2 +1,36 @@
-\chapter{New Chapter}
+\chapter{Introduction}
 \label{chapter-one}
+
+The usability of hypersonic solvers on complex geometries is often limited by
+the extreme problem size associated with high energy physics.  The additional
+equations required in reacting gas simulations lead to large Jacobians that
+scale quadratically in size to the number of governing equations.  This leads
+to a significant increase in the memory required to store the flux
+linearizations and the computational cost of the point solver.  As reacting gas
+CFD solvers are used to solve increasingly more complex problems, this onerous
+quadratic scaling of computational cost and Jacobian size will ultimately
+surpass the current limits of hardware and time constraints on achieving a flow
+solution\cite{fischer}.
+
+The proposed method is based heavily upon the work of Candler et
+al.\cite{candler}. In that work, it was shown that quadratic scaling between the
+cost of solving the implicit system and adding species mass equations can be
+reduced from quadratic to linear scaling by decoupling the species mass
+equations from the mixture mass, momentum, and energy equations and solving the
+two systems sequentially.  In the aforementioned work, the scheme was derived
+for a modified form of the Steger-Warming flux vector splitting
+method\cite{MacCormack}, whereas the work presented here is derived for the Roe
+flux difference splitting (FDS) scheme\cite{roe}.
+
+A primary motivator for the presented work is to prepare for the implementation
+of an adjoint capability in a reacting gas solver that employs the Roe scheme.
+Developing an adjoint implementation for non-equilibrium flows is an extremely
+challenging problem, because deriving exact Jacobians for a reacting gas system
+is particularly difficult.  Decoupling the system also simplifies the derivation
+of exact Jacobians.  If the species mass equations are decoupled, the mixture mass,
+momentum, and energy flux Jacobians can be easily derived\cite{Nishikawa}, and a
+weighting scheme can be used to correct the non-uniqueness of the pressure
+linearization\cite{Shuen}.  For the decoupled species fluxes, we derive an exact
+linearization in the presented work.  Future work will include an adjoint-based
+error estimation capability that leverages these exact linearizations.
+
