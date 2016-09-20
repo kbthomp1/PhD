@@ -1,0 +1,17 @@
+\chapter{Verification of Adjoint Sensitivity Gradients}
+\label{chapter-six}
+
+In this section the sensitivity gradients computed by the adjoint-formulation
+are verified against frechet derivatives with complex step.  This details the
+methods by which the gradient information is computed in the forward-mode and in
+the reverse-mode.
+
+\section{Forward-mode Sensitivities Using Complex-Variables}
+
+The sensitivities can be computed in the forward-mode by using
+finite-difference.  While this approach is unfavorable to use in practice,
+because a minimum number of flow solves equivalent to the number of design
+variables are required, it is a straight-forward way to verify that
+sensitivities computed by the adjoint solver are correct.  To avoid cancellation
+errors associated with real-variable finite difference, a complex variable
+perturbation can be applied
