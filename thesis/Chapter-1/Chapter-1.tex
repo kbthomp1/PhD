@@ -1,36 +1,51 @@
 \chapter{Introduction}
 \label{chapter-one}
 
-The usability of hypersonic solvers on complex geometries is often limited by
-the extreme problem size associated with high energy physics.  The additional
-equations required in reacting gas simulations lead to large Jacobians that
-scale quadratically in size to the number of governing equations.  This leads
-to a significant increase in the memory required to store the flux
-linearizations and the computational cost of the point solver.  As reacting gas
-CFD solvers are used to solve increasingly more complex problems, this onerous
-quadratic scaling of computational cost and Jacobian size will ultimately
-surpass the current limits of hardware and time constraints on achieving a flow
-solution\cite{fischer}.
+In the last decades computational fluid dynamics (CFD) codes have matured to the
+point that it is possible to obtain high-fidelity design sensitivities that can
+be coupled with optimization packages to enable design optimization for a
+variety of design inputs\cite{baysal1992aerodynamic, balagangadhar2001design}.
+In recent years, the benefits of using an adjoint-based formulation to compute
+sensitivities have been realized and implemented in many compressible CFD
+codes\cite{mavriplis-2006, nemec-aftosmis-adjoint, nielsen2002recent}, because
+of the ability compute all sensitivities a the cost of a single extra adjoint
+solution, instead of an additional flow solution for each design variable.
+Reacting gas CFD codes have lagged significantly in adopting this adjoint-based
+approach, with only a small number of codes having published
+results\cite{Copeland, Barcelona}.  This is likely due to the significant
+jump in complexity of the linearizations required, especially in regard to the
+chemical source term and the dissipation term in the Roe flux difference
+splitting (FDS) scheme\cite{roe}.
 
-The proposed method is based heavily upon the work of Candler et
-al.\cite{candler}. In that work, it was shown that quadratic scaling between the
-cost of solving the implicit system and adding species mass equations can be
-reduced from quadratic to linear scaling by decoupling the species mass
-equations from the mixture mass, momentum, and energy equations and solving the
-two systems sequentially.  In the aforementioned work, the scheme was derived
-for a modified form of the Steger-Warming flux vector splitting
-method\cite{MacCormack}, whereas the work presented here is derived for the Roe
-flux difference splitting (FDS) scheme\cite{roe}.
+An additional obstacle that may prevent adjoint-based sensitivity analysis in
+reacting gas solvers is the extreme problem size associated with high energy
+physics.  The additional equations required in reacting gas simulations lead to
+large Jacobians that scale quadratically in size to the number of governing
+equations.  This leads to a significant increase in the memory required to store
+the flux linearizations and the computational cost of the point solver.  As
+reacting gas CFD solvers are used to solve increasingly more complex problems,
+this onerous quadratic scaling of computational cost and Jacobian size will
+ultimately surpass the current limits of hardware and time constraints on
+achieving a flow solution\cite{fischer}.
 
-A primary motivator for the presented work is to prepare for the implementation
-of an adjoint capability in a reacting gas solver that employs the Roe scheme.
-Developing an adjoint implementation for non-equilibrium flows is an extremely
-challenging problem, because deriving exact Jacobians for a reacting gas system
-is particularly difficult.  Decoupling the system also simplifies the derivation
-of exact Jacobians.  If the species mass equations are decoupled, the mixture mass,
-momentum, and energy flux Jacobians can be easily derived\cite{Nishikawa}, and a
-weighting scheme can be used to correct the non-uniqueness of the pressure
-linearization\cite{Shuen}.  For the decoupled species fluxes, we derive an exact
-linearization in the presented work.  Future work will include an adjoint-based
-error estimation capability that leverages these exact linearizations.
+To mitigate this scaling issue, Candler et al.\cite{candler} proposed a scheme
+to for a modified form of the Steger-Warming flux vector splitting
+scheme\cite{MacCormack,Steger}. In that work, it was shown that quadratic
+scaling between the cost of solving the implicit system and adding species mass
+equations can be reduced from quadratic to linear scaling by decoupling the
+species mass equations from the mixture mass, momentum, and energy equations and
+solving the two systems sequentially.  This work extends the aforementioned work
+from the modified form of the Steger-Warming flux vector splitting
+method to the Roe flux difference splitting (FDS) scheme.
+
+The work presented demonstrates that this decoupling can be applied to both the
+flow solver and adjoint solver in a reacting gas CFD code, and significantly
+improve the efficiency in both computational cost and memory required.
+Additionally the implementation of exact linearizations is shown to
+significantly improve performance and robustness in the flow solver over common
+approximations used when linearizing the Roe FDS scheme.  The formulation and
+linearization of the fluxes for the Roe FDS scheme are presented here, and
+design optimization for an inviscid reacting flow is conducted for inviscid,
+reacting flow around an axi-symmetric hypersonic re-entry vehicle with an
+annular jet.
 

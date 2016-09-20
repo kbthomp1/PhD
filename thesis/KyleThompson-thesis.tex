@@ -113,6 +113,9 @@ Discrete Adjoint Formulation}
 %%---------------------------- Personal Macros -------------------------------%%
 %%----------------------------------------------------------------------------%%
 
+\DeclareCaptionType{mycapequ}[][List of equations]
+\captionsetup[mycapequ]{labelformat=empty}
+
 \newcommand{\uv}[1]{\ensuremath{\mathbf{\hat{#1}}}}
 \newcommand{\bo}{\ensuremath{\boldsymbol{\Omega}}}
 \newcommand{\fref}[1]{Figure~\ref{#1}}
@@ -132,6 +135,16 @@ Discrete Adjoint Formulation}
 
 % adjoint lambda with subscript
 \newcommand{\adjlam}[1]{\Lambda_{#1}}
+
+% specific heats
+\newcommand{\cvs}{C_{v,s}}
+\newcommand{\cps}{C_{p,s}}
+
+% stoichiometric coefficients
+\newcommand{\sprod}{\nu_{s,r}^{''}}
+\newcommand{\sreact}{\nu_{s,r}^{'}}
+
+\newcommand{\br}[1]{B_{#1}^{r}}
 
 \newcommand{\real}{\mathbf R}
 \newcommand{\rnn}{\real^{N \times N}}
@@ -193,6 +206,7 @@ Discrete Adjoint Formulation}
 \include{Chapter-2/Chapter-2}
 \include{Chapter-3/Chapter-3}
 \include{Chapter-4/Chapter-4}
+\include{Chapter-5/Chapter-5}
 
 
 %%---------------------------------------------------------------------------%%

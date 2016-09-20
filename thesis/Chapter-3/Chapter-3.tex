@@ -3,9 +3,8 @@
 
 \section{Fully-Coupled Point Implicit Method}
 
-All work presented here is for the inviscid conservation equations, but it can be
-extended to include viscous terms.  For an inviscid, multi-species mixture, the
-governing equations in vector form are:
+The governing equations presented in \erefs{species-cons}{tot-energy-cons} can
+be recast in vector form as
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\label{inv_flux_vec}
@@ -48,14 +47,10 @@ outward normal vector.  The vectors of conserved variables and fluxes are:
 	\end{matrix}
  \end{equation}
 %------------------------------------------------------------------------------%
-where $\overline{U}$ is the outward pointing normal velocity, and $E$ is
-the total energy of the mixture per unit mass, defined as: 
-%------------------------------------------------------------------------------%
-\begin{equation} E = \sum{c_s e_s}
-   + \frac{u^2+v^2+w^2}{2} 
-\end{equation}
-%------------------------------------------------------------------------------%
-where $e_s$ is the internal energy of species $s$.  By using the Roe FDS scheme,
+where $\overline{U}$ is the outward pointing normal velocity, $E$ is
+the total energy of the mixture per unit mass as defined in
+\eref{tot-energy-def}, and $e_s$ is the internal energy of species $s$ as
+defined in \eref{int-energy-def}.  By using the Roe FDS scheme,
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\begin{matrix}
@@ -229,7 +224,7 @@ where $R_\rho$ is included to preserve the constraint that the mass fractions
 sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta
 c_s}=0$.
 
-\section{Cost and Memory Savings of the Decoupled Implicit Problem}
+\section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 
 In decoupling the species equations, the most significant savings comes from the
 source term linearization being purely node-based\cite{gnoffo-tp}.  Solving the
