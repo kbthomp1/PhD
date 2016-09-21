@@ -22,7 +22,7 @@ considering the Taylor series expansion of $f$ using a complex step $ih$
 \begin{equation}
   f(x + ih) = \sum_{k=0}\left( \frac{(ih)^k}{!k}\pnd{f}{x}{k} \right)
             = f(x) + ih\pd{f}{x} - \frac{h^2}{2}\pnd{f}{x}{2}
-            - \frac{h^2}{6}\pnd{f}{x}{3} + \cdots
+            - \frac{h^3}{6}\pnd{f}{x}{3} + \cdots
   \label{taylor-exp}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -88,9 +88,11 @@ solution will be converged without ever needing to update the flux limiter.
 This will ensure that the sensitivity derivatives from the complex and adjoint
 solvers match to high precision for hypersonic cases with a frozen flux limiter.
 
+\section{Verification of 2nd-order Adjoint Linearizations}
+
 To verify the hand-coded linearizations implemented in the adjoint solver, the
 derivatives of the drag and surface temperature cost functions for the
-annular nozzle geometry were computed using both the adjoint method and this
+annular nozzle geometry were computed using both the adjoint method and the
 complex-variable approach. Using the adjoint solution derivatives with respect
 to the plenum pressure and plenum temperature design variables can be computed
 by manipulating \eref{obj-function}
