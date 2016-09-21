@@ -13,5 +13,93 @@ finite-difference.  While this approach is unfavorable to use in practice,
 because a minimum number of flow solves equivalent to the number of design
 variables are required, it is a straight-forward way to verify that
 sensitivities computed by the adjoint solver are correct.  To avoid cancellation
-errors associated with real-variable finite difference, a complex variable
-perturbation can be applied
+errors associated with real-variable finite difference, an approach that uses
+complex variables was originally suggested by Squire and Trapp\cite{squire1998}
+and evaluated by Newman et al\cite{newman1998}.  This complex-variable approach
+can be used to determine the derivative of a real valued function, $f$, by
+considering the Taylor series expansion of $f$ using a complex step $ih$
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f(x + ih) = \sum_{k=0}\left( \frac{(ih)^k}{!k}\pnd{f}{x}{k} \right)
+            = f(x) + ih\pd{f}{x} - \frac{h^2}{2}\pnd{f}{x}{2}
+            - \frac{h^2}{6}\pnd{f}{x}{3} + \cdots
+  \label{taylor-exp}
+\end{equation}
+%------------------------------------------------------------------------------%
+taking the imaginary parts of boths sides of \eref{taylor-exp} and solving for
+the first derivative yields
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{f}{x} &= \frac{Im\left[ f(x + ih) \right]}{h} -
+    \frac{h^2}{6}\pnd{f}{x}{3} \\
+              &= \frac{Im\left[ f(x + ih) \right]}{h} - O(h^2)
+  \end{aligned}
+  \label{complex-fd}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus, this complex-variable approach provides a means of computing the cost
+function derivatives without subtractive cancellation error, giving truly second
+order accuracy.  The power of using this approach is that the derivative of any
+function with respect to a single can be computed without any additional work,
+other than the function be made to use complex arithmetic and a complex-valued
+perturbation be applied.
+
+In practice, this complex-variable approach is implemented by transforming the
+source code such that all real variables used in a function evaluation are made
+to be complex variables.  A specified step size is then added to the complex
+part of the design variable that the cost function is to be linearized with
+respect to in the function evaluation.  Provide the ``complexified'' solver
+converges in the same manner as the real-variable solver, the complex part of
+the function of interest is the sensitivity derivative.
+
+As mentioned before, the complex-variable and real-variable solvers must
+converge to the same solution for the comparison between the adjoint-computed
+sensitivity derivatives and those computed by the complex-variable approach to
+be valid.  The use of a flux limiter is mandatory for hypersonic applications,
+where strong shocks are present; however, the solver is very sensitive to
+changes in the reconstruction, and a ``ringing'' of the residual is often
+observed\cite{gnoffo2007ringing} when using a flux limiter in FUN3D. While this
+sub-convergence of the conservation equation residuals is not detrimental to the
+primal flow solver results, as most aerothermodynamic quantities are usually
+sufficiently converged by this point, the adjoint-formulation is predicated on
+the residual being zero, or at least nearly zero.  Because of this last point,
+the stalled convergence can cause the adjoint solver to give incorrect results
+or cause the adjoint solution to diverge.  To prevent this, the adjoint is
+required to be run with a ``frozen'' limiter, that is only where a
+reconstruction is unrealizable is the value of the limiter function changed.
+ Doing this usually results in the residuals converging to machine precision.
+
+A significant obstacle with using a frozen limiter is that the real-variable and
+complex-variable solvers do not freeze the limiter identically.  Although the
+solvers are nearly identically, their floating-point operations will be
+different since complex arithmetic is involved in only the complex-variable
+solver.  The flux limiter formulation is sensitive to these differences and will
+result in a different converged state, regardless of the limiter being frozen
+at the same iteration between the solvers.  To overcome this, the
+complex-variable solver must not be allowed to change the value of the flux
+limiter.  To implement this, the solution is converged to machine precision with
+the real-variable solver and then the complex-variable solver is started with
+the flow field of the converged real-variable solution.  The complex step is
+then added to the design variable; however, the flux limiter is frozen.  Because
+limiter value is constant, the real solution from the complex-variable and
+real-variable solutions will match identically, and the complex part of the
+solution will be converged without ever needing to update the flux limiter.
+This will ensure that the sensitivity derivatives from the complex and adjoint
+solvers match to high precision for hypersonic cases with a frozen flux limiter.
+
+To verify the hand-coded linearizations implemented in the adjoint solver, the
+derivatives of the drag and surface temperature cost functions for the
+annular nozzle geometry were computed using both the adjoint method and this
+complex-variable approach. Using the adjoint solution derivatives with respect
+to the plenum pressure and plenum temperature design variables can be computed
+by manipulating \eref{obj-function}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\mq} \mathbf{\Lambda}
+  \label{obj-linearization}
+\end{equation}
+%------------------------------------------------------------------------------%
+Table ??? shows that the sensitivity derivatives computed by the adjoint and
+complex-variable approach agree
+

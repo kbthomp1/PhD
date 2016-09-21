@@ -15,7 +15,6 @@ is consistent with the decoupled flow solver.
 
 \section{Discrete Adjoint Derivation}
 
-%The FUN3D adjoint derivation is given in Eric Nielson's PhD Thesis[cite??].
 The derivation for the discrete adjoint begins with forming the Lagrangian as
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -27,12 +26,12 @@ Where $\mr$ is the residual of the flow equations.  Differentiating with respect
 to the design variables $\md$ yields
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{\partial L}{\partial \md}=
-  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
-  +\bigg[\frac{\partial \mq}{\partial \md}\bigg]^T
-  \Bigg\{\frac{\partial f}{\partial \mq}+\bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T \mathbf{\Lambda}\Bigg\}
-  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
-  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
+  \pd{L}{\md} = 
+  \Bigg\{\pd{f}{\md}+\bigg[\pd{\mx}{\md}\bigg]^T \pd{f}{\mx}\Bigg\} 
+  + \bigg[\pd{\mq}{\md}\bigg]^T
+  \Bigg\{\pd{f}{\mq}+\bigg[\pd{\mr}{\mq}\bigg]^T \mathbf{\Lambda}\Bigg\}
+  +\Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+  +\bigg[\pd{\mx}{\md}\bigg]^T\bigg[\pd{\mr}{\mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
   \label{dL}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -40,8 +39,7 @@ To eliminate the dependence of conserved variables $\mq$ on the design
 variables, we solve the adjoint equation
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \bigg[\frac{\partial \mr}{\partial \mq}\bigg]^T\mathbf{\Lambda}=
-  -\frac{\partial f}{\partial \mq}
+  \bigg[\pd{\mr}{\mq}\bigg]^T\mathbf{\Lambda} = -\pd{f}{\mq}
   \label{adjoint-main}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -49,21 +47,19 @@ Where the Lagrange multipliers (also known as costate variables),
 $\mathbf{\Lambda}$ are the cost function dependence on the residual
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \mathbf{\Lambda}=-\frac{\partial f}{\partial \mr}
+  \mathbf{\Lambda}=-\pd{f}{\mr}
 \end{equation}
 %------------------------------------------------------------------------------%
-This can ultimately be used to error estimation and sensitivity analysis for
+This can ultimately be used in error estimation and sensitivity analysis for
 design optimization.  With the second term in eq.~(\ref{dL}) eliminated, the
 derivative of the Lagrangian becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{\partial L}{\partial \md}=
-  \Bigg\{\frac{\partial f}{\partial \md}+\bigg[\frac{\partial \mx}{\partial
-  \md}\bigg]^T \frac{\partial f}{\partial \mx}\Bigg\}
-  +\Bigg\{\bigg[\frac{\partial \mr}{\partial \md}\bigg]^T
-  +\bigg[\frac{\partial \mx}{\partial \md}\bigg]^T\bigg[\frac{\partial
-  \mr}{\partial \mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
-  \label{obj_function}
+  \pd{L}{\md}=
+  \Bigg\{\pd{f}{\md}+\bigg[\pd{\mx}{\md}\bigg]^T \pd{f}{\mx}\Bigg\}
+  +\Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+  +\bigg[\pd{\mx}{\md}\bigg]^T\bigg[\pd{\mr}{\mx}\bigg]^T\Bigg\}\mathbf{\Lambda}
+  \label{obj-function}
 \end{equation}
 %------------------------------------------------------------------------------%
 By solving the adjoint equation in \eref{adjoint-main}) to obtain the costate
@@ -71,7 +67,7 @@ variable vector, $\mathbf{\Lambda}$, we can now use a non-linear optimizer to
 determine the optimum set of design variables, $\md^*$. This can be done using
 {\bf SNOPT\cite{snopt-manual}}, {\bf KSOPT\cite{KSOPT}}, or {\bf
   NPSOL\cite{npsol-manual}} in FUN3D, as well as a host of other non-linear
-optimizers.
+  optimizers.
 
 \section{Block Jacobi Adjoint Decoupling}
 
