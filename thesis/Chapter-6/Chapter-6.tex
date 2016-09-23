@@ -94,14 +94,8 @@ To verify the hand-coded linearizations implemented in the adjoint solver, the
 derivatives of the drag and surface temperature cost functions for the
 annular nozzle geometry were computed using both the adjoint method and the
 complex-variable approach. Using the adjoint solution derivatives with respect
-to the plenum pressure and plenum temperature design variables can be computed
-by manipulating \eref{obj-function}
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\mq} \mathbf{\Lambda}
-  \label{obj-linearization}
-\end{equation}
-%------------------------------------------------------------------------------%
-Table ??? shows that the sensitivity derivatives computed by the adjoint and
-complex-variable approach agree
+to the plenum pressure and plenum temperature design variables are computed
+by \eref{obj-linearization}
+%Table ??? shows that the sensitivity derivatives computed by the adjoint and
+%complex-variable approach agree
 

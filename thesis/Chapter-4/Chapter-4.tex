@@ -334,3 +334,92 @@ approximate jacobians that were used to solve the primal flow equations;
 therefore, all of the benefits of the diagonal block matricies that are
 exploited in the primal flow solver to reduce the linear solver cost and overall
 memory now apply to the adjoint.
+
+\section{Higher-order Reconstruction Linearizations}
+
+To achieve higher-order accuracy, the FUN3D solver uses an extenstion of the
+unstructured MUSCL (U-MUSCL) reconstruction scheme developed by Burg et
+al\cite{burg2005higher,burg2003verification}, which is itself and extension of
+the Monotonic Upstream-centered Scheme for Conservation Laws (MUSCL) scheme
+developed by Van Leer\cite{van1979towards}.  The implementation is a combination
+of central differencing and the original U-MUSCL scheme
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    q_L &= q_1 + (1-\kappa)\left[ \phi\left( \pd{q_1}{x}dx + \pd{q_1}{y}dy +
+    \pd{q_1}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_2 - q_1 \right) \\
+    q_R &= q_2 + (1-\kappa)\left[ \phi\left( \pd{q_2}{x}dx + \pd{q_2}{y}dy +
+    \pd{q_2}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_1 - q_2 \right)
+  \end{aligned}
+  \label{u-muscl}
+\end{equation}
+%------------------------------------------------------------------------------%
+\fref{fig:edge-recons} shows that $q_{L,R}$ are the primitive variables at the
+left and right sides of the edge midpoint, where the flux is evaluated,
+$q_{1,2}$ are the primitive variables at nodes 1 and 2.  The variable $\phi$ is
+the result of the modified Van Albada flux limiter
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/edge_reconstruction.png}
+  \caption{Edge Reconstruction}
+  \label{fig:edge-recons}
+\end{figure}
+%------------------------------------------------------------------------------%
+function\cite{van1997comparative}, and varies between 0 and 1 (effectively
+blending first-order and second order contributions to the flux evalutation).
+The adjoint uses a frozen flux limiter, for purposes that will be discussed in a
+later section, and is therefore held as constant in the linearization
+computations.  Finally the gradient information $\pd{q_{1,2}}{x}$,
+$\pd{q_{1,2}}{y}$, and $\pd{q_{1,2}}{z}$ are computed using least-squares.  For
+the example 2-D stencil shown in \fref{fig:lsq-gradients} this is effectively
+computed as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{q}{x} &= \sum_{i=1}^{5}{W_{x,i}\left( q_i - q_0 \right)} \\
+    \pd{q}{y} &= \sum_{i=1}^{5}{W_{y,i}\left( q_i - q_0 \right)} \\
+    \pd{q}{z} &= \sum_{i=1}^{5}{W_{z,i}\left( q_i - q_0 \right)}
+  \end{aligned}
+  \label{grad-construction}
+\end{equation}
+%------------------------------------------------------------------------------%
+where the $z$ direction would come from geometry out of the page.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/stencil.png}
+  \caption{Example Stencil for Least-Squares Gradient Evaluation}
+  \label{fig:lsq-gradients}
+\end{figure}
+%------------------------------------------------------------------------------%
+In practice, the higher order linearizations can be managed easily by
+constructing a list of neighboring nodes for each node.  By the chain rule the
+linearization of the residual, $R$, is then evaluated in two parts
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\vR\left(\mq^*\left( \mq \right) \right)}{\mq} = 
+  \pd{\vR}{\mq} + \pd{\vR}{\mq^{*}}\pd{\mq^*}{\mq}
+  \label{residual-high-low}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\mq$ are the conserved variables at each node, and $\mq^*$ are the higher
+order terms computed in the U-MUSCL reconstruction; therefore, after computing
+the exact jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the higher order
+linearization is computed by making a circuit around each node to pick up the
+contributions from the least squares gradient computation.  For the example
+stencil in \fref{fig:lsq-gradients}, the contribution to the residual from
+looping around node 0 would be
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\vR_0}{\mq^*}\pd{\mq^*}{\mq_0} = \pd{\vR_0}{\mq^*} \left[\sum_{i=1}^5{(1-\kappa)
+  \left( -W_{x,i}dx - W_{y,i}dy - W_{z,i}dz \right) \pd{q_0}{\mq_0}}\right]
+  \label{ho-linearization}
+\end{equation}
+%------------------------------------------------------------------------------%
+An important point that this illustrates is that the linearization of the higher
+order terms is not dependent upon the choice of the primitive variable vector
+$q$, provided that all of the linearizations are exact.  This is powerful,
+because it allows the decoupled scheme to be extended to higher work, without
+needing to reformulate the linearizations drastically from the fully-coupled
+scheme.

@@ -56,7 +56,7 @@ The geometry was generated with the parameters shown in \tref{tab:annular-geom},
 with the mesh originally created as structured grid and then converted to an
 unstructured grid of hexahedral elements.
 %------------------------------------------------------------------------------%
-\begin{table}[!h]
+\begin{table}[h]
   \centering
   \begin{tabular}{c|c|c}
     Parameter & Description & Value \\
@@ -139,9 +139,18 @@ greater weight to the stagnation temperature in the design.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.5\textwidth]{figures/surface2.png}
-  \caption{$C_D$ and $T_{RMS}$ Integrated Area}
-  \label{fig:cd-t-rms-area}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/surface2.png}
+    \caption{$C_D$ and $T_{RMS}$ Integrated Area}
+    \label{fig:cd-t-rms-area}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/plenum_bc.png}
+    \caption{Plenum Face Boundary Condition}
+    \label{fig:plenum-face}
+  \end{subfigure}
 \end{figure}
 %------------------------------------------------------------------------------%
 
@@ -158,13 +167,18 @@ The design variables for the optimization problem are the plenum total pressure,
 $P_{p,o}$, and plenum total temperature, $T_{p,o}$.  These are provided
 explicitly in the optimization problem, and are used to directly set the flow
 conditions on plenum face boundary condition in the nozzle, shown in
-\fref{fig:plenum-face}.  The mass fractions for species leaving the plenum can
-also be specified as a design variable.
+\fref{fig:plenum-face}.  For a reacting gas mixture, mass fractions for species
+leaving the plenum can also be specified as a design variable.
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.5\textwidth]{figures/plenum_bc.png}
-  \caption{Plenum Face Boundary Condition}
-  \label{fig:plenum-face}
-\end{figure}
-
+The sensitivity gradients for these design variables are easily obtained by
+manipulating \eref{obj-function} to obtain
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\mq} \mathbf{\Lambda}
+  \label{obj-linearization}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus once the adjoint co-state variables $\mathbf{\Lambda}$ has been computed by
+by solving the adjoint equations (\eref{adjoint-main}) the sensitivity
+derivatives for $C_D$ and $T_{RMS}$ on the specied surfaces are obtained by
+evaluating relatively inexpensive matrix-vector products.
