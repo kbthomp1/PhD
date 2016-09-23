@@ -157,7 +157,7 @@ in terms of mass fraction, as follows:
 %------------------------------------------------------------------------------%
 where $\mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T$, and $c_s=\rho_s/\rho$ the mass
 fraction of species $s$.  While the derivation of the species mass equations is
-different for the Roe FVS scheme from that of Steger-Warming proposed by Candler
+different for the Roe FDS scheme from that of Steger-Warming proposed by Candler
 et al.\cite{candler}, the final result takes a similar form: 
 %------------------------------------------------------------------------------%
 \begin{gather}
@@ -182,7 +182,7 @@ $\mathbf{\hat{V}}$ variables yields
   \label{d_last}
 \end{align}
 %------------------------------------------------------------------------------%
-A full derivation of Eqs.~(\ref{dc_flux}-\ref{d_last}), along with the
+A full derivation of \erefs{dc_flux}{d_last}, along with the
 definition of $w$, is included in Appendix A.  The chemical source term is
 linearized in the same manner as the fully coupled scheme; however, the updated
 $\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
@@ -234,7 +234,7 @@ fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
 are linearizations of the species mass fluxes, which results in $ns \times ns$
 matrices.  Because there is no interdependence of species, except through the
 chemical source term, all contributions due to linearizing the convective flux
-are purely diagonal $ns \times ns$ matrices.  Via Eq.~(\ref{decomp_jac}), we
+are purely diagonal $ns \times ns$ matrices.  Via \eref{decomp_jac}, we
 decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
 following linear system:
 %------------------------------------------------------------------------------%
@@ -286,7 +286,7 @@ where $N_{nodes}$ is the number of nodes, and $N_{nz}$ is the number of non-zero
 off-diagonal entries stored using compressed row storage. For a structured grid,
 each node has six neighbors in 3D, i.e., $N_{nz} = 6N_{nodes}$; therefore, we can
 expect the Jacobian memory required to decrease by a factor of seven using this
-decoupled scheme. Interestingly, for a grid that is not purely hexahedral,
+decoupled scheme. Interestingly, for a grid that is not purely hexahedra,
 $N_{nz} > 6N_{nodes}$; thus, this decoupled scheme provides higher relative
 memory savings on unstructured grids than structured grids when using compressed
 row storage.
@@ -299,13 +299,13 @@ efficiency in cost and memory required to utilize the decoupled scheme, and that
 both the fully coupled and decoupled approaches converge to the same result, a
 grid convergence study was conducted on a simple cylinder geometry (radius 0.5
 m).  Due to the presence of strong shocks in blunt body flows, it was
-advantagous to generate structured-type grids to preserve grid alignment with
+advantageous to generate structured-type grids to preserve grid alignment with
 the bow shock. A 50$\times$50, 100$\times$100, and 200$\times$200 family
 of grids were adapted using the adaptation capability in FUN3D\cite{adaptation}
 to produce shock-aligned grids. These grids serve as a surrogate for conducting
 a grid convergence study, in that differences observed between the decoupled and
 fully coupled schemes decrease as the average mesh spacing decreases.  These
-grids are unstructured, consisting totally of hexahedral elements with a single
+grids are unstructured, consisting totally of hexahedra elements with a single
 cell in the spanwise direction, and the 50$\times$50 grid is shown in Figure
 \ref{grid}.  The cell elements of these grids were also subdivided into
 tetrahedral elements, and it was verified that there are no issues with a true
@@ -369,8 +369,8 @@ elements,
   \label{f3d_off_diag} 
 \end{equation} 
 %------------------------------------------------------------------------------%
-Substituting Eq.~(\ref{f3d_off_diag}) into
-Eq.~(\ref{mem_req_eq}), the relative memory cost is:
+Substituting \eref{f3d_off_diag} into \eref{mem_req_eq}, the relative memory
+cost is:
 %------------------------------------------------------------------------------%
 \begin{equation} 
   Relative\ Memory\ Cost = 
@@ -419,7 +419,7 @@ To ensure that the decoupled scheme is robust and accurate at higher velocities,
 fully coupled and decoupled approaches were run on a sphere-cone geometry
 identical to that presented by Candler et. al. \cite{candler} (10 cm nose
 radius, 1.1 m length, 8$^o$ cone angle).  For this case, a simple 64$\times$64
-hexahedral grid was constructed, and freestream conditions were set as
+hexahedra grid was constructed, and freestream conditions were set as
 $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
 It was discovered that CFL limitations for the decoupled scheme were
 prohibitive, because of the stiffness of the chemical source term.  In order to
@@ -496,7 +496,7 @@ computational time and, interestingly, fewer timesteps.
 \end{figure}
 %------------------------------------------------------------------------------%
 This demonstrates that the decoupled scheme has significant potential to
-improve the effiency of high-velocity simulations, and that the stiffness of
+improve the efficiency of high-velocity simulations, and that the stiffness of
 the source term can be overcome in the presence of large chemical reaction
 rates.
 

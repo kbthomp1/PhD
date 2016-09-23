@@ -2,7 +2,7 @@
 \label{chapter-four}
 
 This section details the derivation of the adjoint equations to be solved in
-conjuction with the primal flow equations.  The primary goal of this research is
+conjunction with the primal flow equations.  The primary goal of this research is
 to compute sensitivities of aerodynamic and aerothermodynamic quantities to
 design variables.  To achieve this, the sensitivity to the primal flow equation
 formulation must first be solved.  For a discrete adjoint formulation, this
@@ -51,7 +51,7 @@ $\mathbf{\Lambda}$ are the cost function dependence on the residual
 \end{equation}
 %------------------------------------------------------------------------------%
 This can ultimately be used in error estimation and sensitivity analysis for
-design optimization.  With the second term in eq.~(\ref{dL}) eliminated, the
+design optimization.  With the second term in \eref{dL} eliminated, the
 derivative of the Lagrangian becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -71,7 +71,7 @@ determine the optimum set of design variables, $\md^*$. This can be done using
 
 \section{Block Jacobi Adjoint Decoupling}
 
-It is possible to decoupled the adjoint equations in a fashion similiar to that
+It is possible to decoupled the adjoint equations in a fashion similar to that
 done to the primal flow equations.  In this decoupled adjoint formulation, the
 conserved variables are split identically to flow equations, with the
 fully-coupled vector of conserved variables
@@ -164,7 +164,7 @@ for in the decoupled adjoint formulation.
 The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
 $\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
 adjoint formulation given in \eref{adjoint-main}. The most intuitive and
-staightforward way to do this is to forgo solving for the species mass $\rho_s$
+straightforward way to do this is to forgo solving for the species mass $\rho_s$
 in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -214,13 +214,13 @@ adjoint system becomes
   \label{full-adjoint}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus the jacobian in \eref{full-adjoint} is the completed one of
+Thus the Jacobian in \eref{full-adjoint} is the completed one of
 \erefs{approx-jac}{approx-jac-dc}.  While this is useful, the advantage of
 decoupling the species equations from the mixture equations was to speed up the
 linear solver and save memory.  Solving \eref{full-adjoint} is roughly
 equivalent to solving the fully-coupled system of equations, which undermines
 both of these goals; so, an alternative solution strategy must be formulated.  If
-a block jacobi scheme is employed, the system can be decoupled once again as
+a block Jacobi scheme is employed, the system can be decoupled once again as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{pmatrix}
@@ -330,14 +330,14 @@ and the second system in \eref{dc-adjoint-2} becomes
 \end{equation}
 %------------------------------------------------------------------------------%
 The LHS of \erefs{adj-dc-time1}{adj-dc-time2} are the same first-order
-approximate jacobians that were used to solve the primal flow equations;
-therefore, all of the benefits of the diagonal block matricies that are
+approximate Jacobians that were used to solve the primal flow equations;
+therefore, all of the benefits of the diagonal block matrices that are
 exploited in the primal flow solver to reduce the linear solver cost and overall
 memory now apply to the adjoint.
 
 \section{Higher-order Reconstruction Linearizations}
 
-To achieve higher-order accuracy, the FUN3D solver uses an extenstion of the
+To achieve higher-order accuracy, the FUN3D solver uses an extension of the
 unstructured MUSCL (U-MUSCL) reconstruction scheme developed by Burg et
 al\cite{burg2005higher,burg2003verification}, which is itself and extension of
 the Monotonic Upstream-centered Scheme for Conservation Laws (MUSCL) scheme
@@ -367,7 +367,7 @@ the result of the modified Van Albada flux limiter
 \end{figure}
 %------------------------------------------------------------------------------%
 function\cite{van1997comparative}, and varies between 0 and 1 (effectively
-blending first-order and second order contributions to the flux evalutation).
+blending first-order and second order contributions to the flux evaluation).
 The adjoint uses a frozen flux limiter, for purposes that will be discussed in a
 later section, and is therefore held as constant in the linearization
 computations.  Finally the gradient information $\pd{q_{1,2}}{x}$,
@@ -405,7 +405,7 @@ linearization of the residual, $R$, is then evaluated in two parts
 %------------------------------------------------------------------------------%
 where $\mq$ are the conserved variables at each node, and $\mq^*$ are the higher
 order terms computed in the U-MUSCL reconstruction; therefore, after computing
-the exact jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the higher order
+the exact Jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the higher order
 linearization is computed by making a circuit around each node to pick up the
 contributions from the least squares gradient computation.  For the example
 stencil in \fref{fig:lsq-gradients}, the contribution to the residual from

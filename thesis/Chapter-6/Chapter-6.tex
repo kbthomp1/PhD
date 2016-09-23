@@ -2,9 +2,9 @@
 \label{chapter-six}
 
 In this section the sensitivity gradients computed by the adjoint-formulation
-are verified against frechet derivatives with complex step.  This details the
-methods by which the gradient information is computed in the forward-mode and in
-the reverse-mode.
+are verified against finite-difference derivatives with a complex step.  This
+details the methods by which the gradient information is computed in the
+forward-mode and in the reverse-mode.
 
 \section{Forward-mode Sensitivities Using Complex-Variables}
 
@@ -26,7 +26,7 @@ considering the Taylor series expansion of $f$ using a complex step $ih$
   \label{taylor-exp}
 \end{equation}
 %------------------------------------------------------------------------------%
-taking the imaginary parts of boths sides of \eref{taylor-exp} and solving for
+taking the imaginary parts of both sides of \eref{taylor-exp} and solving for
 the first derivative yields
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -67,7 +67,7 @@ the residual being zero, or at least nearly zero.  Because of this last point,
 the stalled convergence can cause the adjoint solver to give incorrect results
 or cause the adjoint solution to diverge.  To prevent this, the adjoint is
 required to be run with a ``frozen'' limiter, that is only where a
-reconstruction is unrealizable is the value of the limiter function changed.
+reconstruction is unrealisable is the value of the limiter function changed.
  Doing this usually results in the residuals converging to machine precision.
 
 A significant obstacle with using a frozen limiter is that the real-variable and

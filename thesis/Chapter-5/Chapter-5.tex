@@ -20,7 +20,7 @@ In the field of optimization, the function of interest is referred to as the
 ``cost function'' or ``objective function''.  Optimization methods seek to
 minimize this function; therefore, if the intent is to find the maximum value
 of the function, it should be formulated as the negative of the original.  This
-section focuses on geometry and test condtions for the optimization, the
+section focuses on geometry and test conditions for the optimization, the
 implementation of the cost function components and design variables used in the
 optimization, as well as the interface to the optimizer that is used.
 
@@ -54,7 +54,7 @@ condition of maximizing drag, while minimizing surface temperature.
 
 The geometry was generated with the parameters shown in \tref{tab:annular-geom},
 with the mesh originally created as structured grid and then converted to an
-unstructured grid of hexahedral elements.
+unstructured grid of hexahedra elements.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -65,7 +65,7 @@ unstructured grid of hexahedral elements.
     $r_{plenum}$       &   nozzle radius at plenum face, $m$   & 0.05 \\
     $r_{exit,inner}$   &   inside nozzle radius at exit, $m$   & 0.03 \\
     $r_{exit,outer}$   &   outside nozzle radius at exit, $m$  & 0.05 \\
-    $l_{conv}$         &   distance from plenum to thoat, $m$  & 0.05 \\
+    $l_{conv}$         &   distance from plenum to throat, $m$  & 0.05 \\
     $\theta_c$         &   cone half angle, deg                & 70.0
   \end{tabular}
   \caption{Annular Nozzle Geometry Inputs}
@@ -180,5 +180,5 @@ manipulating \eref{obj-function} to obtain
 %------------------------------------------------------------------------------%
 Thus once the adjoint co-state variables $\mathbf{\Lambda}$ has been computed by
 by solving the adjoint equations (\eref{adjoint-main}) the sensitivity
-derivatives for $C_D$ and $T_{RMS}$ on the specied surfaces are obtained by
+derivatives for $C_D$ and $T_{RMS}$ on the specified surfaces are obtained by
 evaluating relatively inexpensive matrix-vector products.
