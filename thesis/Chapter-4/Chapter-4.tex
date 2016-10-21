@@ -154,9 +154,9 @@ Likewise, the species mass equations for a single point can be written as
 \end{equation}
 %------------------------------------------------------------------------------%
 Examining \erefs{approx-jac}{approx-jac-dc} shows that there are clearly some
-physical dependencies being omitted, namely $\rdiff{\rho_s}{\rho}$,
-$\rdiff{\rho}{c_s}$, $\rdiff{\rho \vu}{c_s}$, and $\rdiff{\rho E}{c_s}$.  It has
-been found\cite{candler} that omitting this dependencies does not hinder convergence
+physical dependencies being omitted, namely $\rdiff{\rho_i}{\rho}$,
+$\rdiff{\rho}{c_j}$, $\rdiff{\rho \vu}{c_j}$, and $\rdiff{\rho E}{c_j}$.  It has
+been found\cite{candler} that omitting these dependencies does not hinder convergence
 the primal flow solver; however, because the adjoint requires an exact
 linearization of the converged steady-state solution, these must be accounted
 for in the decoupled adjoint formulation.
@@ -164,8 +164,8 @@ for in the decoupled adjoint formulation.
 The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
 $\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
 adjoint formulation given in \eref{adjoint-main}. The most intuitive and
-straightforward way to do this is to forgo solving for the species mass $\rho_s$
-in lieu of the species mass fraction $c_s$.  Thus, $\mq$ can be expressed as
+straightforward way to do this is to forgo solving for the species mass $\rho_i$
+in lieu of the species mass fraction $c_i$.  Thus, $\mq$ can be expressed as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \mq =
@@ -190,26 +190,26 @@ adjoint system becomes
 \begin{equation}
   \begin{pmatrix}
     \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & 
-    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_s}{\rho} \\ \\
+    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_i}{\rho} \\ \\
     \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & 
-    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_s}{\rho \vu} \\ \\
+    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_i}{\rho \vu} \\ \\
     \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & 
-    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_s}{\rho E} \\ \\
-    \rtdiff{\rho}{c_s} & \rtdiff{\rho \vu}{c_s} & 
-    \rtdiff{\rho E}{c_s} & \rtdiff{\rho_s}{c_s}
+    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_i}{\rho E} \\ \\
+    \rtdiff{\rho}{c_j} & \rtdiff{\rho \vu}{c_j} & 
+    \rtdiff{\rho E}{c_j} & \rtdiff{\rho_i}{c_j}
   \end{pmatrix}
   \begin{pmatrix}
     \adjlam{\rho} \\ \\
     \adjlam{\rho \vu} \\ \\
     \adjlam{\rho E} \\ \\
-    \adjlam{c_s}
+    \adjlam{c_i}
   \end{pmatrix}
   = -
   \begin{pmatrix}
     \pd{f}{\rho} \\ \\
     \pd{f}{\rho \vu} \\ \\
     \pd{f}{\rho E} \\ \\
-    \pd{f}{c_s}
+    \pd{f}{c_j}
   \end{pmatrix}
   \label{full-adjoint}
 \end{equation}
@@ -241,21 +241,21 @@ a block Jacobi scheme is employed, the system can be decoupled once again as
   \end{pmatrix}
   -
   \begin{pmatrix}
-    \rtdiff{\rho_s}{\rho} \\ \\
-    \rtdiff{\rho_s}{\rho \vu} \\ \\
-    \rtdiff{\rho_s}{\rho E}
+    \rtdiff{\rho_i}{\rho} \\ \\
+    \rtdiff{\rho_i}{\rho \vu} \\ \\
+    \rtdiff{\rho_i}{\rho E}
   \end{pmatrix}
-  \adjlam{c_s}
+  \adjlam{c_i}
   \label{dc-adjoint-1}
 \end{equation}
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \rtdiff{\rho_s}{c_s}
-  \adjlam{c_s}
-  = -\pd{f}{c_s}
-  - \rtdiff{\rho}{c_s} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
+  \rtdiff{\rho_i}{c_j}
+  \adjlam{c_i}
+  = -\pd{f}{c_j}
+  - \rtdiff{\rho}{c_j} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_j} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_j} \adjlam{\rho E}
   \label{dc-adjoint-2}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -307,11 +307,11 @@ Thus, the first system of equations in \eref{dc-adjoint-1} becomes
     \end{pmatrix}
     -
     \begin{pmatrix}
-      \rtdiff{\rho_s}{\rho} \\ \\
-      \rtdiff{\rho_s}{\rho \vu} \\ \\
-      \rtdiff{\rho_s}{\rho E}
+      \rtdiff{\rho_i}{\rho} \\ \\
+      \rtdiff{\rho_i}{\rho \vu} \\ \\
+      \rtdiff{\rho_i}{\rho E}
     \end{pmatrix}
-    \adjlam{c_s}
+    \adjlam{c_i}
   \end{split}
   \label{adj-dc-time1}
 \end{equation}
@@ -319,13 +319,13 @@ Thus, the first system of equations in \eref{dc-adjoint-1} becomes
 and the second system in \eref{dc-adjoint-2} becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
-  \adjlam{c_s}
-  = \\ -\pd{f}{c_s}
-  - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
-  - \rtdiff{\rho}{c_s} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_s} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_s} \adjlam{\rho E}
+  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_i}{c_j} \right) \Delta
+  \adjlam{c_i}
+  = \\ -\pd{f}{c_j}
+  - \rtdiff{\rho_i}{c_j} \adjlam{c_i}
+  - \rtdiff{\rho}{c_j} \adjlam{\rho}
+  - \rtdiff{\rho \vu}{c_j} \adjlam{\rho \vu}
+  - \rtdiff{\rho E}{c_j} \adjlam{\rho E}
   \label{adj-dc-time2}
 \end{equation}
 %------------------------------------------------------------------------------%

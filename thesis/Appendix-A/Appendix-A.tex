@@ -4,7 +4,7 @@
 \section{Decoupled Flux Derivation}
 
 For the Roe flux difference splitting scheme, the species mass fluxes are given by
-%
+%------------------------------------------------------------------------------%
 \begin{equation}
 	F_{\rho_s} = \frac{\rho_s^L\overline{U}^L+\rho_s^R\overline{U}^R}{2}
 	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_{3_s}}{2} \label{species_mass} \\
@@ -19,72 +19,75 @@ For the Roe flux difference splitting scheme, the species mass fluxes are given 
 	\lambda_2 = \mid \mathbf{\overline{U}}-\tilde{a} \mid,\quad 
 	\lambda_3 =  \mid \mathbf{\overline{U}} \mid
 \end{align}
-%
+%------------------------------------------------------------------------------%
 where the $\tilde{}$ notation signifies a Roe-averaged quantity, given by:
-%
+%------------------------------------------------------------------------------%
 \begin{gather}
 	\mathbf{\tilde{U}} =w\mathbf{\tilde{U}}^L+(1-w)\mathbf{\tilde{U}}^R \\
 	w = \frac{\tilde{\rho}}{\tilde{\rho}+\rho^R} \\
 	\tilde{\rho} = \sqrt{\rho^R\rho^L}
 \end{gather}
-%
-The species mass fluxes must sum to the total mass flux; thus, the total mixture mass flux is given as
-%
+%------------------------------------------------------------------------------%
+The species mass fluxes must sum to the total mass flux; thus, the total mixture
+mass flux is given as
+%------------------------------------------------------------------------------%
 \begin{equation}
 \label{total_mass}
 	F_\rho = \sum\limits_{s}{F_{\rho_s}} = \frac{\rho^L\overline{U}^L+\rho^R\overline{U}^R}{2}
-	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_3}{2}
+	-\frac{\lambda_1 dv_1 + \lambda_2 dv_2 +\lambda_3 dv_3}{2}
 \end{equation}
 \begin{equation}
 	dv_3 = \frac{\tilde{a}^2 (\rho^R-\rho^L)-(p^R-p^L)}{\tilde{a}^2}
 \end{equation}
-%
+%------------------------------------------------------------------------------%
 Multiplying Eq.~(\ref{total_mass}) by the Roe-averaged mass fraction and
 substituting it into Eq.~(\ref{species_mass}) results in:
-%
+%------------------------------------------------------------------------------%
 \begin{equation}
 \label{unsimp_sp_flux}
 	F_{\rho_s} =\tilde{c}_s F_\rho + \frac{(c_s^L-\tilde{c}_s)\rho^L(\overline{U}^L+\mid \tilde{U}\mid)}{2}
 	+ \frac{(c_s^R-\tilde{c}_s)\rho^R(\overline{U}^R-\mid \tilde{U}\mid)}{2}
 \end{equation}
-%
+%------------------------------------------------------------------------------%
 It should be noted here that the Roe-averaged normal velocity, $\tilde{U}$,
 requires an entropy correction in the presence of strong shocks\cite{harten}.
-This correction has no dependence on the species mass fractions; therefore,
-it does not change the form of the Jacobian for this decoupled scheme. The
-notation can be further simplified by defining the normal velocities as follows:
-%
+This correction has a dependence on the roe-averaged speed of sound, and
+therefore has a dependence on the species mass fractions; however,
+through numerical experiments it has been determined that omitting this
+dependence does not adversely affect convergence.  The notation can be further
+simplified by defining the normal velocities as follows:
+%------------------------------------------------------------------------------%
 \begin{equation} \label{lambda_pm} \lambda^+ = \frac{\overline{U}^L+\mid
   \tilde{U}\mid}{2}, \quad \lambda^- = \frac{\overline{U}^R-\mid
   \tilde{U}\mid}{2} \end{equation}
-%
+%------------------------------------------------------------------------------%
 Finally, substituting Eq.~(\ref{lambda_pm}) into Eq.~(\ref{unsimp_sp_flux})
 yields the final result for calculating the species flux in the decoupled
 system:
-%
+%------------------------------------------------------------------------------%
 \begin{equation} \label{sp_flux} F_{\rho_s} =\tilde{c}_s F_\rho +
   (c_s^L-\tilde{c}_s)\rho^L\lambda^+ + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
 \end{equation}
-%
+%------------------------------------------------------------------------------%
 Forming the convective contributions to the Jacobians is straightforward.
 Because the $\mathbf{U}'$ level variables are constant, only the left, right,
 and Roe-averaged state mass fractions vary.  Differentiating Eq.~(\ref{sp_flux})
 with respect to the mass fraction, $c_s$, the left and right state contributions
 are
-%
+%------------------------------------------------------------------------------%
 \begin{gather} \frac{\partial F_{\rho_s}}{\partial c^L_s} =
   wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\ \frac{\partial
     F_{\rho_s}}{\partial c^R_s} = (1-w)F_\rho+(w-1)\rho^L\lambda^+ +
     w\rho^R\lambda^- \end{gather}
-%
+%------------------------------------------------------------------------------%
 Because there is no dependence between species in decoupled convective
 formulation, the Jacobian block elements are purely diagonal for the convective
 contributions, of the form
-%
+%------------------------------------------------------------------------------%
 \begin{equation} \begin{pmatrix} \frac{\partial F_{\rho_1}}{\partial c_1} & & 0
     \\ & \ddots &  \\ 0 & & \frac{\partial F_{\rho_{ns}}}{\partial c_{ns}}
   \end{pmatrix} \end{equation}
-%
+%------------------------------------------------------------------------------%
 
 \section{Quadratic Interpolation Between Thermodynamic Curve Fits}
 
