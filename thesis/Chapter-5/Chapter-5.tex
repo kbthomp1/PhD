@@ -182,3 +182,45 @@ Thus once the adjoint co-state variables $\mathbf{\Lambda}$ has been computed by
 by solving the adjoint equations (\eref{adjoint-main}) the sensitivity
 derivatives for $C_D$ and $T_{RMS}$ on the specified surfaces are obtained by
 evaluating relatively inexpensive matrix-vector products.
+
+\section{1st Order Optimization}
+
+The optimization procedure is done using the \textit{opt\_driver} utility in
+FUN3D, which is a wrapper utility that executes the FUN3D flow solver, adjoint
+solver, and optimization algorithm sequentially.  These steps are repeated until
+a termination criterion is reached.  In practice, the termination of the
+optimization occurs when the cost function reaches a tolerance of less that
+$10^{-8}$, or when continuing towards the optimal condition would exceed the
+prescribed upper or lower bounds of the design variables.
+
+\subsection{$H_2$ Combustion}
+
+To demonstrate the inverse design capability of an adjoint-based design
+optimization, targets of ??? K for the surface temperature RMS and ??? $kg/m^2$
+for the annular nozzle mass flow rate were specified.  The weights were chosen
+heuristically, such that
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{w_1}{w_2} = \frac{\cost{T_{RMS}}^2}{\cost{\dot{m}}^2}
+  \label{weight-ratio}
+\end{equation}
+%------------------------------------------------------------------------------%
+This results in a roughly equivalent weighting beween the $T_{RMS}$ and
+$\dot{m}$, which is desired as both targets should be met at optimality.
+
+Using the SNOPT optimizer, Figure ??? shows that the target design was met
+within 13 function evaluations.  SNOPT explores the entire design space, as is
+show in the second function evaluation, where a spike in the cost function
+occurred.  Figure ??? indicates that the optimizer tried the upper bound for the
+plenum pressure design variable, and found that sensitivity derivatives
+indicated that the lower pressure was required. This is common, and is an
+effective way to insure that there is a local minimum in the prescribed bound.
+The optimization terminated when the cost function value was less than the
+tolerance of $10^-8$, and Figure ??? shows that both components of the cost
+function were of nearly the same order during the optimization.  This last point
+is important, since non-normalized components can skew the optimization results,
+where competing components can cause oscillations in the function evaluations
+and stall the optimization procedure.  Figure ??? shows the history of the
+surface temperature RMS and annular nozzle mass flow rate, with the design
+targets.  The optimization clearly made significant progress early, with smaller
+gains as the solution approached the target.

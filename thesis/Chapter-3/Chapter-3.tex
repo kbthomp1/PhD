@@ -93,8 +93,8 @@ better vectorization in solving the linear system.  The computational work for
 the Gauss-Seidel scheme is dominated by matrix-vector multiplications of
 elements of $O$ with $\delta\mathbf{U}$, which are $O(N^2)$ operations, where
 $N=ns+4$.  In the next section, it is shown that decoupling the system reduces
-these matrix-vector multiplications to $O(N^2 + M)$ operations, where $N=ns$ and
-$M=ns$.
+these matrix-vector multiplications to $O(M^2 + N)$ operations, where $M=5$ and
+$N=ns$.
 
 \section{Decoupled Point Implicit Method}
 
