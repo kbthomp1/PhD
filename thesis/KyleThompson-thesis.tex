@@ -57,7 +57,6 @@
 %% sentences. TeX's default is to add an wider space, but \frenchspacing
 %% gives a normal spacing. Comment out the following line if you prefer
 %% wider spaces between sentences.
-\frenchspacing
 
 
 %% -------------------------------------------------------------------------- %%
@@ -147,6 +146,9 @@ Discrete Adjoint Formulation}
 \newcommand{\sprod}{\nu_{s,r}^{''}}
 \newcommand{\sreact}{\nu_{s,r}^{'}}
 
+% Roe average weighting
+\newcommand{\roe}{\tilde{w}}
+
 \newcommand{\br}[1]{B_{#1}^{r}}
 
 \newcommand{\real}{\mathbf R}
@@ -201,6 +203,7 @@ Discrete Adjoint Formulation}
 \frontmatter
 
 \include{front}
+\include{nomenclature}
 
 %%---------------------------------------------------------------------------%%
 \mainmatter

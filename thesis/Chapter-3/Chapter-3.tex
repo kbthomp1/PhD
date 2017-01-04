@@ -17,11 +17,11 @@ be recast in vector form as
 \begin{equation}
 	\label{inv_flux_fv}
 	\frac{\partial \mathbf{U}}{\partial t}
-	 + \frac{1}{V}\sum\limits_{f}(\mathbf{F}\cdot\mathbf{S})^f = \mathbf{W}
+	 + \frac{1}{V}\sum\limits_{f}(\mathbf{F}\cdot\mathbf{N})^f = \mathbf{W}
  \end{equation}
 %------------------------------------------------------------------------------%
 summing over all faces, $f$, in the domain, where V is the cell volume, 
-$\mathbf{W}$ is the chemical source term vector, and $\mathbf{S}$ is the face
+$\mathbf{W}$ is the chemical source term vector, and $\mathbf{N}$ is the face
 outward normal vector.  The vectors of conserved variables and fluxes are:
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -39,9 +39,9 @@ outward normal vector.  The vectors of conserved variables and fluxes are:
 		\rho_1  \overline{U} \\
 		\vdots \\
 		\rho_{ns} \overline{U} \\
-		\rho u \overline{U} + p s_x\\
-		\rho u \overline{U} + p s_y\\
-		\rho u \overline{U} + p s_z\\
+		\rho u \overline{U} + p n_x\\
+		\rho u \overline{U} + p n_y\\
+		\rho u \overline{U} + p n_z\\
 		(\rho E + p) \overline{U} \\
 	\end{pmatrix}
 	\end{matrix}
@@ -60,17 +60,18 @@ defined in \eref{int-energy-def}.  By using the Roe FDS scheme,
 	\end{matrix}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  By using an implicit time integration, the implicit scheme becomes:
+where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  By using an
+implicit time integration, the implicit scheme becomes:
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\frac{\mathbf{\delta U}^n}{\Delta t}+\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^L}}\delta\mathbf{U}^L
-	+\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^R}}\delta\mathbf{U}^R)^n \mathbf{S}^f
+	+\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^R}}\delta\mathbf{U}^R)^n \mathbf{N}^f
 	- \frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n
-	= -\frac{1}{V}\sum\limits_{f}(\mathbf{F}^f\cdot\mathbf{S}^f)^n + \mathbf{W}^n
+	= -\frac{1}{V}\sum\limits_{f}(\mathbf{F}^f\cdot\mathbf{N}^f)^n + \mathbf{W}^n
 \end {equation}
-%
+%------------------------------------------------------------------------------%
 or, put more simply:
-%
+%------------------------------------------------------------------------------%
 \begin{equation}
 	A\delta\mathbf{U}^n = \mathbf{b}
 \end{equation}
@@ -125,14 +126,14 @@ fluxes are first solved as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{\partial \mathbf{{U}'}}{\partial t} +
-  \frac{1}{V}\sum\limits_{f}(\mathbf{F}'\cdot\mathbf{S})^f = 0
+  \frac{1}{V}\sum\limits_{f}(\mathbf{F}'\cdot\mathbf{N})^f = 0
 \end{equation}
 %------------------------------------------------------------------------------%
 followed by the species fluxes as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{\partial \mathbf{\hat{U}}}{\partial t} +
-  \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot\mathbf{S})^f =
+  \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot\mathbf{N})^f =
   \mathbf{\hat{W}}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -176,14 +177,14 @@ $\mathbf{\hat{V}}$ variables yields
   \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^L}\delta \mathbf{\hat{V}}^L
   +\frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R}\delta
   \mathbf{\hat{V}}^R \\ \frac{\partial \mathbf{\hat{F}}}{\partial
-  \mathbf{\hat{V}}^L} &= wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\
+  \mathbf{\hat{V}}^L} &= \roe F_\rho+(1-w)\rho^L\lambda^+ - \roe \rho^R\lambda^- \\
   \frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R} &=
-  (1-w)F_\rho+(w-1)\rho^L\lambda^+ + w\rho^R\lambda^-
+  ( 1-\roe )F_\rho+(\roe -1)\rho^L\lambda^+ + \roe \rho^R\lambda^-
   \label{d_last}
 \end{align}
 %------------------------------------------------------------------------------%
 A full derivation of \erefs{dc_flux}{d_last}, along with the
-definition of $w$, is included in Appendix A.  The chemical source term is
+definition of $\roe$, is included in Appendix A.  The chemical source term is
 linearized in the same manner as the fully coupled scheme; however, the updated
 $\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
 applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
@@ -211,13 +212,13 @@ The decoupled system to be solved becomes:
     +\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{\hat{F}}^f}{\partial
     \mathbf{\hat{V}}^L}\delta	\mathbf{\hat{V}}^L
     +\frac{\partial \mathbf{\hat{F}}^f}{\partial \mathbf{\hat{V}}^R}\delta
-    \mathbf{\hat{V}}^R)^{n, n+1}\mathbf{S}^f - C^{n, n+1}\delta\mathbf{V}^n \\
-    &= -\frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}^{n,n+1}\cdot\mathbf{S})^f +
+    \mathbf{\hat{V}}^R)^{n, n+1}\mathbf{N}^f - C^{n, n+1}\delta\mathbf{V}^n \\
+    &= -\frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}^{n,n+1}\cdot\mathbf{N})^f +
     \mathbf{W}^{n, n+1} -\mathbf{\hat{V}}^n\frac{\delta \rho^n}{\Delta t} -
     R_\rho
   \end{split} \\ 
   R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
-  {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
+  {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{N})}}
 \end{gather}
 %------------------------------------------------------------------------------%
 where $R_\rho$ is included to preserve the constraint that the mass fractions
