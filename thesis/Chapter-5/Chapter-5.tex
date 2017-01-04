@@ -165,7 +165,7 @@ coefficient and surface temperature RMS.
 
 The design variables for the optimization problem are the plenum total pressure,
 $P_{p,o}$, plenum total temperature, $T_{p,o}$, and plenum ``fuel-air ratio'',
-$\phi$.  These are provided explicitly in the optimization problem, and are used
+$\fa$.  These are provided explicitly in the optimization problem, and are used
 to directly set the flow conditions on plenum face boundary condition in the
 nozzle, shown in \fref{fig:plenum-face}.  For a reacting gas mixture, the
 ``fuel-air ratio'' specifies the mass fractions for two species leaving the
@@ -173,13 +173,13 @@ plenum.  For a $H_2-N_2$ mixture, the mass fractions are given by
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
-    c_{H_2} &= \phi \\
-    c_{N_2} &= 1 - \phi
+    c_{H_2} &= \fa \\
+    c_{N_2} &= 1 - \fa
   \end{aligned}
   \label{fuel-air-def}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus, the ratio $\phi$ dictates the mass fractions for two species injected into
+Thus, the ratio $\fa$ dictates the mass fractions for two species injected into
 the domain via the plenum boundary.
 
 The sensitivity gradients for these design variables are easily obtained by
@@ -213,8 +213,8 @@ $kg/s$ for the annular nozzle mass flow rate were specified.  These targets were
 chosen semi-arbitarily, and were heuristically determined to be feasible based
 the the design variable bounds. The design variables specified for this
 optimization were the plenum total pressure, $P_{p,o}$ and the plenum ``fuel-air
-ratio'', $\phi$.  A species mixture consisting of $H_2$ and $N_2$ was blown from
-the plenum, with the mass fractions dictated by $\phi$ as described in
+ratio'', $\fa$.  A species mixture consisting of $H_2$ and $N_2$ was blown from
+the plenum, with the mass fractions dictated by $\fa$ as described in
 \eref{fuel-air-def}.  For the cost function, the weights were chosen
 heuristically, such that 
 %------------------------------------------------------------------------------%
@@ -260,7 +260,6 @@ function occurred.
     \caption{Design Variable History}
     \label{fig:fm-hist-1st-H2}
   \end{subfigure}
-  %\label{fig:dv-hist-1st-H2}
 \end{figure}
 %------------------------------------------------------------------------------%
 \fref{fig:dv-hist-1st-H2} indicates that the optimizer tried the upper

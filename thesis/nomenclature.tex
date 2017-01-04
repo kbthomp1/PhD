@@ -35,6 +35,7 @@
   $N_{nb}$ \> Number of neighbors around local node \\
   $O$ \> Decomposed off-diagonal Jacobian matrix \\
   $p$ \> Pressure, $N/m^2$ \\
+  $q$ \> primitive variables \\
   $R_\rho$ \> Decoupled scheme constraint \\
   $R_{f,r}$ \> Forward reaction rate of reaction $r$ \\
   $R_{b,r}$ \> Backward reaction rate of reaction $r$ \\
@@ -54,11 +55,13 @@
 \textbf{Greek Symbols}
 \begin{tabbing}
   XXXXXXXXX \= \kill% this line sets tab stop
-  $\rho$ \> Mixture density, $kg/m^3$ \\
-  $\rho_s$ \> Species $s$ density, $kg/m^3$ \\
   $\lambda_1,\ \lambda_2,\ \lambda_3$ \> Acoustic and convective eigenvalues \\
   $\lambda^-,\ \lambda^+$ \> Species flux effective eigenvalues \\
   $\Lambda$ \> Diagonal eigenvalue matrix \\
+  $\phi$ \> flux limiter result \\
+  $\phi_p$ \> plenum fuel-air ratio \\
+  $\rho$ \> Mixture density, $kg/m^3$ \\
+  $\rho_s$ \> Species $s$ density, $kg/m^3$ \\
   $\sprod$ \> Stoichiometric coefficient of product species $s$ in reaction $r$ \\
   $\sreact$ \> Stoichiometric coefficient of reactant species $s$ in reaction $r$ \\
   $\omega$ \> Chemical source term scaling factor \\
