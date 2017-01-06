@@ -147,13 +147,13 @@ The mass flow rate, $\massflow$,
 through the area outlined in \fref{fig:plenum-face} is computed as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \sum_{i}^{N_{faces}}\left( \rho_i \overline{U} A \right)
+  \massflow = \sum_{i}^{N_{faces}}\left( \rho_i \overline{U} A \right)
   \label{mass-flow-eqn}
 \end{equation}
 %------------------------------------------------------------------------------%
 and is used a metric for the amount of propellent that is required to be carried
-by the vehicle for blowing.  A lower mass flow rate at the plenum is equated to
-less total vehicle mass.
+by the vehicle for blowing.  For the purposes of this demonstration problem, a
+lower mass flow rate at the plenum is equated to less total vehicle mass.
 
 \section{Composite Cost Function Definition and Components}
 \label{cost-func-components}
@@ -214,7 +214,7 @@ manipulating \eref{obj-function} to obtain
   \label{obj-linearization1}
 \end{equation}
 %------------------------------------------------------------------------------%
-For the cost function components listed in \sref{cost-func-components}, their is
+For the cost function components listed in \sref{cost-func-components}, there is
 no direct dependence on the plenum design variables; thus,
 \eref{obj-linearization1} can be reduced to
 %------------------------------------------------------------------------------%
@@ -228,7 +228,7 @@ solving the adjoint equations (\eref{adjoint-main}) the sensitivity derivatives
 of the cost function with respect to the plenum design variables are obtained by
 evaluating relatively inexpensive matrix-vector products.
 
-\section{1st Order Optimization}
+\section{Inverse Design Optimization}
 
 The optimization procedure is done using the \textit{opt\_driver} utility in
 FUN3D, which is a wrapper utility that executes the FUN3D flow solver, adjoint
@@ -237,8 +237,6 @@ a termination criterion is reached.  In practice, the termination of the
 optimization occurs when the cost function reaches a tolerance of less that
 $10^{-8}$, or when continuing towards the optimal condition would exceed the
 prescribed upper or lower bounds of the design variables.
-
-\subsection{$H_2$ Combustion}
 
 To demonstrate the inverse design capability of an adjoint-based design
 optimization, targets of 2000 K for the surface temperature RMS and 0.0024
