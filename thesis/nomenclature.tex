@@ -7,11 +7,13 @@
 \begin{tabbing}
   XXXXXXXXX \= \kill% this line sets tab stop
   $A,\ A_d,\ A_m$ \> Jacobian Matrices \\
+  $A_i$ \> Face area $m^2$ \\
   $a$ \> Speed of sound, $m/s$ \\
   $\mathbf{b}$, $\res{}$ \> Residual vector \\
   $B^{r}_{i}$ \> Equilibrium constant curve fit coefficients \\
   $c_s$ \> Species $s$ mass fraction \\
   $C$ \> Decoupled scheme chemical source term Jacobian \\
+  $C_j$ \> Cost function component value \\
   $C_{f,r}$ \> Preexponential factor of reaction $r$ \\
   $C_{p,s}$ \> Specific heat at constant pressure of species $s$ \\
   $C_{v,s}$ \> Specific heat at constant volume of species $s$ \\
@@ -26,8 +28,11 @@
   $k_{f,r}$ \> Forward reaction rate coefficient of reaction $r$ \\
   $k_{b,r}$ \> Backward reaction rate coefficient of reaction $r$ \\
   $K_{c,r}$ \> Equilibrium constant of reaction $r$ \\
+  $L$ \> Adjoint equations Lagrangian \\
   $M_s$ \> Molecular weight of species $s$ \\
+  $\massflow$ \> Plenum mass flow rate $kg/s$ \\
   $ns$ \> Number of species \\
+  $\mathbf{n}$ Face unit normal vector \\
   $n_x$, $n_y$, $n_z$ \> Face unit normal vector components \\
   $N$ \> Face normal vector, $m^2$ \\
   $N_{nodes}$ \> Number of nodes \\
@@ -35,7 +40,8 @@
   $N_{nb}$ \> Number of neighbors around local node \\
   $O$ \> Decomposed off-diagonal Jacobian matrix \\
   $p$ \> Pressure, $N/m^2$ \\
-  $q$ \> primitive variables \\
+  $p_j$ \> Cost function component power \\
+  $q$ \> Primitive variables \\
   $R_\rho$ \> Decoupled scheme constraint \\
   $R_{f,r}$ \> Forward reaction rate of reaction $r$ \\
   $R_{b,r}$ \> Backward reaction rate of reaction $r$ \\
@@ -46,7 +52,7 @@
   $u,\ v,\ w$ \> Components of velocity, $m/s$ \\
   $V$ \> Cell volume, $m^3$ \\
   $\roe$ \> Roe scheme weighting factor \\
-  $w_i$ \> Composite cost function component weight \\
+  $w_j$ \> Composite cost function component weight \\
   $\mathbf{\hat{V}}$ \>  Decoupled variables vector \\
   $\mathbf{W}$ \> Chemical source term vector \\
   $\mathbf{x}$, $\mathbf{y}$, $\mathbf{z}$ \> Spatial coordinates \\
@@ -78,6 +84,7 @@
 \textbf{Superscripts}
 \begin{tabbing}
   XXXXXXXXX \= \kill% this line sets tab stop
+  $^*$ \> Cost function component target \\
   $n, n+1$ \> Time level \\
   $n_{f,r}$ \> Preexponential factor of reaction $r$ \\
   $R,\ L$ \> Right and left state quantities \\

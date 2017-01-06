@@ -49,7 +49,7 @@ In practice, this complex-variable approach is implemented by transforming the
 source code such that all real variables used in a function evaluation are made
 to be complex variables.  A specified step size is then added to the complex
 part of the design variable that the cost function is to be linearized with
-respect to in the function evaluation.  Provide the ``complexified'' solver
+respect to in the function evaluation.  Provided the ``complexified'' solver
 converges in the same manner as the real-variable solver, the complex part of
 the function of interest is the sensitivity derivative.
 
@@ -91,11 +91,70 @@ solvers match to high precision for hypersonic cases with a frozen flux limiter.
 \section{Verification of 2nd-order Adjoint Linearizations}
 
 To verify the hand-coded linearizations implemented in the adjoint solver, the
-derivatives of the drag and surface temperature cost functions for the
-annular nozzle geometry were computed using both the adjoint method and the
-complex-variable approach. Using the adjoint solution derivatives with respect
-to the plenum pressure and plenum temperature design variables are computed
-by \eref{obj-linearization}
-%Table ??? shows that the sensitivity derivatives computed by the adjoint and
-%complex-variable approach agree
-
+derivatives of the drag, surface temperature, and mass flow rate cost functions
+components for the annular nozzle geometry were computed using both the adjoint
+method and the complex-variable approach.  To facilitate checking the
+linearizations of all of these components efficiently, a composite cost function
+was formed with a three components
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( \massflow - \massflow^{*}\right)^{2}
+  + w_2\left( T_{RMS} - T_{RMS}^*\right)^2
+  + w_3\left( C_{D} - C_{D}^*\right)^2
+  \label{check-cost-func}
+\end{equation}
+%------------------------------------------------------------------------------%
+By combining all components into a single composite function, only one
+real-valued flow and adjoint solution is needed to obtain the sensitivity
+derivatives for all design variables, computed by \eref{obj-linearization2}. One
+complex-valued flow solution is needed for each design variable.
+\tref{tab:pg-deriv-check} shows the comparison between the sensitivity
+derivatives computed by \eref{obj-linearization1} and \eref{complex-fd}, for a
+perfect gas annular jet simulation.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Adjoint & Complex & Difference\\
+    \hline
+    $P_{p,o}$ & 0.12067860106210E-04 & 0.12067860106758E-04 & 5.48E-16 \\
+    $T_{p,o}$ & 0.36654635117980E-03 & 0.36654635118188E-03 & 2.08E-15
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - Perfect Gas}
+  \label{tab:pg-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%
+The adjoint and complex solvers match within machine zero, which is ??? for this
+case.  \tref{tab:frozen-deriv-check} shows the same comparison as that in
+\tref{pg-deriv-check}, but with a $H_2$-$N_2$ mixture ejected in a 5-species
+freestream air mixture with frozen flow
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Adjoint & Complex & Difference\\
+    \hline
+    $P_{p,o}$ & ??? & ??? & ??? \\
+    $T_{p,o}$ & ??? & ??? & ??? \\
+    $\fa$     & ??? & ??? & ???
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - $H_2$-$N_2$ Frozen}
+  \label{tab:frozen-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%
+\tref{tab:react-deriv-check} shows the same comparison as that in
+\tref{frozen-deriv-check}, with reactions allowed to take place.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Adjoint & Complex & Difference\\
+    \hline
+    $P_{p,o}$ & ??? & ??? & ??? \\
+    $T_{p,o}$ & ??? & ??? & ??? \\
+    $\fa$     & ??? & ??? & ???
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - $H_2$-$N_2$ Reacting}
+  \label{tab:react-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%

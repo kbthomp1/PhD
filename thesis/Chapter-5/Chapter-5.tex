@@ -88,29 +88,12 @@ The flow conditions for the optimization are shown in \tref{tab:flow-conditions}
   \label{tab:flow-conditions}
 \end{table}
 %------------------------------------------------------------------------------%
-\section{Cost Function Definition}
 
-The cost function (or objective function) as formulated in FUN3D is a composite,
-weighted function
-%------------------------------------------------------------------------------%
-\begin{equation}
-  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
-  \label{generic-cost-function}
-\end{equation}
-%------------------------------------------------------------------------------%
-Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
-function component $j$.  $C_j$ is the component value, which is evaluated at
-each flow solution.  For this particular optimization problem the cost function
-is defined as 
-%------------------------------------------------------------------------------%
-\begin{equation}
-  f = w_1\left( T_{RMS} \right)^{2} + w_2\left( C_{D} - C_{D}^{*} \right)^2
-  \label{cd-tt-cost-function}
-\end{equation}
-%------------------------------------------------------------------------------%
-The component weights were determined heuristically, to normalize the changes in
-drag coefficient, $C_D$, and surface temperature Root-Mean-Square (RMS) $T_{RMS}$.
-The drag coefficient is defined as
+\section{Integrated Quantities of Interest}
+
+The quantities of interest for this annular jet geometry are surface temperature
+RMS, the outer surface drag coefficient, and the mass flow rate through the
+nozzle plenum.  The drag coefficient is defined as
 %------------------------------------------------------------------------------%
 \begin{equation}
   C_D = \sum_{i}^{N_{faces}}
@@ -132,7 +115,7 @@ defined as
 %------------------------------------------------------------------------------%
 The area-weighted RMS of surface temperature was chosen over a simple
 area-weighted average of surface temperature, because the stagnation temperature
-is generally much higher than temperature elsewhere on a vehicle forebody in
+is generally much higher than temperatures elsewhere on a vehicle forebody in
 hypersonic flows; therefore, the squaring of temperature in the RMS will give
 greater weight to the stagnation temperature in the design.
 
@@ -160,6 +143,44 @@ and, therefore, forces inside the nozzle are ignored.  To accomplish this, only
 the area shown in \fref{fig:cd-t-rms-area} is integrated to compute the drag
 coefficient and surface temperature RMS.
 
+The mass flow rate, $\massflow$,
+through the area outlined in \fref{fig:plenum-face} is computed as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \sum_{i}^{N_{faces}}\left( \rho_i \overline{U} A \right)
+  \label{mass-flow-eqn}
+\end{equation}
+%------------------------------------------------------------------------------%
+and is used a metric for the amount of propellent that is required to be carried
+by the vehicle for blowing.  A lower mass flow rate at the plenum is equated to
+less total vehicle mass.
+
+\section{Composite Cost Function Definition and Components}
+\label{cost-func-components}
+
+The cost function (or objective function) as formulated in FUN3D is a composite,
+weighted function
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
+  \label{generic-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
+function component $j$.  $C_j$ is the component value, which is evaluated at
+each flow solution.  For example, an optimization problem that seeks to minimize the
+surface temperature RMS without decreasing the drag, the cost function is
+defined as 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( T_{RMS} \right)^{2} + w_2\left( C_{D} - C_{D}^{*} \right)^2
+  \label{cd-tt-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+For this case the component weights must be determined heuristically, to normalize
+the changes in drag coefficient, $C_D$, and surface temperature Root-Mean-Square
+(RMS) $T_{RMS}$.  The terms in \eref{cd-tt-cost-function} are squared to provide
+a convex design space.
 
 \section{Design Variables}
 
@@ -169,7 +190,8 @@ $\fa$.  These are provided explicitly in the optimization problem, and are used
 to directly set the flow conditions on plenum face boundary condition in the
 nozzle, shown in \fref{fig:plenum-face}.  For a reacting gas mixture, the
 ``fuel-air ratio'' specifies the mass fractions for two species leaving the
-plenum.  For a $H_2-N_2$ mixture, the mass fractions are given by
+plenum.  For example, if an $H_2-N_2$ mixture is ejected from the annular
+nozzle, the mass fractions of $H_2$ and $N_2$ are given by
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
@@ -182,17 +204,28 @@ plenum.  For a $H_2-N_2$ mixture, the mass fractions are given by
 Thus, the ratio $\fa$ dictates the mass fractions for two species injected into
 the domain via the plenum boundary.
 
-The sensitivity gradients for these design variables are easily obtained by
+\section{Obtaining Sensitivity Gradients for Design Variables}
+
+The sensitivity gradients for the plenum design variables are easily obtained by
 manipulating \eref{obj-function} to obtain
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\mq} \mathbf{\Lambda}
-  \label{obj-linearization}
+  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\md} \mathbf{\Lambda}
+  \label{obj-linearization1}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus once the adjoint co-state variables $\mathbf{\Lambda}$ has been computed by
-by solving the adjoint equations (\eref{adjoint-main}) the sensitivity
-derivatives for $C_D$ and $T_{RMS}$ on the specified surfaces are obtained by
+For the cost function components listed in \sref{cost-func-components}, their is
+no direct dependence on the plenum design variables; thus,
+\eref{obj-linearization1} can be reduced to
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{L}{\md} = \rtdiff{}{\md} \mathbf{\Lambda}
+  \label{obj-linearization2}
+\end{equation}
+%------------------------------------------------------------------------------%
+Once the adjoint co-state variables $\mathbf{\Lambda}$ have been computed by
+solving the adjoint equations (\eref{adjoint-main}) the sensitivity derivatives
+of the cost function with respect to the plenum design variables are obtained by
 evaluating relatively inexpensive matrix-vector products.
 
 \section{1st Order Optimization}
