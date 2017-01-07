@@ -133,8 +133,134 @@ This can be simplified to
 Note that this does not ensure that entropy will be continuous across curve
 fits.
 
-\section{Temperature Jacobian Formulation and Non-dimensionalization}
+\section{Temperature Linearizations and Non-Dimensionalization}
 \label{temperature-jacobian-conditioning}
 
-TODO: Describe the temperature jacobian, and how it's condition number scales
-quadratically with the freestream velocity.
+Following the thermodynamic state relations detailed by Gnoffo et. al.
+\cite{gnoffo-tp}, the derivatives of temperature with respect to the conserved
+variable vector
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{T}{Q} =
+  \begin{pmatrix}
+    \pd{T}{\rho_1} \\
+    \vdots \\
+    \pd{T}{\rho_{ns}} \\
+    \pd{T}{\rho u} \\
+    \pd{T}{\rho v} \\
+    \pd{T}{\rho w} \\
+    \pd{T}{\rho E}
+  \end{pmatrix}
+  \label{tjac}
+\end{equation}
+%------------------------------------------------------------------------------%
+The derivation of \eref{tjac} begins with the definition of the mixture internal
+energy, $e$
+%------------------------------------------------------------------------------%
+\begin{align}
+  e &= \ssum \left( c_s e_s \right) 
+  = \ssum \left[ c_s \left( \int_{T_{ref}}^{T} \cvs dT + e_{s,o} \right)\right]
+  \label{int-energy} \\
+  de &= \ssum \left( dc_s e_s \right) + \ssum \left( c_s \cvs \right) dT
+  \label{dint-energy}
+\end{align}
+%------------------------------------------------------------------------------%
+solving \eref{dint-energy} for $dT$
+%------------------------------------------------------------------------------%
+\begin{equation}
+  dT = \frac{de - \ssum \left( dc_s e_s \right)}{C_v}
+  \label{dt-de}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $C_v$ is the specific heat at constant volume of the mixture, defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  C_v = \ssum \left( c_s \cvs \right)
+  \label{cv-mix}
+\end{equation}
+%------------------------------------------------------------------------------%
+to transform \eref{dt-de} into a relation with conserved variables, the
+definition of mixture total energy is re-arranged as
+%------------------------------------------------------------------------------%
+\begin{align}
+  \rho E &= \rho e + \frac{1}{2}\left( \rho u^2 + \rho v^2 + \rho w^2 \right) \\
+  e &= \frac{\rho E - \frac{1}{2} 
+       \left( \rho u^2 + \rho v^2 + \rho w^2 \right)}{\rho} \\
+  de &= \frac{
+        - \left( e \right) d\rho 
+        - \left( u \right) d\rho u
+        - \left( v \right) d\rho v
+        - \left( w \right) d\rho w
+        + d \rho E
+         }{\rho}
+  \label{rhoe-def}
+\end{align}
+%------------------------------------------------------------------------------%
+substituting \eref{rhoe-def} into \eref{dt-de}, \eref{tjac} can be rewritten as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{T}{Q} =
+  \frac{1}{\rho C_v}
+  \begin{pmatrix}
+    \frac{\left( \qs \right)}{2} - e_1 \\
+    \vdots \\
+    \frac{\left( \qs \right)}{2} - e_{ns} \\
+    -u \\
+    -v \\
+    -w \\
+    1
+  \end{pmatrix}
+  \label{tjac-complete}
+\end{equation}
+%------------------------------------------------------------------------------%
+
+The non-dimensionalization of variables in the generic gas path of FUN3D are
+based on freestream dimensional quantities
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \rho &= \rho^{'} / \rho^{'}_{\infty} \\
+    u &= u^{'} / V^{'}_{\infty} \\
+    v &= v^{'} / V^{'}_{\infty} \\
+    w &= w^{'} / V^{'}_{\infty} \\
+    e &= e^{'} / \left( V^{'}_{\infty} \right)^2 \\
+    T &= T^{'}
+  \end{aligned}
+  \label{nondim-gg}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $^{'}$ denotes a dimensional quantity. Note that temperature, $T$, is not
+nondimensionalized in FUN3D, due to the large number of table look-ups that have
+temperature in dimensional units of Kelvin.  This is an important point when
+non-dimensionalizing the mixture specific heat at constant volume, $C_v$.  In
+the MKS system, $C_v$ has units $J/kg \cdot K$; therefore the proper
+nondimensionalization using the system in \eref{nondim-gg} is
+%------------------------------------------------------------------------------%
+\begin{equation}
+  C_v = {C_v}^{'}/\left( V^{'}_{\infty} \right)^2
+  \label{cv-nondim}
+\end{equation}
+%------------------------------------------------------------------------------%
+Using \erefs{nondim-gg}{cv-nondim}, \eref{tjac-complete} can be rewritten in
+terms of dimensional quantities.
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{T}{Q} =
+  \frac{\rho^{'}_{\infty}}{\rho^{'} {C_v}^{'}}
+  \begin{pmatrix}
+    \frac{\left( \qsp \right)}{2} - e^{'}_1 \\
+    \vdots \\
+    \frac{\left( \qsp \right)}{2} - e^{'}_{ns} \\
+    -u^{'}(V^{'}_{\infty}) \\
+    -v^{'}(V^{'}_{\infty}) \\
+    -w^{'}(V^{'}_{\infty}) \\
+    (V^{'}_{\infty})^2
+  \end{pmatrix}
+  \label{tjac-dim}
+\end{equation}
+%------------------------------------------------------------------------------%
+As the reference velocity becomes large, as is the case in hypersonic problems,
+the quadratic scaling of the final linearization in \eref{tjac-dim},
+$\pd{T}{\rho E}$ can lead to poor conditioning of the jacobian matrix.  This is
+particular true for the chemical source term, since small changes in temperature
+can lead to very large changes in species densities.

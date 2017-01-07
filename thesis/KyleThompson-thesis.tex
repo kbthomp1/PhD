@@ -126,6 +126,9 @@ Discrete Adjoint Formulation}
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
 
+% Nondimensionalization macro
+%\newcommand{\nondim}[1]{{#1}^{'}/{#1}_{ref}}
+
 % Cost function target eqn
 \newcommand{\cost}[1]{\left( {#1} - {#1}^{*} \right)}
 
@@ -136,6 +139,13 @@ Discrete Adjoint Formulation}
 
 % Sum with limits on top and bottom of sigma
 \newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
+
+% Species sum
+\newcommand{\ssum}{\sum\limits_{s=1}^{N_{ns}}}
+
+% velocity magnitude (squared)
+\newcommand{\qs}{u^2 + v^2 + w^2}
+\newcommand{\qsp}{(u^{'})^2 + (v^{'})^2 + (w^{'})^2}
 
 % adjoint lambda with subscript
 \newcommand{\adjlam}[1]{\Lambda_{#1}}
