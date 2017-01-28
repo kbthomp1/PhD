@@ -1,0 +1,91 @@
+\ProvidesPackage{common}
+
+%------------------------------- PACKAGES -------------------------------------%
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{relsize}
+\usepackage{newlfont}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{environ}
+
+%-------------------------- CUSTOM ENVIRONMENTS -------------------------------%
+\NewEnviron{myequation}{%
+    \begin{equation}
+    \scalebox{1.1}{$\BODY$}
+    \end{equation}
+    }
+
+%----------------------- CUSTOM SECTION PAGE BREAK ----------------------------%
+\let\oldsection\section
+\renewcommand\section{\clearpage\oldsection}
+
+%-------------------------- CUSTOM DEFINITIONS --------------------------------%
+
+\newcommand{\eref}[1]{Eq.~(\ref{#1})}
+\newcommand{\erefs}[2]{Eq.s~(\ref{#1}-\ref{#2})}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
+
+% residual and its derivatives
+\newcommand{\res}[1]{\vR_{#1}}
+\newcommand{\rdiff}[2]{\pd{\vR_{#1}}{#2}}
+\newcommand{\rpdiff}[2]{\pd{\vR^{'}_{#1}}{#2}}
+\newcommand{\tdiff}[2]{\pd{\vR_{#2}}{#1}}
+\newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
+
+% Sum with limits on top and bottom of sigma
+\newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
+
+% adjoint lambda with subscript
+\newcommand{\adjlam}[1]{\Lambda_{#1}}
+
+\newcommand{\real}{\mathbf R}
+\newcommand{\rnn}{\real^{N \times N}}
+\newcommand{\rmn}{\real^{M \times N}}
+\newcommand{\diag}{\mbox{diag}}
+\newcommand{\vf}{\mathbf f}
+\newcommand{\vF}{\mathbf F}
+\newcommand{\vx}{\mathbf x}
+\newcommand{\vc}{\mathbf c}
+\newcommand{\vd}{\mathbf d}
+\newcommand{\vy}{\mathbf y}
+\newcommand{\vz}{\mathbf z}
+\newcommand{\ve}{\mathbf e}
+\newcommand{\me}{\mathbf E}
+\newcommand{\mg}{\mathbf G}
+\newcommand{\vw}{\mathbf w}
+\newcommand{\mw}{\mathbf W}
+\newcommand{\mr}{\mathbf R}
+\newcommand{\mh}{\mathbf H}
+\newcommand{\mc}{\mathbf C}
+\newcommand{\ms}{\mathbf S}
+\newcommand{\mi}{\mathbf I}
+\newcommand{\vb}{\mathbf b}
+\newcommand{\vq}{\mathbf q}
+\newcommand{\va}{\mathbf a}
+\newcommand{\vv}{\mathbf v}
+\newcommand{\vu}{\mathbf u}
+\newcommand{\vU}{\mathbf U}
+\newcommand{\vR}{\mathbf R}
+\newcommand{\Up}{\mathbf{U}'}
+\newcommand{\Uhat}{\mathbf{\hat{U}}}
+\newcommand{\ma}{\mathbf A}
+\newcommand{\mb}{\mathbf B}
+\newcommand{\md}{\mathbf D}
+\newcommand{\vr}{\mathbf r}
+\newcommand{\mm}{\mathbf M}
+\newcommand{\ml}{\mathbf L}
+\newcommand{\mU}{\mathbf U}
+\newcommand{\ul}{\mathbf{U^L}}
+\newcommand{\ur}{\mathbf{U^R}}
+\newcommand{\mv}{\mathbf V}
+\newcommand{\mP}{\mathbf P}
+\newcommand{\mq}{\mathbf Q}
+\newcommand{\mx}{\mathbf X}
+\newcommand{\pbar}{\overline p}
+%------------------------------------------------------------------------------%
+

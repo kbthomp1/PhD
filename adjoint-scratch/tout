@@ -1,0 +1,7 @@
+\rdiff{\rho}{\rho}     & \rdiff{\rho \vu}{\rho}     & \rdiff{\rho E}{\rho}     & \rdiff{\rho_1}{\rho}     & \rdiff{\rho_2}{\rho}     & \rdiff{\rho_3}{\rho}     & \rdiff{\rho_4}{\rho}       \\ \\
+\rdiff{\rho}{\rho \vu} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho_1}{\rho \vu} & \rdiff{\rho_2}{\rho \vu} & \rdiff{\rho_3}{\rho \vu} & \rdiff{\rho_4}{\rho \vu}   \\ \\
+\rdiff{\rho}{\rho E}   & \rdiff{\rho \vu}{\rho E}   & \rdiff{\rho E}{\rho E}   & \rdiff{\rho_1}{\rho E}   & \rdiff{\rho_2}{\rho E}   & \rdiff{\rho_3}{\rho E}   & \rdiff{\rho_4}{\rho E}     \\ \\
+\rdiff{\rho}{c_1}      & \rdiff{\rho \vu}{c_1}      & \rdiff{\rho E}{c_1}      & \rdiff{\rho_1}{c_1}      & \rdiff{\rho_2}{c_1}      & \rdiff{\rho_3}{c_1}      & \rdiff{\rho_4}{c_1}        \\ \\
+\rdiff{\rho}{c_2}      & \rdiff{\rho \vu}{c_2}      & \rdiff{\rho E}{c_2}      & \rdiff{\rho_1}{c_2}      & \rdiff{\rho_2}{c_2}      & \rdiff{\rho_3}{c_2}      & \rdiff{\rho_4}{c_2}        \\ \\
+\rdiff{\rho}{c_3}      & \rdiff{\rho \vu}{c_3}      & \rdiff{\rho E}{c_3}      & \rdiff{\rho_1}{c_3}      & \rdiff{\rho_2}{c_3}      & \rdiff{\rho_3}{c_3}      & \rdiff{\rho_4}{c_3}        \\ \\
+\rdiff{\rho}{c_4}      & \rdiff{\rho \vu}{c_4}      & \rdiff{\rho E}{c_4}      & \rdiff{\rho_1}{c_4}      & \rdiff{\rho_2}{c_4}      & \rdiff{\rho_3}{c_4}      & \rdiff{\rho_4}{c_4}        \\ \\

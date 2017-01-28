@@ -1,0 +1,645 @@
+%        File: main.tex
+%     Created: Thu Jan 26 01:00 PM 2017 E
+% Last Change: Thu Jan 26 01:00 PM 2017 E
+%
+
+\documentclass[a4paper]{report}
+
+\usepackage{common}
+
+\title{Change of Variables}
+\author{Kyle B. Thompson}
+
+\begin{document}
+
+\maketitle
+
+\section{Change of Variable Sets}
+\label{change-of-var-section}
+
+The decoupled scheme developed by Candler et. al is based upon the change of
+variables
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    \rho_1 \\
+    \vdots \\
+    \rho_{ns} \\
+    \rho \vu \\
+    \rho E
+  \end{pmatrix}
+  \rightarrow
+  \mv = \begin{pmatrix}
+    c_1 \\
+    \vdots \\
+    c_{ns} \\
+    \rho \\
+    \rho \vu \\
+    \rho E
+  \end{pmatrix}
+  \label{var-sets}
+\end{equation}
+%------------------------------------------------------------------------------%
+To avoid confusion between variable sets, we re-write the variable vectors,
+$\mU$ and $\mv$, in a more generic sense
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    u_1 \\
+    \vdots \\
+    u_{ns + 2}
+  \end{pmatrix}
+  \rightarrow
+  \mv = \begin{pmatrix}
+    v_1 \\
+    \vdots \\
+    v_{ns + 3}
+  \end{pmatrix}
+  \label{generic-var-sets}
+\end{equation}
+%------------------------------------------------------------------------------%
+For simplicity, consider a system with two species, $\rho_1$ and $\rho_2$.
+Using the relationship $\rho_s = c_s \rho$, then the original variable vector,
+$\mU$ can be rewritten in terms of the new variables, $\mv$ as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    u_1 \\
+    u_2 \\
+    u_3 \\
+    u_4
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    v_1 v_3 \\
+    v_2 v_3 \\
+    v_4 \\
+    v_5
+  \end{pmatrix}
+  \label{u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+This allows the derivation of the jacobian 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{\mv} = 
+  \begin{pmatrix}
+    \pd{u_1}{v_1} & \pd{u_1}{v_2} & \pd{u_1}{v_3} & \pd{u_1}{v_4} & \pd{u_1}{v_5} \\ \\
+    \pd{u_2}{v_1} & \pd{u_2}{v_2} & \pd{u_2}{v_3} & \pd{u_2}{v_4} & \pd{u_2}{v_5} \\ \\
+    \pd{u_3}{v_1} & \pd{u_3}{v_2} & \pd{u_3}{v_3} & \pd{u_3}{v_4} & \pd{u_3}{v_5} \\ \\
+    \pd{u_4}{v_1} & \pd{u_4}{v_2} & \pd{u_4}{v_3} & \pd{u_4}{v_4} & \pd{u_4}{v_5}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    v_3 & 0   & v_1 & 0 & 0 \\ \\
+    0   & v_3 & v_2 & 0 & 0 \\ \\
+    0   & 0   & 0   & 1 & 0 \\ \\
+    0   & 0   & 0   & 0 & 1
+  \end{pmatrix}
+  \label{dudv-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+At this point, it is important to note that the jacobian in \eref{dudv-jac} has
+two psuedo-inverse matricies, that correspond to the right and left inverse.
+The right inverse, $\pdr{\mv}{\mU}{R}$, can be constructed based on the previously
+defined steps
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pdr{\mv}{\mU}{R} = 
+  \begin{pmatrix}
+    \pd{v_1}{u_1} & \pd{v_1}{u_2} & \pd{v_1}{u_3} & \pd{v_1}{u_4} \\ \\
+    \pd{v_2}{u_1} & \pd{v_2}{u_2} & \pd{v_2}{u_3} & \pd{v_2}{u_4} \\ \\
+    \pd{v_3}{u_1} & \pd{v_3}{u_2} & \pd{v_3}{u_3} & \pd{v_3}{u_4} \\ \\
+    \pd{v_4}{u_1} & \pd{v_4}{u_2} & \pd{v_4}{u_3} & \pd{v_4}{u_4} \\ \\
+    \pd{v_5}{u_1} & \pd{v_5}{u_2} & \pd{v_5}{u_3} & \pd{v_5}{u_4} 
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+    \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+    1                 & 1                 & 0 & 0 \\ \\
+    0                 & 0                 & 1 & 0 \\ \\
+    0                 & 0                 & 0 & 1
+  \end{pmatrix}
+  \label{dvdu-jac-right}
+\end{equation}
+%------------------------------------------------------------------------------%
+It is easily verified that the matrix product of
+\erefs{dudv-jac}{dvdu-jac-right} produces identity
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{\mv} \pdr{\mv}{\mU}{R} = 
+  \begin{pmatrix}
+    v_3 & 0   & v_1 & 0 & 0 \\ \\
+    0   & v_3 & v_2 & 0 & 0 \\ \\
+    0   & 0   & 0   & 1 & 0 \\ \\
+    0   & 0   & 0   & 0 & 1
+  \end{pmatrix}
+  \begin{pmatrix}
+    \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+    \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+    1                 & 1                 & 0 & 0 \\ \\
+    0                 & 0                 & 1 & 0 \\ \\
+    0                 & 0                 & 0 & 1
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    1 & 0 & 0 & 0 \\ \\
+    0 & 1 & 0 & 0 \\ \\
+    0 & 0 & 1 & 0 \\ \\
+    0 & 0 & 0 & 1
+  \end{pmatrix}
+  \label{dvdu-jac-right-I}
+\end{equation}
+%------------------------------------------------------------------------------%
+however, \eref{dvdu-jac-right-I} is not associative
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pdr{\mv}{\mU}{R} \pd{\mU}{\mv} &= 
+    \begin{pmatrix}
+      \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+      \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+      1                 & 1                 & 0 & 0 \\ \\
+      0                 & 0                 & 1 & 0 \\ \\
+      0                 & 0                 & 0 & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      v_3 & 0   & v_1 & 0 & 0 \\ \\
+      0   & v_3 & v_2 & 0 & 0 \\ \\
+      0   & 0   & 0   & 1 & 0 \\ \\
+      0   & 0   & 0   & 0 & 1
+    \end{pmatrix} \\
+    &= 
+    \begin{pmatrix}
+      1-v_1 & -v_1  & \frac{-(v_1)^2 - v_1 v_2 + v_1}{v_3} & 0 & 0 \\ \\
+      -v_2  & 1-v_2 & \frac{-(v_2)^2 - v_1 v_2 + v_2}{v_3} & 0 & 0 \\ \\
+      0     & 0     & 0                                    & 1 & 0 \\ \\
+      0     & 0     & 0                                    & 0 & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{dvdu-jac-right-I-bad}
+\end{equation}
+%------------------------------------------------------------------------------%
+to correctly compute identity, the property of matrix transpose multiplication
+is used
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left( \pd{\mU}{\mv} \pdr{\mv}{\mU}{R} \right)^T &= 
+    {\pdr{\mv}{\mU}{R}}^T {\pd{\mU}{\mv}}^T \\ &=
+    \begin{pmatrix}
+      \frac{1-v_1}{v_3} & \frac{-v_2}{v_3}  & 1 & 0 & 0 \\ \\
+      \frac{-v_1}{v_3}  & \frac{1-v_2}{v_3} & 1 & 0 & 0 \\ \\
+      0                 & 1                 & 0 & 1 & 0 \\ \\
+      0                 & 0                 & 0 & 0 & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      v_3 & 0   & 0   & 0 \\ \\
+      0   & v_3 & 0   & 0 \\ \\
+      v_1 & v_2 & 0   & 0 \\ \\
+      0   & 0   & 1   & 0 \\ \\
+      0   & 0   & 0   & 1 
+    \end{pmatrix} \\
+    &= 
+    \begin{pmatrix}
+      1 & 0 & 0 & 0 \\ \\
+      0 & 1 & 0 & 0 \\ \\
+      0 & 0 & 1 & 0 \\ \\
+      0 & 0 & 0 & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{dvdu-jac-tranpose}
+\end{equation}
+%------------------------------------------------------------------------------%
+This is critical in understanding the relationships needed to switch transform
+variables sets.  For linearizations of the residual, $\mr$, the correct
+transformation from the variable set $\mU$ to the variable set $\mv$ is
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mr}{\mv} = \pd{\mr}{\mU} \pd{\mU}{\mv}
+  \label{r-u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+which is intuitively understood; however, the transformation from the variable
+set $\mv$ to the variable set $\mU$ must follow \eref{dvdu-jac-tranpose}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mr}{\mU} = \left( \pd{\mr}{\mv}^{T} \pd{\mv}{\mU}^{T} \right)^{T}
+  \label{r-v-to-u}
+\end{equation}
+%------------------------------------------------------------------------------%
+The transposition in \eref{r-u-to-v} is critical, as the linearizations will be
+incorrect if the multiplication is done without it.  Fortunately,
+\eref{r-u-to-v} is rarely seen in practice, as most linearizations are done for
+the fully-coupled system that requires \eref{r-v-to-u} to transform the
+linearizations
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mv} = \pd{\mr}{\mU} \pd{\mU}{\mv} =
+    \begin{pmatrix}
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_1}{\rho_{ns}}    & \rdiff{\rho_1}{\rho \vu}    & \rdiff{\rho_1}{\rho E}    \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                    \\ \\
+      \rdiff{\rho_{ns}}{\rho_1} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho_{ns}}{\rho \vu} & \rdiff{\rho_{ns}}{\rho E} \\ \\
+      \rdiff{\rho \vu}{\rho_1}  & \dots  & \rdiff{\rho \vu}{\rho_{ns}}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho \vu}{\rho E}  \\ \\
+      \rdiff{\rho E}{\rho_1}    & \dots  & \rdiff{\rho E}{\rho_{ns}}    & \rdiff{\rho E}{\rho \vu}    & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    \begin{pmatrix}
+      \rho   & \dots  & 0      & c_1     & 0      & 0      \\ \\
+      \vdots & \ddots & \vdots & \vdots  & \vdots & \vdots \\ \\
+      0      & \dots  &\rho    & c_{ns}  & 0      & 0      \\ \\
+      0      & \dots  &0       & 0       & 1      & 0      \\ \\
+      0      & \dots  &0       & 0       & 0      & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{drdu-to-drdv}
+\end{equation}
+%------------------------------------------------------------------------------%
+likewise, in the adjoint the transformation is applied to the tranpose of the 
+jacobian
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mU}^{T} = \pd{\mU}{\mv}^{T} \pd{\mr}{\mU}^{T} =
+    \begin{pmatrix}
+      \rho   & \dots  & 0      &  0      & 0      \\ \\
+      \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
+      0      & \dots  &\rho    &  0      & 0      \\ \\
+      c_1    & \dots  & c_{ns} &  0      & 0      \\ \\
+      0      & \dots  & 0      &  1      & 0      \\ \\
+      0      & \dots  & 0      &  0      & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{ns}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1} \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                   \\ \\
+      \rdiff{\rho_1}{\rho_{ns}} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho \vu}{\rho_{ns}} & \rdiff{\rho E}{\rho_{ns}} \\ \\
+      \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{ns}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu} \\ \\
+      \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{ns}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \end{aligned}
+  \label{drdu-to-drdv-t}
+\end{equation}
+%------------------------------------------------------------------------------%
+Since the tranformation is right-multiplied, the matrix vector products of the 
+exact jacobian with costate variables, $\adjlam{}$, in the adjoint linear system
+can be done first, and the transformation can then be applied to the system
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mU}^{T} \adjlam{} =
+    \begin{pmatrix}
+      \rho   & \dots  & 0      &  0      & 0      \\ \\
+      \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
+      0      & \dots  &\rho    &  0      & 0      \\ \\
+      c_1    & \dots  & c_{ns} &  0      & 0      \\ \\
+      0      & \dots  & 0      &  1      & 0      \\ \\
+      0      & \dots  & 0      &  0      & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      \rlprod{\rho_1}{\rho_1}    & \dots  &+& \rlprod{\rho_{ns}}{\rho_1}    &+& \rlprod{\rho \vu}{\rho_1}    &+& \rlprod{\rho E}{\rho_1} \\ \\
+      \vdots                     & \ddots & & \vdots                        & & \vdots                       & & \vdots                   \\ \\
+      \rlprod{\rho_1}{\rho_{ns}} & \dots  &+& \rlprod{\rho_{ns}}{\rho_{ns}} &+& \rlprod{\rho \vu}{\rho_{ns}} &+& \rlprod{\rho E}{\rho_{ns}} \\ \\
+      \rlprod{\rho_1}{\rho \vu}  & \dots  &+& \rlprod{\rho_{ns}}{\rho \vu}  &+& \rlprod{\rho \vu}{\rho \vu}  &+& \rlprod{\rho E}{\rho \vu} \\ \\
+      \rlprod{\rho_1}{\rho E}    & \dots  &+& \rlprod{\rho_{ns}}{\rho E}    &+& \rlprod{\rho \vu}{\rho E}    &+& \rlprod{\rho E}{\rho E}
+    \end{pmatrix}
+  \end{aligned}
+  \label{adj-drdv}
+\end{equation}
+%------------------------------------------------------------------------------%
+This indicates the important point that the transformation of the adjoint
+residual is not dependent on the number of equations solved, but only the number
+of dependent variables the equations are linearized with respect to, namely
+$\mU$.
+
+In the decoupled scheme the number of equations effectively solved is one more
+than the fully-coupled scheme.  The residual vector, $R$ for the decoupled
+scheme can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \res{} =
+  \begin{pmatrix}
+    \res{\rho_1} - c_1 \resrho \\ \\
+    \vdots \\ \\
+    \res{\rho_{N_s}} - c_{N_s} \resrho \\ \\
+    \resrho \\ \\
+    \res{\rho \vu} \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{dc-res}
+\end{equation}
+%------------------------------------------------------------------------------%
+The residual vector in \eref{dc-res} is composed entirely of components from
+the fully coupled system; there for the linearizations for the fully-coupled
+system can be re-used to construct the decoupled adjoint residual
+
+\section{Relationship to Adjoint Equation}
+
+The flow solver equations can be constructed by the integration of the governing
+equations.  In semi-discrete form, this is 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{t} + \frac{1}{V} \sum_{i}^{N_{nodes}}
+  \left( \vF_i \cdot \norm_i \right) = \mw
+  \label{semi-discrete}
+\end{equation}
+%------------------------------------------------------------------------------%
+where
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \vF = 
+  \begin{pmatrix}
+    \rho_1 \vu \\
+    \vdots \\
+    \rho_{N_s} \\
+    \rho \vu^2 + p\norm \\
+    (E + p) \vu
+  \end{pmatrix}
+  \label{f-vec}
+\end{equation}
+%------------------------------------------------------------------------------%
+the next time level $n+1$ can be determined from the current time level
+$n$ if the equations are linearized by the approximations
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \vF^{n+1} &\approx \vF^{n} + \pd{\vF^{n}}{\mU} d \mU^{n} \\
+    \mw^{n+1} &\approx \mw^{n} + \pd{\mw^{n}}{\mU} d \mU^{n}
+  \end{aligned}
+  \label{linearization-flux}
+\end{equation}
+%------------------------------------------------------------------------------%
+This creates the linear system of equations which may be solved by a
+quasi-Newton method
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left[ 
+    \frac{V}{\Delta t} \mi + 
+    \begin{pmatrix}
+      \tdiff{\rho_1}{\rho_1}    & \dots  & \tdiff{\rho_{ns}}{\rho_1}    & \tdiff{\rho \vu}{\rho_1}    & \tdiff{\rho E}{\rho_1} \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                   \\ \\
+      \tdiff{\rho_1}{\rho_{ns}} & \dots  & \tdiff{\rho_{ns}}{\rho_{ns}} & \tdiff{\rho \vu}{\rho_{ns}} & \tdiff{\rho E}{\rho_{ns}} \\ \\
+      \tdiff{\rho_1}{\rho \vu}  & \dots  & \tdiff{\rho_{ns}}{\rho \vu}  & \tdiff{\rho \vu}{\rho \vu}  & \tdiff{\rho E}{\rho \vu} \\ \\
+      \tdiff{\rho_1}{\rho E}    & \dots  & \tdiff{\rho_{ns}}{\rho E}    & \tdiff{\rho \vu}{\rho E}    & \tdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \right]
+  \begin{pmatrix}
+    d \rho_1     \\ \\
+    \vdots       \\ \\
+    d \rho_{N_s} \\ \\
+    d \rho \vu   \\ \\
+    d \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1}     \\ \\
+    \vdots           \\ \\
+    \res{\rho_{N_s}} \\ \\
+    \res{\rho \vu}   \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{fc-flow}
+\end{equation}
+%------------------------------------------------------------------------------%
+assuming all linearizations are exact, the adjoint system of equations that
+results from the fully coupled formulation in \eref{fc-flow} is
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{pmatrix}
+    \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{ns}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1}    \\ \\
+    \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                    \\ \\
+    \rdiff{\rho_1}{\rho_{ns}} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho \vu}{\rho_{ns}} & \rdiff{\rho E}{\rho_{ns}} \\ \\
+    \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{ns}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu}  \\ \\
+    \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{ns}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
+  \end{pmatrix}
+  \begin{pmatrix}
+    \adjlam{\rho_1}     \\ \\
+    \vdots              \\ \\
+    \adjlam{\rho_{N_s}} \\ \\
+    \adjlam{\rho \vu}   \\ \\
+    \adjlam{\rho E}
+  \end{pmatrix}
+  = -
+  \begin{pmatrix}
+    \pd{f}{\rho_1}     \\ \\
+    \vdots           \\ \\
+    \pd{f}{\rho_{N_s}} \\ \\
+    \pd{f}{\rho \vu}   \\ \\
+    \pd{f}{\rho E}
+  \end{pmatrix}
+  \label{fc-adj}
+\end{equation}
+%------------------------------------------------------------------------------%
+In the new variable set, $\mv$, \eref{fc-flow} is re-written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left[ 
+    \frac{V}{\Delta t} \mi + 
+    \begin{pmatrix}
+      \tdiff{\rho_1}{\rho_1}    & \dots  & \tdiff{\rho_{ns}}{\rho_1}    & \tdiff{\rho}{\rho_1}    & \tdiff{\rho \vu}{\rho_1}    & \tdiff{\rho E}{\rho_1} \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                  & \vdots                      & \vdots                   \\ \\
+      \tdiff{\rho_1}{\rho_{ns}} & \dots  & \tdiff{\rho_{ns}}{\rho_{ns}} & \tdiff{\rho}{\rho_{ns}} & \tdiff{\rho \vu}{\rho_{ns}} & \tdiff{\rho E}{\rho_{ns}} \\ \\
+      \tdiff{\rho_1}{\rho}      & \dots  & \tdiff{\rho_{ns}}{\rho}      & \tdiff{\rho}{\rho}      & \tdiff{\rho \vu}{\rho}      & \tdiff{\rho E}{\rho}      \\ \\
+      \tdiff{\rho_1}{\rho \vu}  & \dots  & \tdiff{\rho_{ns}}{\rho \vu}  & \tdiff{\rho}{\rho \vu}  & \tdiff{\rho \vu}{\rho \vu}  & \tdiff{\rho E}{\rho \vu} \\ \\
+      \tdiff{\rho_1}{\rho E}    & \dots  & \tdiff{\rho_{ns}}{\rho E}    & \tdiff{\rho}{\rho E}    & \tdiff{\rho \vu}{\rho E}    & \tdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \right]
+  \begin{pmatrix}
+    d c_1      \\ \\
+    \vdots     \\ \\
+    d c_{N_s}  \\ \\
+    d \rho     \\ \\
+    d \rho \vu \\ \\
+    d \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1}^{'}     \\ \\
+    \vdots               \\ \\
+    \res{\rho_{N_s}}^{'} \\ \\
+    \res{\rho}           \\ \\
+    \res{\rho \vu}       \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{dc-flow}
+\end{equation}
+%------------------------------------------------------------------------------%
+Where the new species density equations $\res{\rho_s}^{'}$ and mixture density
+equation $\res{\rho}$ are defined as
+%------------------------------------------------------------------------------%
+\begin{align}
+  \res{\rho_s}^{'} &= \res{\rho_s} - c_s \res{\rho}
+  \label{res-rhos-def} \\
+  \res{\rho} &= \sum_{i=1}^{N_s}\left( \res{\rho_i} \right)
+  \label{res-rho-def}
+\end{align}
+%------------------------------------------------------------------------------%
+\erefs{res-rhos-def}{res-rho-def} are critical to the adjoint formulation of
+\eref{dc-flow}, as primal flow equations have been altered to enforce the
+constraint that
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \sum_{i=1}^{N_s}\left( c_i \right) = 1, \quad
+  \sum_{i=1}^{N_s}\left( d c_i \right) = 0, \ 
+  \label{mass-frac-sum}
+\end{equation}
+%------------------------------------------------------------------------------%
+Just as relationships were derived for the variables set $\mU$ and $\mv$ in
+\sref{change-of-var-section}, there are also relationships between the
+equations, which we denote as $\ru{}$ and $\rv{}$ for the variable sets
+$\mU{}$ and $\mv{}$, respectively.  the equation set $\ru{}$ can be rewritten in
+terms of the equation set $\rv{}$, to form the jacobian
+%------------------------------------------------------------------------------%
+\begin{gather}
+  \ru{} =
+  \begin{pmatrix}
+    \rv{i} + c_i \left(\rv{N_s+1} \right) \\
+    \rv{N_s+2} \\
+    \rv{N_s+3}
+  \end{pmatrix}
+  \label{ru-to-rv} \\[12pt]
+  \pd{\ru{}}{\rv{}} =
+  \begin{pmatrix}
+    1 & 0 & c_i & 0 & 0 \\ \\
+    0 & 1 & c_i & 0 & 0 \\ \\
+    0 & 0 & 0   & 1 & 0 \\ \\
+    0 & 0 & 0   & 0 & 1 \\ \\
+  \end{pmatrix}
+  \label{drudrv}
+\end{gather}
+%------------------------------------------------------------------------------%
+Likewise, the tranformation can be made from $\rv{}$ to $\ru{}$
+%------------------------------------------------------------------------------%
+\begin{gather}
+  \rv{} =
+  \begin{pmatrix}
+    \ru{i} + c_i \lsum{k=1}{N_s}{\left( \ru{k} \right)} \\ \\
+    \lsum{k=1}{N_s}{\left( \ru{k} \right)} \\ \\
+    \ru{N_s+1} \\ \\
+    \ru{N_s+2}
+  \end{pmatrix}
+  \label{rv-to-ru} \\[12pt]
+  \pd{\rv{}}{\ru{}} =
+  \begin{pmatrix}
+    1 - c_i & -c_i    & 0 & 0 \\ \\
+    -c_i    & 1 - c_i & 0 & 0 \\ \\
+    1       & 1       & 0 & 0 \\ \\
+    0       & 0       & 1 & 0 \\ \\
+    0       & 0       & 0 & 1
+  \end{pmatrix}
+  \label{drvdru}
+\end{gather}
+%------------------------------------------------------------------------------%
+The change of equations sets in \erefs{ru-to-rv}{drudrv} and the change of
+dependent variable in \eref{u-to-v} can be used to rewrite the fully coupled
+system in \eref{fc-flow} into the decoupled system from \eref{dc-flow}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right) d \mU &= \ru{}
+    \\[12pt]
+    \pd{\rv{}}{\ru{}}
+    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right)
+    \left( \pd{\mU}{\mv} \right) d \mv
+    &= 
+    \pd{\rv{}}{\ru{}} \ru{}
+  \end{aligned}
+  \label{fc-to-dc-form}
+\end{equation}
+%------------------------------------------------------------------------------%
+\eref{fc-to-dc-form} shows that \eref{dc-flow} is actually just a preconditioned
+version of \eref{fc-flow}, that can be generically written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left(\mm \ma_{\mU} \right) \left( \mb d\mv \right) = \mm \ru{}
+  \label{generic-dc}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\mm$ is the left preconditioner, $\pd{\rv{}}{\ru{}}$, $\mb$ is the right
+preconditioner, $\pd{\mU}{\mv}$, and $\ma_{\mU}$ it the jacobian matrix for the
+fully coupled system, $\pd{\ru{}}{\mU}$.  This is crucial towards the
+understanding of the adjoint system of equations, since the transpose operation
+will reverse the order of operations of these matrix products.  Based on
+\eref{generic-dc}, the jacobian for the system based on $\rv{}$ and $\mv$,
+denoted as $\ma_{\mv}$, can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \ma_{\mv} = \mm \ma_{\mU} \mb
+  \label{adj-dc-generic}
+\end{equation}
+%------------------------------------------------------------------------------%
+along with its tranpose
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \ma_{\mv}^{T}
+   = \left( \mm \ma_{\mU} \mb \right)^{T}
+   = \mb^{T} \ma_{\mU}^{T} \mm^{T}
+  \label{adj-dc-generic-transpose}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus, in the adjoint $\mb$ becomes the left preconditioner, and $\mm$ becomes
+the right preconditioner
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left(\pd{\rv{}}{\mv} \right)^{T} \adjlam{\mv} &= -\pd{f}{\mv} \\
+    \left( \pd{\mU}{\mv} \right)^{T}
+    \left(\pd{\ru{}}{\mU} \right)^{T} 
+    \left( \pd{\rv{}}{\ru{}} \right)^{T}
+    \adjlam{\mv} 
+    &= 
+    - \left( \pd{\mU}{\mv} \right)^{T}
+    \left( \pd{f}{\mv} \right)
+  \end{aligned}
+  \label{adj-u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+Based on \eref{adj-u-to-v}, it is possible to reuse the exact jacobian of the
+fully coupled scheme, $\ma_{\mU}$, instead of computing the exact jacobian of
+the decoupled system, $\ma_{\mv}$.  This is very attractive, since the
+implementation of the fully coupled scheme does not need to be changed at the
+low-level linearizations.  Instead, the residual of the adjoint can be formed in
+the exact same fashion as the fully coupled scheme, and a series of matrix
+operations can then be performed to transform the equations and dependent
+variables into those used by the decoupled scheme.
+
+The exact same preconditioners used by the flow solver can be transposed and
+used to solve the linear system of equations in the adjoint.  This is done in
+two steps and in reverse order of the iterative mechanism used in the flow
+solver. First, the adjoint costate variables associated with the species mass
+equations, $\adjlam{\rho_s}$, are solved for
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \frac{V}{\Delta t} \mi + \ma_d \right) d \adjlam{\rho_s}
+  = -
+  \begin{pmatrix}
+    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{c_s}} 
+    + \rlprod{\rho}{c_s}
+    + \rlprod{\rho \vu}{c_s}
+    + \rlprod{\rho E}{c_s}
+    + \pd{f}{c_s}
+  \end{pmatrix}
+  \label{dc-solve-adj}
+\end{equation}
+%------------------------------------------------------------------------------%
+Followed by the adjoint costate variables associated with the mixture equations,
+$\adjlam{\rho}$, $\adjlam{\rho \vu}$, and $\adjlam{\rho E}$
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \frac{V}{\Delta t} \mi + \ma_m \right) 
+  \begin{pmatrix}
+    d \adjlam{\rho}     \\ \\
+    d \adjlam{\rho \vu} \\ \\
+    d \adjlam{\rho E}
+  \end{pmatrix}
+  = -
+  \begin{pmatrix}
+    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho}} + \rlprod{\rho}{\rho} + \rlprod{\rho \vu}{\rho} + \rlprod{\rho E}{\rho} + \pd{f}{\rho} \\ \\
+    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho \vu}} + \rlprod{\rho}{\rho \vu} + \rlprod{\rho \vu}{\rho \vu} + \rlprod{\rho E}{\rho \vu} + \pd{f}{\rho \vu} \\ \\
+    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho E}} + \rlprod{\rho}{\rho E} + \rlprod{\rho \vu}{\rho E} + \rlprod{\rho E}{\rho E} + \pd{f}{\rho E}
+  \end{pmatrix}
+  \label{mean-solve-adj}
+\end{equation}
+%------------------------------------------------------------------------------%
+
+\end{document}

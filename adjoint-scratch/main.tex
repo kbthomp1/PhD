@@ -1,0 +1,143 @@
+%        File: 
+%     Created: Thu Oct 13 09:00 AM 2016 E
+% Last Change: Thu Oct 13 09:00 AM 2016 E
+%
+\documentclass[a4paper]{article}
+\usepackage{common}
+\usepackage{lscape}
+\begin{document}
+
+\begin{landscape}
+
+  \begin{huge}
+  \bf{Flow solver equations:}
+  \begin{equation}
+    \begin{pmatrix}
+      \rdiff{\rho}{\rho}     & \rdiff{\rho}{\rho \vu}     &  \rdiff{\rho}{\rho E}     & \rdiff{\rho}{c_1}     & \rdiff{\rho}{c_2}     & \rdiff{\rho}{c_3}     & \rdiff{\rho}{c_4}      \\ \\
+      \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} &  \rdiff{\rho \vu}{\rho E} & \rdiff{\rho \vu}{c_1} & \rdiff{\rho \vu}{c_2} & \rdiff{\rho \vu}{c_3} & \rdiff{\rho \vu}{c_4}  \\ \\
+      \rdiff{\rho E}{\rho}   & \rdiff{\rho E}{\rho \vu}   &  \rdiff{\rho E}{\rho E}   & \rdiff{\rho E}{c_1}   & \rdiff{\rho E}{c_2}   & \rdiff{\rho E}{c_3}   & \rdiff{\rho E}{c_4}    \\ \\
+      \rdiff{\rho_1}{\rho}   & \rdiff{\rho_1}{\rho \vu}   &  \rdiff{\rho_1}{\rho E}   & \rdiff{\rho_1}{c_1}   & \rdiff{\rho_1}{c_2}   & \rdiff{\rho_1}{c_3}   & \rdiff{\rho_1}{c_4}    \\ \\
+      \rdiff{\rho_2}{\rho}   & \rdiff{\rho_2}{\rho \vu}   &  \rdiff{\rho_2}{\rho E}   & \rdiff{\rho_2}{c_1}   & \rdiff{\rho_2}{c_2}   & \rdiff{\rho_2}{c_3}   & \rdiff{\rho_2}{c_4}    \\ \\
+      \rdiff{\rho_3}{\rho}   & \rdiff{\rho_3}{\rho \vu}   &  \rdiff{\rho_3}{\rho E}   & \rdiff{\rho_3}{c_1}   & \rdiff{\rho_3}{c_2}   & \rdiff{\rho_3}{c_3}   & \rdiff{\rho_3}{c_4}    \\ \\
+      \rdiff{\rho_4}{\rho}   & \rdiff{\rho_4}{\rho \vu}   &  \rdiff{\rho_4}{\rho E}   & \rdiff{\rho_4}{c_1}   & \rdiff{\rho_4}{c_2}   & \rdiff{\rho_4}{c_3}   & \rdiff{\rho_4}{c_4}    \\ \\
+    \end{pmatrix}
+    \begin{pmatrix}
+      dQ_{\rho} \\ \\
+      dQ_{\rho \vu} \\ \\
+      dQ_{\rho E} \\ \\
+      dQ_{c_1} \\ \\
+      dQ_{c_2} \\ \\
+      dQ_{c_3} \\ \\
+      dQ_{c_4}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      R_{\rho} \\ \\
+      R_{\rho \vu} \\ \\
+      R_{\rho E} \\ \\
+      R_{c_1} \\ \\
+      R_{c_2} \\ \\
+      R_{c_3} \\ \\
+      R_{c_4}
+    \end{pmatrix}
+    \label{full-adjoint}
+  \end{equation}
+
+  \newpage
+  \bf{Adjoint solver equations:}
+  \begin{equation}
+    \begin{pmatrix}
+      \rdiff{\rho}{\rho}     & \rdiff{\rho \vu}{\rho}     & \rdiff{\rho E}{\rho}     & \rpdiff{\rho_1}{\rho}     & \rpdiff{\rho_2}{\rho}     & \rpdiff{\rho_3}{\rho}     & \rpdiff{\rho_4}{\rho}       \\ \\
+      \rdiff{\rho}{\rho \vu} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho E}{\rho \vu} & \rpdiff{\rho_1}{\rho \vu} & \rpdiff{\rho_2}{\rho \vu} & \rpdiff{\rho_3}{\rho \vu} & \rpdiff{\rho_4}{\rho \vu}   \\ \\
+      \rdiff{\rho}{\rho E}   & \rdiff{\rho \vu}{\rho E}   & \rdiff{\rho E}{\rho E}   & \rpdiff{\rho_1}{\rho E}   & \rpdiff{\rho_2}{\rho E}   & \rpdiff{\rho_3}{\rho E}   & \rpdiff{\rho_4}{\rho E}     \\ \\
+      \rdiff{\rho}{c_1}      & \rdiff{\rho \vu}{c_1}      & \rdiff{\rho E}{c_1}      & \rpdiff{\rho_1}{c_1}      & \rpdiff{\rho_2}{c_1}      & \rpdiff{\rho_3}{c_1}      & \rpdiff{\rho_4}{c_1}        \\ \\
+      \rdiff{\rho}{c_2}      & \rdiff{\rho \vu}{c_2}      & \rdiff{\rho E}{c_2}      & \rpdiff{\rho_1}{c_2}      & \rpdiff{\rho_2}{c_2}      & \rpdiff{\rho_3}{c_2}      & \rpdiff{\rho_4}{c_2}        \\ \\
+      \rdiff{\rho}{c_3}      & \rdiff{\rho \vu}{c_3}      & \rdiff{\rho E}{c_3}      & \rpdiff{\rho_1}{c_3}      & \rpdiff{\rho_2}{c_3}      & \rpdiff{\rho_3}{c_3}      & \rpdiff{\rho_4}{c_3}        \\ \\
+      \rdiff{\rho}{c_4}      & \rdiff{\rho \vu}{c_4}      & \rdiff{\rho E}{c_4}      & \rpdiff{\rho_1}{c_4}      & \rpdiff{\rho_2}{c_4}      & \rpdiff{\rho_3}{c_4}      & \rpdiff{\rho_4}{c_4}
+    \end{pmatrix}
+    \begin{pmatrix}
+      \adjlam{\rho} \\ \\
+      \adjlam{\rho \vu} \\ \\
+      \adjlam{\rho E} \\ \\
+      \adjlam{c_1} \\ \\
+      \adjlam{c_2} \\ \\
+      \adjlam{c_3} \\ \\
+      \adjlam{c_4}
+    \end{pmatrix}
+    = -
+    \begin{pmatrix}
+      \pd{f}{\rho} \\ \\
+      \pd{f}{\rho \vu} \\ \\
+      \pd{f}{\rho E} \\ \\
+      \pd{f}{c_1} \\ \\
+      \pd{f}{c_2} \\ \\
+      \pd{f}{c_3} \\ \\
+      \pd{f}{c_4}
+    \end{pmatrix}
+    \label{full-trans-adjoint}
+  \end{equation}
+
+  \newpage
+  \bf{Adjoint solver equations (before contraction):}
+  \begin{equation}
+    \begin{pmatrix}
+      \rdiff{\rho_1}{\rho_1}   & \rdiff{\rho_2}{\rho_1}   & \rdiff{\rho_3}{\rho_1}   & \rdiff{\rho_4}{\rho_1}   & \rdiff{\rho \vu}{\rho_1}   & \rdiff{\rho E}{\rho_1}   \\ \\
+      \rdiff{\rho_1}{\rho_2}   & \rdiff{\rho_2}{\rho_2}   & \rdiff{\rho_3}{\rho_2}   & \rdiff{\rho_4}{\rho_2}   & \rdiff{\rho \vu}{\rho_2}   & \rdiff{\rho E}{\rho_2}   \\ \\
+      \rdiff{\rho_1}{\rho_3}   & \rdiff{\rho_2}{\rho_3}   & \rdiff{\rho_3}{\rho_3}   & \rdiff{\rho_4}{\rho_3}   & \rdiff{\rho \vu}{\rho_3}   & \rdiff{\rho E}{\rho_3}   \\ \\
+      \rdiff{\rho_1}{\rho_4}   & \rdiff{\rho_2}{\rho_4}   & \rdiff{\rho_3}{\rho_4}   & \rdiff{\rho_4}{\rho_4}   & \rdiff{\rho \vu}{\rho_4}   & \rdiff{\rho E}{\rho_4}   \\ \\
+      \rdiff{\rho_1}{\rho \vu} & \rdiff{\rho_2}{\rho \vu} & \rdiff{\rho_3}{\rho \vu} & \rdiff{\rho_4}{\rho \vu} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho E}{\rho \vu} \\ \\
+      \rdiff{\rho_1}{\rho E}   & \rdiff{\rho_2}{\rho E}   & \rdiff{\rho_3}{\rho E}   & \rdiff{\rho_4}{\rho E}   & \rdiff{\rho \vu}{\rho E}   & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    \begin{pmatrix}
+      \adjlam{\rho_1} \\ \\
+      \adjlam{\rho_2} \\ \\
+      \adjlam{\rho_3} \\ \\
+      \adjlam{\rho_4} \\ \\
+      \adjlam{\rho \vu} \\ \\
+      \adjlam{\rho E}
+    \end{pmatrix}
+    = -
+    \begin{pmatrix}
+      \pd{f}{\rho_1} \\ \\
+      \pd{f}{\rho_2} \\ \\
+      \pd{f}{\rho_3} \\ \\
+      \pd{f}{\rho_4} \\ \\
+      \pd{f}{\rho \vu} \\ \\
+      \pd{f}{\rho E} \\ \\
+    \end{pmatrix}
+    \label{full-adjoint2}
+  \end{equation}
+
+  \newpage
+  \bf{Flow solver equations (before contraction):}
+  \begin{equation}
+    \begin{pmatrix}
+      \tdiff{\rho_1}{\rho_1}   & \tdiff{\rho_2}{\rho_1}   & \tdiff{\rho_3}{\rho_1}   & \tdiff{\rho_4}{\rho_1}   & \tdiff{\rho \vu}{\rho_1}   & \tdiff{\rho E}{\rho_1}   \\ \\
+      \tdiff{\rho_1}{\rho_2}   & \tdiff{\rho_2}{\rho_2}   & \tdiff{\rho_3}{\rho_2}   & \tdiff{\rho_4}{\rho_2}   & \tdiff{\rho \vu}{\rho_2}   & \tdiff{\rho E}{\rho_2}   \\ \\
+      \tdiff{\rho_1}{\rho_3}   & \tdiff{\rho_2}{\rho_3}   & \tdiff{\rho_3}{\rho_3}   & \tdiff{\rho_4}{\rho_3}   & \tdiff{\rho \vu}{\rho_3}   & \tdiff{\rho E}{\rho_3}   \\ \\
+      \tdiff{\rho_1}{\rho_4}   & \tdiff{\rho_2}{\rho_4}   & \tdiff{\rho_3}{\rho_4}   & \tdiff{\rho_4}{\rho_4}   & \tdiff{\rho \vu}{\rho_4}   & \tdiff{\rho E}{\rho_4}   \\ \\
+      \tdiff{\rho_1}{\rho \vu} & \tdiff{\rho_2}{\rho \vu} & \tdiff{\rho_3}{\rho \vu} & \tdiff{\rho_4}{\rho \vu} & \tdiff{\rho \vu}{\rho \vu} & \tdiff{\rho E}{\rho \vu} \\ \\
+      \tdiff{\rho_1}{\rho E}   & \tdiff{\rho_2}{\rho E}   & \tdiff{\rho_3}{\rho E}   & \tdiff{\rho_4}{\rho E}   & \tdiff{\rho \vu}{\rho E}   & \tdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    \begin{pmatrix}
+      dQ_{\rho_1} \\ \\
+      dQ_{\rho_2} \\ \\
+      dQ_{\rho_3} \\ \\
+      dQ_{\rho_4} \\ \\
+      dQ_{\rho \vu} \\ \\
+      dQ_{\rho E}
+    \end{pmatrix}
+    = -
+    \begin{pmatrix}
+      R_{\rho_1} \\ \\
+      R_{\rho_2} \\ \\
+      R_{\rho_3} \\ \\
+      R_{\rho_4} \\ \\
+      R_{\rho \vu} \\ \\
+      R_{\rho E} \\ \\
+    \end{pmatrix}
+    \label{full-flow-right}
+  \end{equation}
+  \end{huge}
+\end{landscape}
+\end{document}
