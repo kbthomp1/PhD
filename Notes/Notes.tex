@@ -589,7 +589,7 @@ in that
 The mapping of the decoupled variable set $\Up$ to the fully coupled variable
 set $\vU$ is done by
 %------------------------------------------------------------------------------%
-\begin{equation}
+\begin{align}
   \begin{pmatrix}
  		d \rho_1    \\ \\
 		  \vdots    \\ \\
@@ -603,6 +603,7 @@ set $\vU$ is done by
     c_1    & 0 & 0 & 0 & 0 \\ \\
     \vdots & \vdots & \vdots & \vdots & \vdots \\ \\
     c_{ns} & 0 & 0 & 0 & 0 \\ \\
+    0      & 1 & 0 & 0 & 0 \\ \\
     0      & 0 & 1 & 0 & 0 \\ \\
     0      & 0 & 0 & 1 & 0 \\ \\
     0      & 0 & 0 & 0 & 1
@@ -615,7 +616,7 @@ set $\vU$ is done by
 		d \rho E  \\ \\
 	\end{pmatrix}
   \label{q-map1}
-\end{equation}
+\end{align}
 %------------------------------------------------------------------------------%
 Likewise, the mapping of the decoupled variables $\Uhat$ to the
 fully coupled variables $\vU$ is done by
@@ -637,6 +638,7 @@ fully coupled variables $\vU$ is done by
     0      &    0    & 0      \\ \\
     0      &    0    & 0      \\ \\
     0      &    0    & 0      \\ \\
+    0      &    0    & 0      \\ \\
   \end{pmatrix}
   \begin{pmatrix}
  		d \rho_1    \\ \\
@@ -646,8 +648,16 @@ fully coupled variables $\vU$ is done by
   \label{q-map2}
 \end{equation}
 %------------------------------------------------------------------------------%
-In practice, however, the primal solver does not solve for $\Uhat$, but rather
-for the mass fractions $c_s$ which we define as
+Because the total density $\rho$ is solved for in $\Up$, the sum of $\Uhat$
+cannot change.  In practice, this means that the primal solver does not solve
+for $\Uhat$, but rather for the mass fractions $c_s$ which we define as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  c_s = \frac{\rho_s}{\sum_{s=1}^{N_s}{\rho_s}} = \frac{\rho_s}{\rho}
+  \label{mass-frac-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+thus, in lieu of $\Uhat$, a new vector $\Vhat$ is solved for
 %------------------------------------------------------------------------------%
 \begin{equation}
   \Vhat = 

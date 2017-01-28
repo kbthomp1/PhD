@@ -229,6 +229,7 @@ of the cost function with respect to the plenum design variables are obtained by
 evaluating relatively inexpensive matrix-vector products.
 
 \section{Inverse Design Optimization}
+\label{inv-design-opt}
 
 The optimization procedure is done using the \textit{opt\_driver} utility in
 FUN3D, which is a wrapper utility that executes the FUN3D flow solver, adjoint
@@ -307,3 +308,92 @@ procedure.  \fref{fig:fm-hist-1st-H2} shows the history of the surface
 temperature RMS and annular nozzle mass flow rate, with the design targets.  The
 optimization clearly made significant progress early, with smaller gains as the
 solution approached the target.
+
+\section{Direct Design Optimization}
+
+Using the same cost function components and design variables as in
+\sref{inv-design-opt}, a direct design problem was completed to minimize both
+mass flow rate and surface temperature RMS.  The cost function was formulated as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( \massflow \right)^2 + w_2\left( T_{RMS} \right)^2
+  \label{direct-design-cost-func}
+\end{equation}
+%------------------------------------------------------------------------------%
+With the weights chosen in the same manner as the inverse design problem to
+insure that the components are normalized to the same order of magnitude
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{w_1}{w_2} = \frac{\left( \massflow \right)^2}{\left( T_{RMS} \right)^2}
+  \label{direct-design-weights}
+\end{equation}
+%------------------------------------------------------------------------------%
+The SNOPT optimizer was able to very quickly determine that blowing pure
+$H_2$, i.e. $\fa = 1.0$, would yield the lowest surface temperature RMS and mass
+flow rate.  \fref{fig:dd-cost-func-value} shows that most of the improvement in
+the design was made within the first two function evaluations, and the
+subsequent steps were significantly less.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/cost-func.png}
+    \caption{Composite Cost Function Value}
+    \label{fig:dd-cost-func-value}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/components.png}
+    \caption{Cost Function Components}
+    \label{fig:dd-components}
+  \end{subfigure}
+  \caption{Direct Design Cost Function}
+  \label{fig:dd-cost-func}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:dd-components} verifies that weights determined by
+\eref{direct-design-weights} were indeed sufficient to normalize $\massflow$ and
+$T_{RMS}$ contributions to the composite cost function.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/dv-hist.png}
+    \caption{Design Variable History}
+    \label{fig:dd-dv-hist}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/mass-tt.png}
+    \caption{$\massflow$ and $T_{RMS}$ Design History}
+    \label{fig:dd-mass-tt}
+  \end{subfigure}
+  \caption{Direct Design History}
+  \label{fig:dd-history}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:dd-dv-hist} shows that the optimization was largely dependent on the
+plenum pressure, and \fref{fig:dd-mass-tt} shows that larger pressure at the
+plenum resulted in a lower surface temperature, at the expense of a higher mass
+flow rate.  This is an excellent problem for a high-fidelity gradient-based
+optimization, as the non-linear effects of plenum-shock interation makes the
+optimum plenum condition difficult to determine intuitively.
+
+There is a much stronger dependence on the choice of cost function weights for
+this problem than for the inverse design problem in \sref{inv-design-opt}.  For
+the inverse design problem, the target mass flow rate and surface temperature
+RMS were known a priori; therefore, the weighting was chosen as a purely
+normalizing measure to accelerate convergence to the target condition.  For this
+direct design problem the target mass flow rate and surface temperature RMS are
+not know a priori, and the weights chosen have a direct impact on the optimum
+condition.  A ``skewed'' weighting may be advisable from an engineering
+perspective when attempting a direct design approach.  For example, if the
+surface thermal protection (TPS) is rated to withstand much higher surface
+heating than what is nominally predicted, a higher weight might be given to the
+mass flow rate in order to decreased the required vehicle mass.  The heuristic
+nature of this approach can be avoided by setting a component target, or
+converting a composite cost function component to an explicit constraint.  The
+latter option is more robust, but comes at the cost of an additional adjoint
+solution.
