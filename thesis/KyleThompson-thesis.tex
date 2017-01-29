@@ -125,6 +125,7 @@ Discrete Adjoint Formulation}
 \newcommand{\sref}[1]{section~\ref{#1}}
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
+\newcommand{\pdr}[3]{\left. \frac{\partial #1}{\partial #2}\right|_{#3}}
 
 % Nondimensionalization macro
 %\newcommand{\nondim}[1]{{#1}^{'}/{#1}_{ref}}
@@ -134,7 +135,12 @@ Discrete Adjoint Formulation}
 
 % residual and its derivatives
 \newcommand{\res}[1]{\vR_{#1}}
+\newcommand{\resrho}{\sum_{i=1}^{N_s}\left(\vR_{\rho_i}\right)}
 \newcommand{\rdiff}[2]{\pd{\vR_{#1}}{#2}}
+\newcommand{\rpdiff}[2]{\pd{\vR^{'}_{#1}}{#2}}
+\newcommand{\rlprod}[2]{\pd{\vR_{#1}}{#2} \adjlam{#1}}
+\newcommand{\rlpprod}[2]{\pd{\vR^{'}_{#1}}{#2} \adjlam{#1}}
+\newcommand{\tdiff}[2]{\pd{\vR_{#2}}{#1}}
 \newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
 
 % Sum with limits on top and bottom of sigma
@@ -149,6 +155,10 @@ Discrete Adjoint Formulation}
 
 % adjoint lambda with subscript
 \newcommand{\adjlam}[1]{\Lambda_{#1}}
+
+% Equation sets
+\newcommand{\ru}[1]{\res{{\mU}_{#1}}}
+\newcommand{\rv}[1]{\res{{\mv}_{#1}}}
 
 % specific heats
 \newcommand{\cvs}{C_{v,s}}
@@ -173,6 +183,7 @@ Discrete Adjoint Formulation}
 \newcommand{\rnn}{\real^{N \times N}}
 \newcommand{\rmn}{\real^{M \times N}}
 \newcommand{\diag}{\mbox{diag}}
+\newcommand{\norm}{\mathbf{n}}
 \newcommand{\vf}{\mathbf f}
 \newcommand{\vF}{\mathbf F}
 \newcommand{\vx}{\mathbf x}
