@@ -1,158 +1,344 @@
-\chapter{Verification of Adjoint Sensitivity Gradients}
+\chapter{Design Optimization}
 \label{chapter-six}
 
-In this section the sensitivity gradients computed by the adjoint-formulation
-are verified against finite-difference derivatives with a complex step.  This
-details the methods by which the gradient information is computed in the
-forward-mode and in the reverse-mode.
+Design optimization is a wide field that encompasses methods generally falling
+into two categories: local gradient-based optimization, and heuristic global
+optimization.  Local gradient-based optimization techniques focus on the
+determining an optimality condition by evaluating a function and its gradients.
+Provided certain conditions are met, it can be proven that the optimization
+procedure will find a local minimum or maximum on a bounded domain.  Examples of
+local gradient-based optimization methods include
+steepest-descent\cite{fletcher1963rapidly}, sequential quadratic programming
+(SQP)\cite{SNOPT-alg}, as well as an interesting method that converts a
+constrained optimization problem into an unconstrained on by employing the
+Kreisselmeier-Steinhauser function\cite{wrenn1989indirect}.  A heuristic global
+optimization seeks to find the global extrema of a function.  Although these
+methods are powerful, because of their heuristic nature they are not guaranteed
+to find the absolute optimum condition and are not the focus this research.
 
-\section{Forward-mode Sensitivities Using Complex-Variables}
+In the field of optimization, the function of interest is referred to as the
+``cost function'' or ``objective function''.  Optimization methods seek to
+minimize this function; therefore, if the intent is to find the maximum value
+of the function, it should be formulated as the negative of the original.  This
+section focuses on geometry and test conditions for the optimization, the
+implementation of the cost function components and design variables used in the
+optimization, as well as the interface to the optimizer that is used.
 
-The sensitivities can be computed in the forward-mode by using
-finite-difference.  While this approach is unfavorable to use in practice,
-because a minimum number of flow solves equivalent to the number of design
-variables are required, it is a straight-forward way to verify that
-sensitivities computed by the adjoint solver are correct.  To avoid cancellation
-errors associated with real-variable finite difference, an approach that uses
-complex variables was originally suggested by Squire and Trapp\cite{squire1998}
-and evaluated by Newman et al\cite{newman1998}.  This complex-variable approach
-can be used to determine the derivative of a real valued function, $f$, by
-considering the Taylor series expansion of $f$ using a complex step $ih$
+\section{Integrated Quantities of Interest}
+
+The primary objective of this optimization is to explore the effects of the plume
+from the annular jet interacting with the bow shock.  Rather than focus on the
+net force contribution of this annular jet geometry to drag, as was previously
+investigated by Gnoffo et. al \cite{gnoffo2016tapping}, the primary objective of
+this study is to efficiently cool the surface of the vehicle with minimal mass
+added to the vehicle.  Since only inviscid flow was done in this study, and the
+root-mean-square (RMS) of surface temperature is taken as an analog to the
+surface heating rate.  Likewise, the massflow rate through nozzle plenum
+boundary is taken as an analog to the addition of mass to the vehicle.
+
+The RMS of surface temperature is defined as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  f(x + ih) = \sum_{k=0}\left( \frac{(ih)^k}{!k}\pnd{f}{x}{k} \right)
-            = f(x) + ih\pd{f}{x} - \frac{h^2}{2}\pnd{f}{x}{2}
-            - \frac{h^3}{6}\pnd{f}{x}{3} + \cdots
-  \label{taylor-exp}
+  T_{RMS} =
+  \sqrt{
+    \frac{\sum_{i}^{N_{faces}}\left( T_{RMS} A_i \right)^2}
+       {\sum_{i}^{N_{faces}}\left( A_i \right)^2}
+     }
+  \label{tt-rms-def}
 \end{equation}
 %------------------------------------------------------------------------------%
-taking the imaginary parts of both sides of \eref{taylor-exp} and solving for
-the first derivative yields
+The area-weighted RMS of surface temperature was chosen over a simple
+area-weighted average of surface temperature, because the temperatures on the
+vehicle forebody are likely non-uniform, and there are regions of very high
+temperature near the stagnation region of a vehicle forebody in hypersonic
+flows.  Squaring of temperature in the RMS will give greater weight to the
+these high-temperature regions in the design, as these are the in the most
+danger of burn-through.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/surface2.png}
+    \caption{$T_{RMS}$ Integrated Area}
+    \label{fig:t-rms-area}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/plenum_bc.png}
+    \caption{Mass Flow Rate Integrated Area}
+    \label{fig:plenum-face}
+  \end{subfigure}
+\end{figure}
+%------------------------------------------------------------------------------%
+
+The mass flow rate, $\massflow$,
+through the area outlined in \fref{fig:plenum-face} is computed as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \massflow = \sum_{i}^{N_{faces}}\left( \rho_i \overline{U} A \right)
+  \label{mass-flow-eqn}
+\end{equation}
+%------------------------------------------------------------------------------%
+and is used a metric for the amount of propellent that is required to be carried
+by the vehicle for blowing.  Again, for the purposes of this demonstration
+problem, a lower mass flow rate at the plenum is equated to less total vehicle
+mass.
+
+\section{Composite Cost Function Definition and Components}
+\label{cost-func-components}
+
+The cost function (or objective function) as formulated in FUN3D is a composite,
+weighted function
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = \sum_{j=1}^{N_{func}}w_j\left( C_j - C_{j^*} \right)^{p_j}
+  \label{generic-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+Where $w_j$, $C_{j^*}$, and $p_j$ are the weight, target, and power of cost
+function component $j$.  $C_j$ is the component value, which is evaluated at
+each flow solution.  For example, an optimization problem that seeks to minimize the
+surface temperature RMS without decreasing the drag, the cost function is
+defined as 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( T_{RMS} \right)^{2} + w_2\left( C_{D} - C_{D}^{*} \right)^2
+  \label{cd-tt-cost-function}
+\end{equation}
+%------------------------------------------------------------------------------%
+For this case the component weights must be determined heuristically, to normalize
+the changes in drag coefficient, $C_D$, and surface temperature Root-Mean-Square
+(RMS) $T_{RMS}$.  The terms in \eref{cd-tt-cost-function} are squared to provide
+a convex design space.
+
+\section{Design Variables}
+
+The design variables for the optimization problem are the plenum total pressure,
+$P_{p,o}$, plenum total temperature, $T_{p,o}$, and plenum ``fuel-air ratio'',
+$\fa$.  These are provided explicitly in the optimization problem, and are used
+to directly set the flow conditions on plenum face boundary condition in the
+nozzle, shown in \fref{fig:plenum-face}.  For a reacting gas mixture, the
+``fuel-air ratio'' specifies the mass fractions for two species leaving the
+plenum.  For example, if an $H_2-N_2$ mixture is ejected from the annular
+nozzle, the mass fractions of $H_2$ and $N_2$ are given by
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
-    \pd{f}{x} &= \frac{Im\left[ f(x + ih) \right]}{h} -
-    \frac{h^2}{6}\pnd{f}{x}{3} \\
-              &= \frac{Im\left[ f(x + ih) \right]}{h} - O(h^2)
+    c_{H_2} &= \fa \\
+    c_{N_2} &= 1 - \fa
   \end{aligned}
-  \label{complex-fd}
+  \label{fuel-air-def}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus, this complex-variable approach provides a means of computing the cost
-function derivatives without subtractive cancellation error, giving truly second
-order accuracy.  The power of using this approach is that the derivative of any
-function with respect to a single can be computed without any additional work,
-other than the function be made to use complex arithmetic and a complex-valued
-perturbation be applied.
+Thus, the ratio $\fa$ dictates the mass fractions for two species injected into
+the domain via the plenum boundary.
 
-In practice, this complex-variable approach is implemented by transforming the
-source code such that all real variables used in a function evaluation are made
-to be complex variables.  A specified step size is then added to the complex
-part of the design variable that the cost function is to be linearized with
-respect to in the function evaluation.  Provided the ``complexified'' solver
-converges in the same manner as the real-variable solver, the complex part of
-the function of interest is the sensitivity derivative.
+\section{Obtaining Sensitivity Gradients for Design Variables}
 
-As mentioned before, the complex-variable and real-variable solvers must
-converge to the same solution for the comparison between the adjoint-computed
-sensitivity derivatives and those computed by the complex-variable approach to
-be valid.  The use of a flux limiter is mandatory for hypersonic applications,
-where strong shocks are present; however, the solver is very sensitive to
-changes in the reconstruction, and a ``ringing'' of the residual is often
-observed\cite{gnoffo2007ringing} when using a flux limiter in FUN3D. While this
-sub-convergence of the conservation equation residuals is not detrimental to the
-primal flow solver results, as most aerothermodynamic quantities are usually
-sufficiently converged by this point, the adjoint-formulation is predicated on
-the residual being zero, or at least nearly zero.  Because of this last point,
-the stalled convergence can cause the adjoint solver to give incorrect results
-or cause the adjoint solution to diverge.  To prevent this, the adjoint is
-required to be run with a ``frozen'' limiter, that is only where a
-reconstruction is unrealisable is the value of the limiter function changed.
- Doing this usually results in the residuals converging to machine precision.
+The sensitivity gradients for the plenum design variables are easily obtained by
+manipulating \eref{obj-function} to obtain
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{L}{\md} = \pd{f}{\md} + \rtdiff{}{\md} \mathbf{\Lambda}
+  \label{obj-linearization1}
+\end{equation}
+%------------------------------------------------------------------------------%
+For the cost function components listed in \sref{cost-func-components}, there is
+no direct dependence on the plenum design variables; thus,
+\eref{obj-linearization1} can be reduced to
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{L}{\md} = \rtdiff{}{\md} \mathbf{\Lambda}
+  \label{obj-linearization2}
+\end{equation}
+%------------------------------------------------------------------------------%
+Once the adjoint co-state variables $\mathbf{\Lambda}$ have been computed by
+solving the adjoint equations (\eref{adjoint-main}) the sensitivity derivatives
+of the cost function with respect to the plenum design variables are obtained by
+evaluating relatively inexpensive matrix-vector products.
 
-A significant obstacle with using a frozen limiter is that the real-variable and
-complex-variable solvers do not freeze the limiter identically.  Although the
-solvers are nearly identically, their floating-point operations will be
-different since complex arithmetic is involved in only the complex-variable
-solver.  The flux limiter formulation is sensitive to these differences and will
-result in a different converged state, regardless of the limiter being frozen
-at the same iteration between the solvers.  To overcome this, the
-complex-variable solver must not be allowed to change the value of the flux
-limiter.  To implement this, the solution is converged to machine precision with
-the real-variable solver and then the complex-variable solver is started with
-the flow field of the converged real-variable solution.  The complex step is
-then added to the design variable; however, the flux limiter is frozen.  Because
-limiter value is constant, the real solution from the complex-variable and
-real-variable solutions will match identically, and the complex part of the
-solution will be converged without ever needing to update the flux limiter.
-This will ensure that the sensitivity derivatives from the complex and adjoint
-solvers match to high precision for hypersonic cases with a frozen flux limiter.
+\section{Inverse Design Optimization}
+\label{inv-design-opt}
 
-\section{Verification of 2nd-order Adjoint Linearizations}
+The optimization procedure is done using the \textit{opt\_driver} utility in
+FUN3D, which is a wrapper utility that executes the FUN3D flow solver, adjoint
+solver, and optimization algorithm sequentially.  These steps are repeated until
+a termination criterion is reached.  In practice, the termination of the
+optimization occurs when the cost function reaches a tolerance of less that
+$10^{-8}$, or when continuing towards the optimal condition would exceed the
+prescribed upper or lower bounds of the design variables.
 
-To verify the hand-coded linearizations implemented in the adjoint solver, the
-derivatives of the drag, surface temperature, and mass flow rate cost functions
-components for the annular nozzle geometry were computed using both the adjoint
-method and the complex-variable approach.  To facilitate checking the
-linearizations of all of these components efficiently, a composite cost function
-was formed with a three components
 %------------------------------------------------------------------------------%
-\begin{equation} f = w_1\left( \massflow - \massflow^{*}\right)^{2} + w_2\left(
-  T_{RMS} - T_{RMS}^*\right)^2 + w_3\left( C_{D} - C_{D}^*\right)^2
-  \label{check-cost-func} \end{equation}
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/1st-H2/cost_func.png}
+    \caption{Composite Value}
+    \label{fig:cost-func-1st-H2}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/1st-H2/func_components.png}
+    \caption{Component Values}
+    \label{fig:components-1st-H2}
+  \end{subfigure}
+  \caption{Cost Function and Component History}
+\end{figure}
 %------------------------------------------------------------------------------%
-By combining all components into a single composite function, only one
-real-valued flow and adjoint solution is needed to obtain the sensitivity
-derivatives for all design variables, computed by \eref{obj-linearization2}. One
-complex-valued flow solution is needed for each design variable.
-\tref{tab:pg-deriv-check} shows the comparison between the sensitivity
-derivatives computed by \eref{obj-linearization1} and \eref{complex-fd}, for a
-perfect gas annular jet simulation.
+To demonstrate the inverse design capability of an adjoint-based design
+optimization, targets of 2000 K for the surface temperature RMS and 0.0024
+$kg/s$ for the annular nozzle mass flow rate were specified.  These targets were
+chosen semi-arbitarily, and were heuristically determined to be feasible based
+the the design variable bounds. The design variables specified for this
+optimization were the plenum total pressure, $P_{p,o}$ and the plenum ``fuel-air
+ratio'', $\fa$.  A species mixture consisting of $H_2$ and $N_2$ was blown from
+the plenum, with the mass fractions dictated by $\fa$ as described in
+\eref{fuel-air-def}.  For the cost function, the weights were chosen
+heuristically, such that 
 %------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & 0.12067860106210E-04 &
-    0.12067860106758E-04 & 5.48E-16 \\ $T_{p,o}$ & 0.36654635117980E-03 &
-    0.36654635118188E-03 & 2.08E-15 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - Perfect Gas} \label{tab:pg-deriv-check} \end{table}
+\begin{equation}
+  \frac{w_1}{w_2} = \frac{\cost{T_{RMS}}^2}{\cost{\dot{m}}^2}
+  \label{weight-ratio}
+\end{equation}
 %------------------------------------------------------------------------------%
-The adjoint and complex solvers match within machine zero, which is $\sim
-10^{-15}$ for this case.  \tref{tab:frozen-deriv-check} shows the same
-comparison as that in \tref{tab:pg-deriv-check}, but with a $H_2$-$N_2$ mixture
-ejected in a 5-species freestream air mixture with frozen flow
+This results in a roughly equivalent weighting beween the $T_{RMS}$ and
+$\dot{m}$, which is desired as both targets should be met at optimality.
 %------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & -0.18451007644622E-06 &
-    -0.184510076442032E-06 & 4.19E-18 \\ $T_{p,o}$ &  0.62086963151678E-03 &
-    0.620869631517086E-03 & 3.06E-16 \\ $\fa$     & -0.34045335117520E-01 &
-    -0.340453351177196E-01 & 1.20E-13 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - $H_2$-$N_2$ Frozen} \label{tab:frozen-deriv-check}
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/1st-H2/dv_hist.png}
+    \caption{Design Variable History}
+    \label{fig:dv-hist-1st-H2}
+  \end{subfigure}
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/1st-H2/fm_hist.png}
+    \caption{Design Variable History}
+    \label{fig:fm-hist-1st-H2}
+  \end{subfigure}
+  \caption{Inverse Design History}
+\end{figure}
+%------------------------------------------------------------------------------%
+Using the SNOPT optimizer, \fref{fig:cost-func-1st-H2} shows that the target
+design was met within 13 function evaluations.  SNOPT explores the entire design
+space, as is show in the second function evaluation, where a spike in the cost
+function occurred.
+\fref{fig:dv-hist-1st-H2} indicates that the optimizer tried the upper
+bound for the plenum pressure design variable, and found that sensitivity
+derivatives indicated that the lower pressure was required. This is common, and
+is an effective way to insure that there is a local minimum in the prescribed
+bound.  The optimization terminated when the cost function value was less than
+the tolerance of $10^{-8}$, and \fref{fig:components-1st-H2} shows that both
+components of the cost function were within one order of magnitude of each other
+during the optimization.  This last point is important, since non-normalized
+components can skew the optimization results, where competing components can
+cause oscillations in the function evaluations and stall the optimization
+procedure.  \fref{fig:fm-hist-1st-H2} shows the history of the surface
+temperature RMS and annular nozzle mass flow rate, with the design targets.  The
+optimization clearly made significant progress early, with smaller gains as the
+solution approached the target.
+
+\section{Direct Design Optimization}
+
+Using the same cost function components and design variables as in
+\sref{inv-design-opt}, a direct design problem was completed to minimize both
+mass flow rate and surface temperature RMS.  The cost function was formulated as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f = w_1\left( \massflow \right)^2 + w_2\left( T_{RMS} \right)^2
+  \label{direct-design-cost-func}
+\end{equation}
+%------------------------------------------------------------------------------%
+With the weights chosen in the same manner as the inverse design problem to
+insure that the components are normalized to the same order of magnitude
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \frac{w_1}{w_2} = \frac{\left( \massflow \right)^2}{\left( T_{RMS} \right)^2}
+  \label{direct-design-weights}
+\end{equation}
+%------------------------------------------------------------------------------%
+The SNOPT optimizer was able to very quickly determine that blowing pure
+$H_2$, i.e. $\fa = 1.0$, would yield the lowest surface temperature RMS and mass
+flow rate.  \fref{fig:dd-cost-func-value} shows that most of the improvement in
+the design was made within the first two function evaluations, and the
+subsequent steps were significantly less.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/cost-func.png}
+    \caption{Composite Cost Function Value}
+    \label{fig:dd-cost-func-value}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/components.png}
+    \caption{Cost Function Components}
+    \label{fig:dd-components}
+  \end{subfigure}
+  \caption{Direct Design Cost Function}
+  \label{fig:dd-cost-func}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:dd-components} verifies that weights determined by
+\eref{direct-design-weights} were indeed sufficient to normalize $\massflow$ and
+$T_{RMS}$ contributions to the composite cost function.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/dv-hist.png}
+    \caption{Design Variable History}
+    \label{fig:dd-dv-hist}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+    \centering
+    \includegraphics[width=\textwidth]{figures/direct_design/mass-tt.png}
+    \caption{$\massflow$ and $T_{RMS}$ Design History}
+    \label{fig:dd-mass-tt}
+  \end{subfigure}
+  \caption{Direct Design History}
+  \label{fig:dd-history}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:dd-dv-hist} shows that the optimization was largely dependent on the
+plenum pressure, and \tref{tab:design-improvement} shows that larger pressure at
+the plenum resulted in a 13.79\% lower surface temperature, at the expense of a
+4.6\% higher mass flow rate.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Component & Initial & Final & Improvement\\
+    \hline
+    $\dot{m}$, $kg/s$ & 1.268e-3 & 1.327e-3 & -4.6\% \\
+    $T_{RMS}$, $K$    & 2473     & 2132     & 13.79\%
+  \end{tabular}
+  \caption{Direct Design Optimization Improvement}
+  \label{tab:design-improvement}
 \end{table}
 %------------------------------------------------------------------------------%
-There is very strong agreement between all the design variable senstivities
-computed by the adjoint and complex solvers, with all matching discretely to
-within 11 digits.  \tref{tab:react-deriv-check} shows the same comparison as
-that in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
-%------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & -0.11081344492683E-06 &
-    -0.110529774659536E-06 & 2.84E-10 \\ $T_{p,o}$ & 0.190899489720282E-03 &
-    0.190892847933810E-03 & 6.64E-09 \\ $\fa$     & -0.28035433535237E-01 &
-    -0.280251731728184E-01 & 1.03E-05 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - $H_2$-$N_2$ Reacting} \label{tab:react-deriv-check}
-\end{table}
-%------------------------------------------------------------------------------%
-It is clear that these do not match as well as those in
-\trefs{tab:pg-deriv-check}{tab:frozen-deriv-check}.  The difference is explained
-by the temperature dependence of the chemical source term, and the conditioning
-of the temperature jacobian matrices.  The dissociation reactions near the
-stagnation region and the combustion reactions that occur when $H_2$
-auto-ignites in the shock layer are sensitive to the temperature, and account
-for a significant numerical stiffness seen in the convergence of the
-conservation equation residuals.  This manifests in the residuals stalling at a
-much higher value than the previous cases that were run without a chemical
-source term.  Due to the non-dimensionalization in the generic gas path of
-FUN3D, the condition number of temperature jacobian scales quadratically with
-the freestream velocity.  This is discussed thoroughly in Appendix
-\ref{temperature-jacobian-conditioning}. Since this is a hypersonic problem,
-it can be expected that the conditioning of the temperature jacobian has
-impacted the adjoint and complex solve sensitivities.
+This is an excellent problem for a high-fidelity gradient-based
+optimization, as the non-linear effects of plenum-shock interation makes the
+optimum plenum condition difficult to determine intuitively.
+
+There is a much stronger dependence on the choice of cost function weights for
+this problem than for the inverse design problem in \sref{inv-design-opt}.  For
+the inverse design problem, the target mass flow rate and surface temperature
+RMS were known a priori; therefore, the weighting was chosen as a purely
+normalizing measure to accelerate convergence to the target condition.  For this
+direct design problem the target mass flow rate and surface temperature RMS are
+not know a priori, and the weights chosen have a direct impact on the optimum
+condition.  A ``skewed'' weighting may be advisable from an engineering
+perspective when attempting a direct design approach.  For example, if the
+surface thermal protection (TPS) is rated to withstand much higher surface
+heating than what is nominally predicted, a higher weight might be given to the
+mass flow rate in order to decreased the required vehicle mass.  The heuristic
+nature of this approach can be avoided by setting a component target, or
+converting a composite cost function component to an explicit constraint.  The
+latter option is more robust, but comes at the cost of an additional adjoint
+solution.
