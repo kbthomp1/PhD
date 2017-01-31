@@ -110,12 +110,14 @@ With this splitting, the mixture equations for single point in the global system
 of the decoupled flow solve can be written as
 %------------------------------------------------------------------------------%
 \begin{equation}
+  \left[ 
   \frac{V}{\Delta t}\mi + 
   \begin{pmatrix}
     \rdiff{\rho}{\rho} & \rdiff{\rho}{\rho \vu} & \rdiff{\rho}{\rho E} \\ \\
     \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho \vu}{\rho E} \\ \\
     \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho E}{\rho E}
   \end{pmatrix}
+  \right]
   \begin{pmatrix}
     \Delta \rho \\ \\
     \Delta \rho \vu \\ \\
@@ -132,13 +134,15 @@ of the decoupled flow solve can be written as
 %------------------------------------------------------------------------------%
 Likewise, the species mass equations for a single point can be written as
 %------------------------------------------------------------------------------%
-\begin{equation}
-  \frac{V}{\Delta t}\mi + 
-  \begin{pmatrix}
-    \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\ \\
-    \vdots & \ddots & \vdots \\ \\
-    \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
-  \end{pmatrix}
+\begin{gather}
+  \left[
+    \frac{\rho V}{\Delta t}\mi + 
+    \begin{pmatrix}
+      \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\ \\
+      \vdots & \ddots & \vdots \\ \\
+      \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
+    \end{pmatrix}
+  \right]
   \begin{pmatrix}
     \Delta c_1 \\ \\
     \vdots \\ \\
@@ -146,194 +150,319 @@ Likewise, the species mass equations for a single point can be written as
   \end{pmatrix}
   =
   \begin{pmatrix}
-    \res{\rho_1} \\ \\
+    \resp{\rho_1} \\ \\
     \vdots \\ \\
-    \res{\rho_{ns}}
+    \resp{\rho_{ns}}
   \end{pmatrix}
-  \label{approx-jac-dc}
-\end{equation}
+  \label{approx-jac-dc} \\[12pt]
+  \resp{\rho_s} = \res{\rho_s} - c_s \res{\rho}
+  \label{resp-def} \\[12pt]
+  \res{\rho} = \resrho
+  \label{resrho-def}
+\end{gather}
 %------------------------------------------------------------------------------%
 Examining \erefs{approx-jac}{approx-jac-dc} shows that there are clearly some
 physical dependencies being omitted, namely $\rdiff{\rho_i}{\rho}$,
 $\rdiff{\rho}{c_j}$, $\rdiff{\rho \vu}{c_j}$, and $\rdiff{\rho E}{c_j}$.  It has
-been found\cite{candler} that omitting these dependencies does not hinder convergence
-the primal flow solver; however, because the adjoint requires an exact
-linearization of the converged steady-state solution, these must be accounted
-for in the decoupled adjoint formulation.
+been found\cite{candler} that omitting these dependencies does not hinder
+convergence the primal flow solver; however, because the adjoint requires an
+exact linearization of the converged steady-state solution, these must be
+accounted for in the decoupled adjoint formulation.
 
 The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
 $\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
-adjoint formulation given in \eref{adjoint-main}. The most intuitive and
-straightforward way to do this is to forgo solving for the species mass $\rho_i$
-in lieu of the species mass fraction $c_i$.  Thus, $\mq$ can be expressed as
+adjoint formulation given in \eref{adjoint-main}. This begins by recognizing
+that the decoupled scheme can actually also be solved as a fully-coupled system
+of equations that involves the change of variables
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \mq =
-  \begin{pmatrix}
-  	\rho \\
-  	\rho u \\
-  	\rho v \\
-  	\rho w \\
-  	\rho E \\
+  \mU = \begin{pmatrix}
+    \rho_1 \\
+    \vdots \\
+    \rho_{ns} \\
+    \rho \vu \\
+    \rho E
+  \end{pmatrix}
+  \rightarrow
+  \mv = \begin{pmatrix}
     c_1 \\
     \vdots \\
-    c_{ns}
+    c_{ns} \\
+    \rho \\
+    \rho \vu \\
+    \rho E
   \end{pmatrix}
-  \label{q-vec}
+  \label{u-v-vars}
 \end{equation}
 %------------------------------------------------------------------------------%
-This allows the linearizations in \erefs{approx-jac}{approx-jac-dc} to be used
-in the adjoint formulation, by augmenting them with the previously omitted
-linearizations.  Replacing $\rdiff{}{\mq}$ with the fully-coupled system, the
-adjoint system becomes
+as well as the change of equations
 %------------------------------------------------------------------------------%
 \begin{equation}
+  \ru{} =
   \begin{pmatrix}
-    \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & 
-    \rtdiff{\rho E}{\rho} & \rtdiff{\rho_i}{\rho} \\ \\
-    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & 
-    \rtdiff{\rho E}{\rho \vu} & \rtdiff{\rho_i}{\rho \vu} \\ \\
-    \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & 
-    \rtdiff{\rho E}{\rho E} & \rtdiff{\rho_i}{\rho E} \\ \\
-    \rtdiff{\rho}{c_j} & \rtdiff{\rho \vu}{c_j} & 
-    \rtdiff{\rho E}{c_j} & \rtdiff{\rho_i}{c_j}
+    \res{\rho_1} \\
+    \vdots \\
+    \res{\rho_{N_s}} \\
+    \res{\rho \vu} \\
+    \res{\rho E}
   \end{pmatrix}
+  \rightarrow
+  \rv{} =
   \begin{pmatrix}
-    \adjlam{\rho} \\ \\
-    \adjlam{\rho \vu} \\ \\
-    \adjlam{\rho E} \\ \\
-    \adjlam{c_i}
+    \res{\rho_1} - c_1 \resrho \\
+    \vdots \\
+    \res{\rho_{N_s}} - c_{N_s} \resrho \\
+    \resrho \\
+    \res{\rho \vu} \\
+    \res{\rho E}
   \end{pmatrix}
+  \label{fc-to-dc-res}
+\end{equation}
+%------------------------------------------------------------------------------%
+details and the derivation of the transformation matricies need to convert
+between these two systems are included in \sref{change-of-var-section}.  From
+this perspective, the decoupled scheme linear system for the flow solver can be
+viewed, with no approximations, as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left[ 
+    \frac{V}{\Delta t} \mi + 
+    \begin{pmatrix}
+      \rpdiff{\rho_1}{c_1}      & \dots  & \rpdiff{\rho_1}{c_{N_s}}     & \rpdiff{\rho_1}{\rho}     & \rpdiff{\rho_1}{\rho \vu}     &  \rpdiff{\rho_1}{\rho E}  \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                    & \vdots                        & \vdots                    \\ \\
+      \rpdiff{\rho_{N_s}}{c_1}  & \dots  & \rpdiff{\rho_{N_s}}{c_{N_s}} & \rpdiff{\rho_{N_s}}{\rho} & \rpdiff{\rho_{N_s}}{\rho \vu} &  \rpdiff{\rho_{N_s}}{\rho E}    \\ \\
+      \rdiff{\rho}{c_1}         & \dots  & \rdiff{\rho}{c_{N_s}}        & \rdiff{\rho}{\rho}        & \rdiff{\rho}{\rho \vu}        &  \rdiff{\rho}{\rho E}     \\ \\
+      \rdiff{\rho \vu}{c_1}     & \dots  & \rdiff{\rho \vu}{c_{N_s}}    & \rdiff{\rho \vu}{\rho}    & \rdiff{\rho \vu}{\rho \vu}    &  \rdiff{\rho \vu}{\rho E} \\ \\
+      \rdiff{\rho E}{c_1}       & \dots  & \rdiff{\rho E}{c_{N_s}}      & \rdiff{\rho E}{\rho}      & \rdiff{\rho E}{\rho \vu}      &  \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \right]
+  \begin{pmatrix}
+    \Delta c_1      \\ \\
+    \vdots     \\ \\
+    \Delta c_{N_s}  \\ \\
+    \Delta \rho     \\ \\
+    \Delta \rho \vu \\ \\
+    \Delta \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1}^{'}     \\ \\
+    \vdots               \\ \\
+    \res{\rho_{N_s}}^{'} \\ \\
+    \res{\rho}           \\ \\
+    \res{\rho \vu}       \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{dc-full-system}
+\end{equation}
+%------------------------------------------------------------------------------%
+The iterative mechanism used in the solver makes the following approximations to
+the jacobians
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \resp{\rho_s} &= \res{\rho_s} \\[12pt]
+    \rdiff{\rho}{c_s} &= \rdiff{\rho \vu}{c_s} = \rdiff{\rho E}{c_s} &= 0 \\[6pt]
+    \rpdiff{\rho_s}{\rho} &= \rpdiff{\rho_s}{\rho \vu} = \rpdiff{\rho_s}{\rho E} &= 0
+  \end{aligned}
+  \label{dc-approximations}
+\end{equation}
+%------------------------------------------------------------------------------%
+which results in a significantly more sparse matrix
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left[ 
+    \frac{V}{\Delta t} \mi + 
+    \left(
+    \begin{array}{c c c | c c c }
+      \rdiff{\rho_1}{c_1}      & \dots  & \rdiff{\rho_1}{c_{N_s}} & & & \\[12pt]
+      \vdots                    & \ddots & \vdots                       & & 0 & \\[12pt]
+      \rdiff{\rho_{N_s}}{c_1}  & \dots  & \rdiff{\rho_{N_s}}{c_{N_s}} & & & \\[12pt]
+      \hline
+      & & & & & \\
+      & & & \rdiff{\rho}{\rho}        & \rdiff{\rho}{\rho \vu}        &  \rdiff{\rho}{\rho E}     \\[12pt]
+      & 0 & & \rdiff{\rho \vu}{\rho}    & \rdiff{\rho \vu}{\rho \vu}    &  \rdiff{\rho \vu}{\rho E} \\[12pt]
+      & & & \rdiff{\rho E}{\rho}      & \rdiff{\rho E}{\rho \vu}      &  \rdiff{\rho E}{\rho E}
+    \end{array}
+    \right)
+  \right]
+  \begin{pmatrix}
+    \Delta c_1      \\ \\
+    \vdots     \\ \\
+    \Delta c_{N_s}  \\ \\
+    \Delta \rho     \\ \\
+    \Delta \rho \vu \\ \\
+    \Delta \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1}^{'}     \\ \\
+    \vdots               \\ \\
+    \res{\rho_{N_s}}^{'} \\ \\
+    \res{\rho}           \\ \\
+    \res{\rho \vu}       \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{dc-sparse-system}
+\end{equation}
+%------------------------------------------------------------------------------%
+that results in the approximate factorization used by the flow solver.  This is
+a more complete picture of the decoupled scheme, but it indicates that
+\eref{dc-full-system} must be used to formulate the adjoint system of equations,
+since \eref{dc-sparse-system} omits a signifcant part of the jacobian.
+
+The simplest approach to solving \eref{adjoint-main} with system of equations
+$\rv{}$ and dependent variables $\mv$ is to solve
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\rv{}}{\mv}^{\mathsmaller T}\adjlam{\mv} = -\pd{f}{\mv}
+  \label{v-adj}
+\end{equation}
+%------------------------------------------------------------------------------%
+directly, via a linear solver such as GMRES \cite{saad1986gmres}.  Nielsen
+\cite{nielsenPhD} found that time-marching the FUN3D discrete adjoint linear
+system with the same point-implicit scheme as the FUN3D flow solver was more
+robust, and solved systems where GMRES tended to stall.  The time marching
+algorithm also has the benefit of reusing the approximate jacobians from the
+flow solver, transforming \eref{v-adj} into
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left(
+    \frac{V}{\Delta t} \mi + \drvdv
+  \right)^{\mathsmaller T}
+  \Delta \adjlam{\mv}
+  =
+  -\left(\pd{\rv{}}{\mv}^{\mathsmaller T}\adjlam{\mv} + \pd{f}{\mv} \right)
+  \label{v-adj-time}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\drvdv$ can include all of the jacobian approximations used by the flow
+solver jacobians, including those in \eref{dc-approximations}.
+\eref{v-adj-time} can be solved using the same iterative mechanism
+as the flow solver; however, the exact linearizations of $\pd{\rv{}}{\mv}$
+are different, and more complex, than the linearizations required by the
+traditional fully-coupled system, $\pd{\ru{}}{\mU}$.  This makes the decoupled
+scheme somewhat less attractive, since the re-implementing the exact
+linearizations for the change of variable and change of equations in the
+decoupled scheme requires a significant amount of coding and verification.  An
+alternative to \eref{v-adj-time} is to recast the decoupled scheme again as a
+series of matrix transformations on the fully-coupled system of equations.  For
+the flow solver this involves
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right) d \mU &= \ru{} \\[12pt]
+    \pd{\rv{}}{\ru{}}
+    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right)
+    \left( \pd{\mU}{\mv} \right) \Delta \mv
+    &= 
+    \pd{\rv{}}{\ru{}} \ru{}
+  \end{aligned}
+  \label{fc-to-dc-flow}
+\end{equation}
+%------------------------------------------------------------------------------%
+From the perspective of \eref{fc-to-dc-flow}, the decoupled scheme is actually
+the result of left and right preconditioning on the fully-coupled scheme that
+can be generically written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left(\mm \ma_{\mU} \right) \left( \mb d\mv \right) &= \mm \ru{} \\
+    \Delta \mU &= \mb \Delta \mv
+  \end{aligned}
+  \label{generic-fc-to-dc}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\mm$ is the left preconditioner, $\pd{\rv{}}{\ru{}}$, $\mb$ is the right
+preconditioner, $\pd{\mU}{\mv}$, and $\ma_{\mU}$ it the jacobian matrix for the
+fully coupled system, $\pd{\ru{}}{\mU}$.  A full derivation of the
+transformation of equations is also included in \sref{change-of-var-section}.
+\eref{generic-fc-to-dc} is crucial towards the understanding of the adjoint
+system of equations, since the transpose operation will reverse the order of
+operations of these matrix products.  Based on \eref{generic-fc-to-dc}, the
+jacobian for the system based on $\rv{}$ and $\mv$, denoted as $\ma_{\mv}$, can
+be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \ma_{\mv} = \mm \ma_{\mU} \mb
+  \label{adj-dc-generic}
+\end{equation}
+%------------------------------------------------------------------------------%
+along with its tranpose
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \ma_{\mv}^{T}
+   = \left( \mm \ma_{\mU} \mb \right)^{T}
+   = \mb^{T} \ma_{\mU}^{T} \mm^{T}
+  \label{adj-dc-generic-transpose}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus, in the adjoint linear system of equations $\mb$ becomes the left
+preconditioner, and $\mm$ becomes the right preconditioner.  Using
+\eref{adj-dc-generic-transpose}, \eref{v-adj} can be re-written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \pd{\mU}{\mv} \right)^{T}
+  \left(\pd{\ru{}}{\mU} \right)^{T} 
+  \left( \pd{\rv{}}{\ru{}} \right)^{T}
+  \adjlam{\mv} 
+  = 
+  - \left( \pd{\mU}{\mv} \right)^{T}
+  \left( \pd{f}{\mv} \right)
+  \label{adj-u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+and applying the same time-marching strategy as \eref{v-adj-time} leads to
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left(
+    \frac{V}{\Delta t} \mi + \drvdv
+  \right) \Delta \adjlam{\mv}
   = -
-  \begin{pmatrix}
-    \pd{f}{\rho} \\ \\
-    \pd{f}{\rho \vu} \\ \\
-    \pd{f}{\rho E} \\ \\
-    \pd{f}{c_j}
-  \end{pmatrix}
-  \label{full-adjoint}
+  \left( \pd{\mU}{\mv} \right)^{T}
+  \left[
+    \left(\pd{\ru{}}{\mU} \right)^{T} 
+    \left( \pd{\rv{}}{\ru{}} \right)^{T}
+    \adjlam{\mv} 
+    + \left( \pd{f}{\mv} \right)
+  \right]
+  \label{adj-u-to-v-time}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus the Jacobian in \eref{full-adjoint} is the completed one of
-\erefs{approx-jac}{approx-jac-dc}.  While this is useful, the advantage of
-decoupling the species equations from the mixture equations was to speed up the
-linear solver and save memory.  Solving \eref{full-adjoint} is roughly
-equivalent to solving the fully-coupled system of equations, which undermines
-both of these goals; so, an alternative solution strategy must be formulated.  If
-a block Jacobi scheme is employed, the system can be decoupled once again as
+Where the adjoint costate variables associated with the fully coupled equations,
+$\ru{}$ can be recovered from the right preconditioning
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \begin{pmatrix}
-    \rtdiff{\rho}{\rho}     & \rtdiff{\rho \vu}{\rho}     & \rtdiff{\rho E}{\rho} \\ \\
-    \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-    \rtdiff{\rho}{\rho E}   & \rtdiff{\rho \vu}{\rho E}   & \rtdiff{\rho E}{\rho E}
-  \end{pmatrix}
-  \begin{pmatrix}
-    \adjlam{\rho} \\ \\
-    \adjlam{\rho \vu} \\ \\
-    \adjlam{\rho E}
-  \end{pmatrix}
-  = -
-  \begin{pmatrix}
-    \pd{f}{\rho} \\ \\
-    \pd{f}{\rho \vu} \\ \\
-    \pd{f}{\rho E}
-  \end{pmatrix}
-  -
-  \begin{pmatrix}
-    \rtdiff{\rho_i}{\rho} \\ \\
-    \rtdiff{\rho_i}{\rho \vu} \\ \\
-    \rtdiff{\rho_i}{\rho E}
-  \end{pmatrix}
-  \adjlam{c_i}
-  \label{dc-adjoint-1}
+  \Delta \adjlam{\mU} = \pd{\ru{}}{\rv{}} \Delta \adjlam{\mv}
+  \label{adj-lam-v-to-u}
 \end{equation}
 %------------------------------------------------------------------------------%
-\begin{equation}
-  \rtdiff{\rho_i}{c_j}
-  \adjlam{c_i}
-  = -\pd{f}{c_j}
-  - \rtdiff{\rho}{c_j} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_j} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_j} \adjlam{\rho E}
-  \label{dc-adjoint-2}
-\end{equation}
-%------------------------------------------------------------------------------%
-Adding a time-like derivative to the adjoint equations, the solution of the
-costate variables, $\Lambda$, can be time marched similar to the primal flow
-solver
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left[ \frac{V}{\Delta t} \mi + \rtdiff{}{\mq} \right] \Delta
-  \adjlam{}
-  = -\pd{f}{\mq} - \rtdiff{}{\mq} \adjlam{}
-  \label{adj-dc-time-general}
-\end{equation}
-%------------------------------------------------------------------------------%
-Thus, the first system of equations in \eref{dc-adjoint-1} becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{split}
-    \left[
-      \frac{V}{\Delta t} \mi +
-      \begin{pmatrix}
-        \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
-        \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-        \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
-      \end{pmatrix}
-    \right]
-    \begin{pmatrix}
-      \Delta \adjlam{\rho} \\ \\
-      \Delta \adjlam{\rho \vu} \\ \\
-      \Delta \adjlam{\rho E}
-    \end{pmatrix}
-    &= \\ -
-    \begin{pmatrix}
-      \pd{f}{\rho} \\ \\
-      \pd{f}{\rho \vu} \\ \\
-      \pd{f}{\rho E}
-    \end{pmatrix}
-    -
-    \begin{pmatrix}
-      \rtdiff{\rho}{\rho} & \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho E}{\rho} \\ \\
-      \rtdiff{\rho}{\rho \vu} & \rtdiff{\rho \vu}{\rho \vu} & \rtdiff{\rho E}{\rho \vu} \\ \\
-      \rtdiff{\rho}{\rho E} & \rtdiff{\rho \vu}{\rho E} & \rtdiff{\rho E}{\rho E}
-    \end{pmatrix}
-    &
-    \begin{pmatrix}
-      \adjlam{\rho} \\ \\
-      \adjlam{\rho \vu} \\ \\
-      \adjlam{\rho E}
-    \end{pmatrix}
-    -
-    \begin{pmatrix}
-      \rtdiff{\rho_i}{\rho} \\ \\
-      \rtdiff{\rho_i}{\rho \vu} \\ \\
-      \rtdiff{\rho_i}{\rho E}
-    \end{pmatrix}
-    \adjlam{c_i}
-  \end{split}
-  \label{adj-dc-time1}
-\end{equation}
-%------------------------------------------------------------------------------%
-and the second system in \eref{dc-adjoint-2} becomes
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_i}{c_j} \right) \Delta
-  \adjlam{c_i}
-  = \\ -\pd{f}{c_j}
-  - \rtdiff{\rho_i}{c_j} \adjlam{c_i}
-  - \rtdiff{\rho}{c_j} \adjlam{\rho}
-  - \rtdiff{\rho \vu}{c_j} \adjlam{\rho \vu}
-  - \rtdiff{\rho E}{c_j} \adjlam{\rho E}
-  \label{adj-dc-time2}
-\end{equation}
-%------------------------------------------------------------------------------%
-The LHS of \erefs{adj-dc-time1}{adj-dc-time2} are the same first-order
-approximate Jacobians that were used to solve the primal flow equations;
-therefore, all of the benefits of the diagonal block matrices that are
-exploited in the primal flow solver to reduce the linear solver cost and overall
-memory now apply to the adjoint.
+Based on \erefs{adj-u-to-v-time}{adj-lam-v-to-u}, it is possible to reuse the
+exact jacobian of the fully coupled scheme, $\ma_{\mU}$, instead of computing
+the exact jacobian of the decoupled system, $\ma_{\mv}$.  This is very
+attractive, since the implementation of the fully coupled scheme does not need
+to be changed at the low-level linearizations.  Instead, the residual of the
+adjoint can be formed in the exact same fashion as the fully coupled scheme, and
+a series of matrix operations can then be performed to transform the equations
+and dependent variables into those used by the decoupled scheme.
+
+The iterative mechanism required by the adjoint solver has been found to be much
+more flexible than the flow solver.  In the flow solver, the mixture variables
+were updated before the species mass fractions, with the former used to compute
+the later at the next time level.  This same process can be carried out on the
+costate variable vector, $\adjlam{\mv}$, in the adjoint solver, which would
+correspond to a block gauss-seidel type scheme; however, through testing, their
+is no significant advantage found applying costate variables at the next time
+level to compute costate variables at the previous time level.  Thus, the much
+more cost effective approach is to apply a block jacobi scheme where all
+costate variables are updated at the same time level, regardless of order.
+Because information is not passed between the costate variables for the mixture
+equations and costate variables for the species equations, only a single
+residual vector is required to be computed per timestep in the block jacobi
+adjoint solver, rather than two required by a block gauss-seidel type adjoint
+solver.  This is also more efficient than the flow solver iterative mechanism,
+which requires two residual vectors to be computed per timestep.
+
 
 \section{Higher-order Reconstruction Linearizations}
 

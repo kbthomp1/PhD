@@ -784,67 +784,11 @@ Likewise, the tranformation can be made from $\rv{}$ to $\ru{}$
 The change of equations sets in \erefs{ru-to-rv}{drudrv} and the change of
 dependent variable in \eref{u-to-v} can be used to rewrite the fully coupled
 system in \eref{fc-flow} into the decoupled system from \eref{dc-flow}
+
 %------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{aligned}
-    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right) d \mU &= \ru{}
-    \\[12pt]
-    \pd{\rv{}}{\ru{}}
-    \left( \frac{V}{\Delta t} \mi + \pd{\ru{}}{\mU} \right)
-    \left( \pd{\mU}{\mv} \right) d \mv
-    &= 
-    \pd{\rv{}}{\ru{}} \ru{}
-  \end{aligned}
-  \label{fc-to-dc-form}
-\end{equation}
+
 %------------------------------------------------------------------------------%
-\eref{fc-to-dc-form} shows that \eref{dc-flow} is actually just a preconditioned
-version of \eref{fc-flow}, that can be generically written as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left(\mm \ma_{\mU} \right) \left( \mb d\mv \right) = \mm \ru{}
-  \label{generic-dc}
-\end{equation}
-%------------------------------------------------------------------------------%
-where $\mm$ is the left preconditioner, $\pd{\rv{}}{\ru{}}$, $\mb$ is the right
-preconditioner, $\pd{\mU}{\mv}$, and $\ma_{\mU}$ it the jacobian matrix for the
-fully coupled system, $\pd{\ru{}}{\mU}$.  This is crucial towards the
-understanding of the adjoint system of equations, since the transpose operation
-will reverse the order of operations of these matrix products.  Based on
-\eref{generic-dc}, the jacobian for the system based on $\rv{}$ and $\mv$,
-denoted as $\ma_{\mv}$, can be written as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \ma_{\mv} = \mm \ma_{\mU} \mb
-  \label{adj-dc-generic}
-\end{equation}
-%------------------------------------------------------------------------------%
-along with its tranpose
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \ma_{\mv}^{T}
-   = \left( \mm \ma_{\mU} \mb \right)^{T}
-   = \mb^{T} \ma_{\mU}^{T} \mm^{T}
-  \label{adj-dc-generic-transpose}
-\end{equation}
-%------------------------------------------------------------------------------%
-Thus, in the adjoint $\mb$ becomes the left preconditioner, and $\mm$ becomes
-the right preconditioner
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{aligned}
-    \left(\pd{\rv{}}{\mv} \right)^{T} \adjlam{\mv} &= -\pd{f}{\mv} \\
-    \left( \pd{\mU}{\mv} \right)^{T}
-    \left(\pd{\ru{}}{\mU} \right)^{T} 
-    \left( \pd{\rv{}}{\ru{}} \right)^{T}
-    \adjlam{\mv} 
-    &= 
-    - \left( \pd{\mU}{\mv} \right)^{T}
-    \left( \pd{f}{\mv} \right)
-  \end{aligned}
-  \label{adj-u-to-v}
-\end{equation}
-%------------------------------------------------------------------------------%
+
 Based on \eref{adj-u-to-v}, it is possible to reuse the exact jacobian of the
 fully coupled scheme, $\ma_{\mU}$, instead of computing the exact jacobian of
 the decoupled system, $\ma_{\mv}$.  This is very attractive, since the

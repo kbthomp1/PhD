@@ -135,13 +135,20 @@ Discrete Adjoint Formulation}
 
 % residual and its derivatives
 \newcommand{\res}[1]{\vR_{#1}}
+\newcommand{\resp}[1]{\vR_{#1}^{'}}
 \newcommand{\resrho}{\sum_{i=1}^{N_s}\left(\vR_{\rho_i}\right)}
+
 \newcommand{\rdiff}[2]{\pd{\vR_{#1}}{#2}}
 \newcommand{\rpdiff}[2]{\pd{\vR^{'}_{#1}}{#2}}
+
 \newcommand{\rlprod}[2]{\pd{\vR_{#1}}{#2} \adjlam{#1}}
 \newcommand{\rlpprod}[2]{\pd{\vR^{'}_{#1}}{#2} \adjlam{#1}}
+
 \newcommand{\tdiff}[2]{\pd{\vR_{#2}}{#1}}
+\newcommand{\tpdiff}[2]{\pd{\vR_{#2}^{'}}{#1}}
 \newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
+
+\newcommand{\drvdv}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
 
 % Sum with limits on top and bottom of sigma
 \newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
