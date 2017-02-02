@@ -70,6 +70,7 @@ determine the optimum set of design variables, $\md^*$. This can be done using
   optimizers.
 
 \section{Block Jacobi Adjoint Decoupling}
+\label{block-jacobi-decoupling}
 
 It is possible to decoupled the adjoint equations in a fashion similar to that
 done to the primal flow equations.  In this decoupled adjoint formulation, the
@@ -465,6 +466,7 @@ which requires two residual vectors to be computed per timestep.
 
 
 \section{Higher-order Reconstruction Linearizations}
+\label{sec:higher-order-linerizations}
 
 To achieve higher-order accuracy, the FUN3D solver uses an extension of the
 unstructured MUSCL (U-MUSCL) reconstruction scheme developed by Burg et
@@ -550,5 +552,23 @@ An important point that this illustrates is that the linearization of the higher
 order terms is not dependent upon the choice of the primitive variable vector
 $q$, provided that all of the linearizations are exact.  This is powerful,
 because it allows the decoupled scheme to be extended to higher work, without
-needing to reformulate the linearizations drastically from the fully-coupled
-scheme.
+needing to reformulate the linearizations from the fully-coupled scheme.
+
+\section{Memory and Computational Cost of Exact Second Order Linearizations}
+\label{sec:2nd-order-mem-cost}
+
+As shown in \sref{sec:higher-order-linerizations}, the second order
+reconstruction results in an extended stencil.  This significantly decreases the
+sparsity of the jacobian, since the linearizations at node must now include the
+nearest neighbors.  The cost of computing these linearizations can quickly
+dominate other costs of the adjoint, but can be significantly mitigated if the
+linearizations of second order jacobian are stored.  This essentially trades all
+the memory in the simulation for computational speed, and may not be possible
+for large mesh sizes.  Since all of the linearizations on the second order
+jacobian must be exact, the memory saving approximations of the decoupled scheme
+can only be applied to the LHS jacobians in \eref{adj-u-to-v-time}.  This last
+point makes the quadratic scaling of memory required with the number of species
+a significant concern of the adjoint.  The savings provided by the decoupled
+scheme become a very important boon in these cases, since the memory freed by
+the sparsity on the LHS of \eref{adj-u-to-v-time} can be used by the RHS
+linearizations to aid in computational efficiency.
