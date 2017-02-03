@@ -56,37 +56,26 @@ the function of interest is the sensitivity derivative.
 As mentioned before, the complex-variable and real-variable solvers must
 converge to the same solution for the comparison between the adjoint-computed
 sensitivity derivatives and those computed by the complex-variable approach to
-be valid.  The use of a flux limiter is mandatory for hypersonic applications,
-where strong shocks are present; however, the solver is very sensitive to
-changes in the reconstruction, and a ``ringing'' of the residual is often
-observed\cite{gnoffo2007ringing} when using a flux limiter in FUN3D. While this
-sub-convergence of the conservation equation residuals is not detrimental to the
-primal flow solver results, as most aerothermodynamic quantities are usually
-sufficiently converged by this point, the adjoint-formulation is predicated on
-the residual being zero, or at least nearly zero.  Because of this last point,
-the stalled convergence can cause the adjoint solver to give incorrect results
-or cause the adjoint solution to diverge.  To prevent this, the adjoint is
-required to be run with a ``frozen'' limiter, that is only where a
-reconstruction is unrealisable is the value of the limiter function changed.
- Doing this usually results in the residuals converging to machine precision.
-
-A significant obstacle with using a frozen limiter is that the real-variable and
-complex-variable solvers do not freeze the limiter identically.  Although the
-solvers are nearly identically, their floating-point operations will be
-different since complex arithmetic is involved in only the complex-variable
-solver.  The flux limiter formulation is sensitive to these differences and will
-result in a different converged state, regardless of the limiter being frozen
-at the same iteration between the solvers.  To overcome this, the
-complex-variable solver must not be allowed to change the value of the flux
-limiter.  To implement this, the solution is converged to machine precision with
-the real-variable solver and then the complex-variable solver is started with
-the flow field of the converged real-variable solution.  The complex step is
-then added to the design variable; however, the flux limiter is frozen.  Because
-limiter value is constant, the real solution from the complex-variable and
-real-variable solutions will match identically, and the complex part of the
-solution will be converged without ever needing to update the flux limiter.
-This will ensure that the sensitivity derivatives from the complex and adjoint
-solvers match to high precision for hypersonic cases with a frozen flux limiter.
+be valid.  Section \ref{sec:frozen-limiter} described the need for a frozen
+limiter to satisfy the lagrangian in \eref{lagrangian}, from which the discrete
+adjoint equations are derived.  A significant obstacle with using a frozen
+limiter is that the real-variable and complex-variable solvers do not freeze the
+limiter identically.  Although the solvers are nearly identically, their
+floating-point operations will be different since complex arithmetic is involved
+in only the complex-variable solver.  The flux limiter formulation is sensitive
+to these differences and will result in a different converged state, regardless
+of the limiter being frozen at the same iteration between the solvers.  To
+overcome this, the complex-variable solver must not be allowed to change the
+value of the flux limiter.  Enforcing consistency between the real-value and
+complex-value flow solver is done by converging the real-value flow solver to
+machine precision, and then starting the complex-variable solver with the flow
+field of the converged real-variable solution.  The complex step is then added
+to the design variable; however, the flux limiter is frozen.  Because limiter
+value is constant, the real solution from the complex-variable and real-variable
+solutions will match identically, and the complex part of the solution will be
+converged without ever needing to update the flux limiter.  This will ensure
+that the sensitivity derivatives from the complex and adjoint solvers match to
+high precision for hypersonic cases with a frozen flux limiter.
 
 \section{Verification of 2nd-order Adjoint Linearizations}
 
@@ -97,35 +86,49 @@ method and the complex-variable approach.  To facilitate checking the
 linearizations of all of these components efficiently, a composite cost function
 was formed with a three components
 %------------------------------------------------------------------------------%
-\begin{equation} f = w_1\left( \massflow - \massflow^{*}\right)^{2} + w_2\left(
-  T_{RMS} - T_{RMS}^*\right)^2 + w_3\left( C_{D} - C_{D}^*\right)^2
-  \label{check-cost-func} \end{equation}
+\begin{equation} 
+  f = w_1\left( \massflow - \massflow^{*}\right)^{2} 
+  + w_2\left( T_{RMS} - T_{RMS}^*\right)^2
+  + w_3\left( C_{D} - C_{D}^*\right)^2
+  \label{check-cost-func}
+\end{equation}
 %------------------------------------------------------------------------------%
 By combining all components into a single composite function, only one
 real-valued flow and adjoint solution is needed to obtain the sensitivity
 derivatives for all design variables, computed by \eref{obj-linearization2}. One
 complex-valued flow solution is needed for each design variable.
-\tref{tab:pg-deriv-check} shows the comparison between the sensitivity
+\tref{tab:pg-deriv-check} shows the relative difference between the sensitivity
 derivatives computed by \eref{obj-linearization1} and \eref{complex-fd}, for a
 perfect gas annular jet simulation.
 %------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & 0.12067860106210E-04 &
-    0.12067860106758E-04 & 5.48E-16 \\ $T_{p,o}$ & 0.36654635117980E-03 &
-    0.36654635118188E-03 & 2.08E-15 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - Perfect Gas} \label{tab:pg-deriv-check} \end{table}
+\begin{table}[h]
+  \centering 
+  \begin{tabular}{c|c|c|c} 
+    Design Variable & Adjoint & Complex & Relative Difference \\ 
+    \hline 
+    $P_{p,o}$ & 0.12067860106210E-04 & 0.12067860106758E-04 & 4.54e-11 \\
+    $T_{p,o}$ & 0.36654635117980E-03 & 0.36654635118188E-03 & 5.67e-12 
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - Perfect Gas}
+  \label{tab:pg-deriv-check}
+\end{table}
 %------------------------------------------------------------------------------%
 The adjoint and complex solvers match within machine zero, which is $\sim
 10^{-15}$ for this case.  \tref{tab:frozen-deriv-check} shows the same
 comparison as that in \tref{tab:pg-deriv-check}, but with a $H_2$-$N_2$ mixture
 ejected in a 5-species freestream air mixture with frozen flow
 %------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & -0.18451007644622E-06 &
-    -0.184510076442032E-06 & 4.19E-18 \\ $T_{p,o}$ &  0.62086963151678E-03 &
-    0.620869631517086E-03 & 3.06E-16 \\ $\fa$     & -0.34045335117520E-01 &
-    -0.340453351177196E-01 & 1.20E-13 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - $H_2$-$N_2$ Frozen} \label{tab:frozen-deriv-check}
+\begin{table}[h] 
+  \centering 
+  \begin{tabular}{c|c|c|c} 
+    Design Variable & Adjoint & Complex & Relative Difference\\
+    \hline 
+    $P_{p,o}$ & -0.18451007644622E-06 & -0.184510076442032E-06 & 2.27e-11 \\ 
+    $T_{p,o}$ &  0.62086963151678E-03 &  0.620869631517086E-03 & 4.93e-13 \\ 
+    $\fa$     & -0.34045335117520E-01 & -0.340453351177196E-01 & 5.86e-12 
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - $H_2$-$N_2$ Frozen}
+  \label{tab:frozen-deriv-check}
 \end{table}
 %------------------------------------------------------------------------------%
 There is very strong agreement between all the design variable senstivities
@@ -133,12 +136,17 @@ computed by the adjoint and complex solvers, with all matching discretely to
 within 11 digits.  \tref{tab:react-deriv-check} shows the same comparison as
 that in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
 %------------------------------------------------------------------------------%
-\begin{table}[h] \centering \begin{tabular}{c|c|c|c} Design Variable & Adjoint &
-    Complex & Difference\\ \hline $P_{p,o}$ & -0.11081344492683E-06 &
-    -0.110529774659536E-06 & 2.84E-10 \\ $T_{p,o}$ & 0.190899489720282E-03 &
-    0.190892847933810E-03 & 6.64E-09 \\ $\fa$     & -0.28035433535237E-01 &
-    -0.280251731728184E-01 & 1.03E-05 \end{tabular} \caption{Sensitivity
-  Derivative Comparison - $H_2$-$N_2$ Reacting} \label{tab:react-deriv-check}
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Adjoint & Complex & Relative Difference\\
+    \hline
+    $P_{p,o}$ & -0.11081315601976E-06 & -0.110529774659536E-06 & 2.56e-03 \\
+    $T_{p,o}$ &  0.19089941237390E-03 &  0.190892847933810E-03 & 3.44e-05 \\
+    $\fa$     & -0.28035409045530E-01 & -0.280251731728184E-01 & 3.65e-04
+  \end{tabular}
+  \caption{Sensitivity Derivative Comparison - $H_2$-$N_2$ Reacting}
+  \label{tab:react-deriv-check}
 \end{table}
 %------------------------------------------------------------------------------%
 It is clear that these do not match as well as those in

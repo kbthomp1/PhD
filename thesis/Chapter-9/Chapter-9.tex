@@ -11,7 +11,8 @@ coupled variable set.  This chapter details the benefits of applying the
 decoupled adjoint solver over the fully coupled solver for the annular jet
 demonstration problem.
 
-\section{Verification of Accuracy}
+\section{Verification of Consistency}
+\label{adj-consistency}
 
 Section \ref{block-jacobi-decoupling} showed in detail that, in the adjoint,
 changing from the fully coupled variable and equation sets to the decoupled
@@ -23,7 +24,58 @@ well conditioned and convergence is sufficient, preconditioning should not
 affect the final adjoint solution; thus, we expect to recover the exact same
 solution from both the fully coupled and decoupled adjoint schemes.
 
+The 5 $km/s$ spanwise cylinder case from \sref{sec:5-kps-cylinder} and the 15
+$km/s$ sphere cone case from \sref{sec:15-kps-sphere-cone} are re-examined here
+to determine the consistency of the adjoint solution computed by the fully
+coupled schemes.  In this case, the sensitivity of the drag coefficient, $C_D$
+to the angle of attack, $\alpha$, is computed by both schemes and compared.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Case & Decoupled Sensitivity & Fully Coupled Sensitivity & Rel. Diff\\
+    \hline
+    Cylinder    &  0.764409218044021E-07 &  0.764409218054372E-07 & $1 \times 10^{-11}$ \\
+    Sphere-Cone & -0.877773486565165E-02 & -0.877773486565157E-02 & $2 \times 10^{-14}$
+  \end{tabular}
+  \caption{Angle of Attack Sensitivity Relative Difference}
+  \label{tab:cylinder-adj-diff}
+\end{table}
+%------------------------------------------------------------------------------%
+\tref{tab:cylinder-adj-diff} shows that the solutions match to discretely to at
+least 11 digits, and is indicative that the decoupled iterative mechanism can be
+used to compute the adjoint solution without changing the result.  It should be
+recognized here that, in the continuous sense, the drag on a cylinder is
+independent of angle of attack; however, in the discrete sense of this grid,
+which is only a half-body cylinder, there is a minimal dependence between angle
+of attack and drag.
+
+For the annular jet demonstration problem, the sensitivities computed in
+\tref{tab:react-deriv-check} were checked to verify that decoupled and fully
+coupled adjoint solutions matched to give the same sensitivity.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Decoupled Sensitivity & Fully Coupled Sensitivity & Rel. Diff\\
+    \hline
+    $P_{p,o}$ & -0.11081315601976E-06 & -0.11081315601976E-06 & $1 \times 10^{-11}$ \\
+    $T_{p,o}$ &  0.19089941243495E-03 &  0.19089941237390E-03 & $2 \times 10^{-14}$ \\
+    $\fa$     & -0.28035409093945E-01 & -0.28035409045530E-01 & $2 \times 10^{-14}$
+  \end{tabular}
+  \caption{Annular Jet Plenum Sensitivity Relative Difference}
+  \label{tab:srp-adj-diff}
+\end{table}
+%------------------------------------------------------------------------------%
+\tref{tab:srp-adj-diff} also gives excellent agreement between the decoupled and
+fully coupled adjoint schemes.  Examining the differences of sensitivities in
+\trefs{tab:cylinder-adj-diff}{tab:srp-adj-diff}, it is clear
+that the absolute difference is almost always on the order of $10^{-15}$ each
+case.  Since double precision was used in all floating point operations for
+these cases, this is consistent with the level of precision used.
+
 \section{Relative Memory Savings and Speedup}
+\label{sec:adj-cost-mem-savings}
 
 The computational cost of the solution process in the adjoint can be greatly
 improved by storing the exact linearizations of the discrete flow solver
@@ -61,7 +113,7 @@ rather than recomputed at each timestep.
     Fully Coupled & Recomputed  & 309.4 & 1.0 (baseline)\\
     Decoupled     & Recomputed  & 244.2 & 1.27 \\
     Fully Coupled & Stored      & 61.22 & 5.05 \\
-    Decoupled     & Stored      & 18.69 & 16.6 \\
+    Decoupled     & Stored      & 18.69 & $\mathbf{16.6}$ \\
   \end{tabular}
   \caption{Relative Speedup}
   \label{tab:srp-rel-speedup}
@@ -113,4 +165,5 @@ decoupled adjoint solver is significant, since the ability to store the exact
 linearizations is a binary problem: either there is enough memory or there is
 not.  The increased savings are as important as the speedup, if not more, since
 the decoupled scheme can facilitate larger problems to be solved with greater
-than an order of magnitude increase in computational efficiency.
+than an order of magnitude increase in computational efficiency, if the exact
+linearizations can be stored.

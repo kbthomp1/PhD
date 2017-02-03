@@ -12,6 +12,7 @@ decoupled flow solver over the fully coupled solver for a variety of test cases,
 including the annular jet demonstration problem.
 
 \section{5 km/s Flow over Cylinder}
+\label{sec:5-kps-cylinder}
 
 Demonstrating the improved efficiency in cost and memory required to utilize the
 decoupled scheme, and that both the fully coupled and decoupled approaches
@@ -265,3 +266,24 @@ from \fref{fig:exact-approx-speedup} that the improvements compounded by the
 decoupled scheme, which affords iterative converge similar to the exact fully
 coupled scheme, will be significantly faster than the baseline scheme that was
 originally implemented in the reacting gas path of FUN3D.
+
+\section{Re-entry Vehicle with Retro-Firing Annular Jet}
+
+The demonstration problem presented in \crefs{chapter-five}{chapter-six}
+presents the most challenging problem for the decoupled scheme, due to the
+Hydrogen-air combustion.  To verify that the solution is not effected by
+employing the decoupled scheme over the fully coupled scheme, the comparison is
+made between solutions of the decoupled and fully coupled flow solvers on the
+cost function component quantities in \sref{cost-func-components}.  The
+freestream conditions in \tref{tab:flow-conditions} were used for this
+comparison, along with the plenum conditions in \tref{tab:plenum-conditions}.
+
+\subsection{Annular Jet: Verification of Implementation}
+
+Due to startup transients, where reaction rates grew very large as nearly all
+$H_2$ and $O_2$, and most of $N_2$, dissociated near the stagnation region, the
+source term scaling factor, $\omega$, was employed for this problem to maintain
+stability.  It was empirically determined that the source term scaling could be
+removed within the first third of the way to convergence for this problem.
+
+

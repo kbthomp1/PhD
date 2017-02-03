@@ -14,12 +14,14 @@ to the primal flow solver.  To mitigate this, a decoupled scheme is derived that
 is consistent with the decoupled flow solver.
 
 \section{Discrete Adjoint Derivation}
+\label{sec:adj-derivation}
 
 The derivation for the discrete adjoint begins with forming the Lagrangian as
 %------------------------------------------------------------------------------%
 \begin{equation}
   L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
   +\mathbf{\Lambda}^T\mr(\md,\mq,\mx)
+  \label{lagrangian}
 \end{equation}
 %------------------------------------------------------------------------------%
 Where $\mr$ is the residual of the flow equations.  Differentiating with respect
