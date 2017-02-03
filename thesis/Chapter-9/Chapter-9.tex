@@ -55,13 +55,13 @@ rather than recomputed at each timestep.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
-  \begin{tabular}{c|c|c}
-    Scheme & Time to Convergence (s) & Speedup \\
+  \begin{tabular}{c|c|c|c}
+    Scheme & Linearizations & Time to Convergence (s) & Speedup \\
     \hline
-    Fully Coupled (Recomputed Linearizations) & 309.4 & 1.0 (baseline)\\
-    Decoupled (Recomputed Linearizations)     & 244.2 & 1.27 \\
-    Fully Coupled (Recomputed Linearizations) & 61.22 & 5.05 \\
-    Decoupled (Stored Linearizations)         & 18.69 & 16.6 \\
+    Fully Coupled & Recomputed  & 309.4 & 1.0 (baseline)\\
+    Decoupled     & Recomputed  & 244.2 & 1.27 \\
+    Fully Coupled & Stored      & 61.22 & 5.05 \\
+    Decoupled     & Stored      & 18.69 & 16.6 \\
   \end{tabular}
   \caption{Relative Speedup}
   \label{tab:srp-rel-speedup}
