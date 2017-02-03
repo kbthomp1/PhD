@@ -1,2 +1,28 @@
-\chapter{New Chapter}
+\chapter{Concluding Remarks}
 \label{chapter-ten}
+
+An implicit, decoupled scheme has been implemented in the reacting gas path of
+the FUN3D flow solver, and an adjoint solver employing a fully coupled and
+decoupled scheme has also been implemented.  The sensitivity dervatives provided
+by the adjoint solver have been verified using a complex-variable approach, and
+a sample inverse optimization and direct optimization was completed on a
+hypersonic re-entry vehicle geometry that employed a retro-firing annular jet.
+
+The consistency and robustness of decoupling the variable sets in the flow
+solver was examined.  It was found that the decoupled scheme only exhibited
+stability issues when the chemical source term was very large, due to large
+reaction rates.  This stability issue was mitigated by multiplying the chemical
+source term uniformly by scaling term, which could be ramped from zero to one
+over the course of the simulation.  Provided that the ramping was completed, the
+true steady-state solution, done without ramping, was recovered.  The
+consistency of the solutions computed by the fully coupled and decoupled methods
+was found to match discretely for surface temperature and pressure, and to
+within $10^{-4}$ for mass fractions on the stagnation line of a spanwise
+cylinder case in a $5 km/s$ flow.  It was also determined that this difference
+in mass fraction was reduced with mesh spacing.
+
+The decoupled adjoint scheme demonstrated here is a significant improvement to
+the state of the art in the field of sensitivity analysis for reacting flows.
+The decreased memory and computational costs afforded by solving a decoupled
+dependent variable set in the adjoint solver enable a speedup greater than an
+order of magnitude for some cases.  
