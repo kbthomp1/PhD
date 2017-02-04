@@ -74,6 +74,17 @@ that the absolute difference is almost always on the order of $10^{-15}$ each
 case.  Since double precision was used in all floating point operations for
 these cases, this is consistent with the level of precision used.
 
+As a note on robustness, none of the stability issues found in the decoupled
+flow solver have been observed for the decoupled adjoint scheme.  The
+non-linear nature of the chemical source term was the primary stability concern
+in the decoupled flow solver, since the explicitness introduced by the decoupled
+mass fraction update exacerbates CFL restrictions.  These problems dissappear in
+the adjoint equations, since it is a linear system being solved instead of a
+highly non-linear one.  The full stability and convergence properties of the
+fully coupled adjoint solver were recovered by the decoupled adjoint solver, and
+it is therefore concluded that there is no advantage of solving the adjoint
+system in a fully coupled manner.
+
 \section{Relative Memory Savings and Speedup}
 \label{sec:adj-cost-mem-savings}
 
