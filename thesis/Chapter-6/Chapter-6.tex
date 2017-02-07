@@ -158,7 +158,7 @@ solving the adjoint equations (\eref{adjoint-main}) the sensitivity derivatives
 of the cost function with respect to the plenum design variables are obtained by
 evaluating relatively inexpensive matrix-vector products.
 
-\section{Inverse Design Optimization}
+\section{First-Order Inverse Design Optimization}
 \label{inv-design-opt}
 
 The optimization procedure is done using the \textit{opt\_driver} utility in
@@ -167,7 +167,11 @@ solver, and optimization algorithm sequentially.  These steps are repeated until
 a termination criterion is reached.  In practice, the termination of the
 optimization occurs when the cost function reaches a tolerance of less that
 $10^{-8}$, or when continuing towards the optimal condition would exceed the
-prescribed upper or lower bounds of the design variables.
+prescribed upper or lower bounds of the design variables.  Due to the
+difficulties encountered with the flux limiter that were described in
+\sref{sec:frozen-limiter}, a first-order inverse design optimization is shown in
+this section.  Results of the second-order inverse design optimization failed
+due to the high sensitivity to the interation at which the limiter is frozen.
 
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
@@ -193,10 +197,10 @@ $kg/s$ for the annular nozzle mass flow rate were specified.  These targets were
 chosen semi-arbitarily, and were heuristically determined to be feasible based
 the the design variable bounds. The design variables specified for this
 optimization were the plenum total pressure, $P_{p,o}$ and the plenum ``fuel-air
-ratio'', $\fa$.  A species mixture consisting of $H_2$ and $N_2$ was blown from
-the plenum, with the mass fractions dictated by $\fa$ as described in
-\eref{fuel-air-def}.  For the cost function, the weights were chosen
-heuristically, such that 
+ratio'', $\fa$.  The plenum total temperature, $T_{p,o}$, was fixed at 500 K.  A
+species mixture consisting of $H_2$ and $N_2$ was blown from the plenum, with
+the mass fractions dictated by $\fa$ as described in \eref{fuel-air-def}.  For
+the cost function, the weights were chosen heuristically, such that 
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{w_1}{w_2} = \frac{\cost{T_{RMS}}^2}{\cost{\dot{m}}^2}
@@ -240,11 +244,14 @@ temperature RMS and annular nozzle mass flow rate, with the design targets.  The
 optimization clearly made significant progress early, with smaller gains as the
 solution approached the target.
 
-\section{Direct Design Optimization}
+\section{Second-Order Direct Design Optimization}
 
-Using the same cost function components and design variables as in
-\sref{inv-design-opt}, a direct design problem was completed to minimize both
-mass flow rate and surface temperature RMS.  The cost function was formulated as
+A direct design problem is possible with the second-order reconstruction scheme,
+by defining the termination of the optimization as point that changes in the
+design variables or cost function are below a supplied threshold.  Using the
+same cost function components and design variables as in \sref{inv-design-opt},
+a direct design problem was completed to minimize both mass flow rate and
+surface temperature RMS.  The cost function was formulated as
 %------------------------------------------------------------------------------%
 \begin{equation}
   f = w_1\left( \massflow \right)^2 + w_2\left( T_{RMS} \right)^2
@@ -262,8 +269,10 @@ insure that the components are normalized to the same order of magnitude
 The SNOPT optimizer was able to very quickly determine that blowing pure
 $H_2$, i.e. $\fa = 1.0$, would yield the lowest surface temperature RMS and mass
 flow rate.  \fref{fig:dd-cost-func-value} shows that most of the improvement in
-the design was made within the first two function evaluations, and the
-subsequent steps were significantly less.
+the design was made within the first three function evaluations, and the
+subsequent steps were significantly less.  The optimization was terminated by
+the ninth function evaluation, as no meaningful improvement to the design was
+made after that point.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -307,21 +316,22 @@ $T_{RMS}$ contributions to the composite cost function.
 %------------------------------------------------------------------------------%
 \fref{fig:dd-dv-hist} shows that the optimization was largely dependent on the
 plenum pressure, and \tref{tab:design-improvement} shows that larger pressure at
-the plenum resulted in a 13.79\% lower surface temperature, at the expense of a
-4.6\% higher mass flow rate.
+the plenum resulted in a 4.044\% lower surface temperature, and 18.93\% lower
+mass flow rate.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
   \begin{tabular}{c|c|c|c}
     Component & Initial & Final & Improvement\\
     \hline
-    $\dot{m}$, $kg/s$ & 1.268e-3 & 1.327e-3 & -4.6\% \\
-    $T_{RMS}$, $K$    & 2473     & 2132     & 13.79\%
+    $\dot{m}$, $kg/s$ & 1.268e-3 & 1.028e-3 & 18.93\% \\
+    $T_{RMS}$, $K$    & 1088     & 1044     & 4.044\%
   \end{tabular}
   \caption{Direct Design Optimization Improvement}
   \label{tab:design-improvement}
 \end{table}
 %------------------------------------------------------------------------------%
+Thus, the optimizer was able to improve both components of the cost function.
 This is an excellent problem for a high-fidelity gradient-based
 optimization, as the non-linear effects of plenum-shock interation makes the
 optimum plenum condition difficult to determine intuitively.

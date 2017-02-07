@@ -470,43 +470,14 @@ which requires two residual vectors to be computed per timestep.
 \section{Higher-order Reconstruction Linearizations}
 \label{sec:higher-order-linerizations}
 
-To achieve higher-order accuracy, the FUN3D solver uses an extension of the
-unstructured MUSCL (U-MUSCL) reconstruction scheme developed by Burg et
-al\cite{burg2005higher,burg2003verification}, which is itself and extension of
-the Monotonic Upstream-centered Scheme for Conservation Laws (MUSCL) scheme
-developed by Van Leer\cite{van1979towards}.  The implementation is a combination
-of central differencing and the original U-MUSCL scheme
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{aligned}
-    q_L &= q_1 + (1-\kappa)\left[ \phi\left( \pd{q_1}{x}dx + \pd{q_1}{y}dy +
-    \pd{q_1}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_2 - q_1 \right) \\
-    q_R &= q_2 + (1-\kappa)\left[ \phi\left( \pd{q_2}{x}dx + \pd{q_2}{y}dy +
-    \pd{q_2}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_1 - q_2 \right)
-  \end{aligned}
-  \label{u-muscl}
-\end{equation}
-%------------------------------------------------------------------------------%
-\fref{fig:edge-recons} shows that $q_{L,R}$ are the primitive variables at the
-left and right sides of the edge midpoint, where the flux is evaluated,
-$q_{1,2}$ are the primitive variables at nodes 1 and 2.  The variable $\phi$ is
-the result of the modified Van Albada flux limiter
-%------------------------------------------------------------------------------%
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=0.5\textwidth]{figures/edge_reconstruction.png}
-  \caption{Edge Reconstruction}
-  \label{fig:edge-recons}
-\end{figure}
-%------------------------------------------------------------------------------%
-function\cite{van1997comparative}, and varies between 0 and 1 (effectively
-blending first-order and second order contributions to the flux evaluation).
-The adjoint uses a frozen flux limiter, for purposes that will be discussed in a
-later section, and is therefore held as constant in the linearization
-computations.  Finally the gradient information $\pd{q_{1,2}}{x}$,
-$\pd{q_{1,2}}{y}$, and $\pd{q_{1,2}}{z}$ are computed using least-squares.  For
-the example 2-D stencil shown in \fref{fig:lsq-gradients} this is effectively
-computed as
+The reconstruction scheme detailed in \sref{sec:2nd-order-reconstruction} must
+be exactly linearized in the adjoint solver to achieve correct sensitivity
+derivatives. The adjoint uses a frozen flux limiter, for purposes that will be
+discussed in a later section, and is therefore held as constant in the
+linearization computations.  All gradient information in \eref{u-muscl},
+$\pd{q_{1,2}}{x}$, $\pd{q_{1,2}}{y}$, and $\pd{q_{1,2}}{z}$, are computed using
+least-squares.  For the example 2-D stencil shown in \fref{fig:lsq-gradients}
+this is effectively computed as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
@@ -528,7 +499,7 @@ where the $z$ direction would come from geometry out of the page.
 %------------------------------------------------------------------------------%
 In practice, the higher order linearizations can be managed easily by
 constructing a list of neighboring nodes for each node.  By the chain rule the
-linearization of the residual, $R$, is then evaluated in two parts
+linearization of the residual, $\mr$, is then evaluated in two parts
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{\vR\left(\mq^*\left( \mq \right) \right)}{\mq} = 
@@ -552,8 +523,15 @@ looping around node 0 would be
 %------------------------------------------------------------------------------%
 An important point that this illustrates is that the linearization of the higher
 order terms is not dependent upon the choice of the primitive variable vector
-$q$, provided that all of the linearizations are exact.  This is powerful,
-because it allows the decoupled scheme to be extended to higher work, without
+$q$, provided that all of the linearizations are exact.  This is a powerful
+telescoping property of the reconstruction scheme from
+\sref{sec:2nd-order-reconstruction}, and it significantly decreases the
+complexity of the code required to implement the second order term
+linearizations.  The downside to looping around each node is the high number of
+cache misses, as the data structures in FUN3D are not conducive to co-locating
+memory based on stencil.  This results in the evaluation of the second order
+linearizations being the dominant computational cost in the adjoint solver.
+extended to higher work, without
 needing to reformulate the linearizations from the fully-coupled scheme.
 
 \section{Memory and Computational Cost of Exact Second Order Linearizations}

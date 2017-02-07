@@ -130,7 +130,8 @@ bubble was ever found for the $50^o$ cone angle.
 
 To determine the flow solution mesh sensitivity, a grid convergence study was
 attempted by uniformly refining the original mesh, using the cut-cell method
-developed by Park\cite{???} that uniformly divides each element in the mesh.
+developed by Park\cite{park2008anisotropic} that uniformly divides each element
+in the mesh.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -204,10 +205,92 @@ experience high-frequency errors as the shock and plume re-position due to the
 reconstruction changing somewhat asymmetrically.  Consequently, species in will
 quickly deplete and form as the shock and plume move, causing the flux limiter
 as more nodes to require re-evalution.  This process will eventually settle out
-to converge the flow solution to machine zero; however, the solution is highly
-dependent on the limiter field.  Because of this sensitivity, integrated
-aerothermodynamic quantities results can vary between solution with the same
-inputs, but different starting states.  This is a recognized problem, but one
-that is outside of the scope of this study.  There are a number of recent
-approaches in the hypersonic community CITE???? that are attempting to mitigate this
-particular issue with grid alignment, and future work may incorporate them.
+to converge the flow solution to machine zero; however, machine zero is also
+dependent on the conditioning of the problem being solved.  
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/limiters/chem-res-comp.png}
+  \caption{Typical Residual Convergence Behavior}
+  \label{fig:chem-res-comp}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:chem-res-comp} shows a typical convergence history for the annular jet
+case with a flux limiter engaged on the coarse mesh.  If no chemical reactions
+are allows to take place, i.e. ``frozen'' flow, the residual of all equations
+can be decreased to to less than $10^{-16}$.  If finite rate chemistry is
+included, convergence ends at $\sim 10^{-8}$.  The difference is believed to be
+associated with the high degree of stiffness in the chemical source terms.  The
+large reaction rates significantly increase the condition number of the
+jacobian, and further updates to the solution do not improve convergence.  This
+is not a problem for the adjoint solution, as both levels of convergence are
+sufficient to obtain an adjoint solution; however, the convergence of the flow
+equations with chemistry is marred by a high degree of sensitivity to the flux
+limiter used.  It can be seen in \fref{fig:chem-res-comp} that convergence to
+steady state is less smooth when chemistry is involved, and this is directly
+tied to the flux limiter field.  In FUN3D, the frozen flux limiter is
+re-evaluated when a reconstruction is unrealizable.  This re-evaluation causes
+high-frequency errors, which manifest as ``spikes'' in the residual history.
+Fortunately, the re-evaluation is only needed at a small number of nodes
+(usually $< 10$ nodes), so integrated aerothermodynamic quantities are
+unaffected by these re-evaluations when convergence to steady-state is reached.
+It should be noted that while the results presented here are only on the
+coarsest mesh level, the refined meshes also exhibit similar behavior.
+
+Because the solution is not grid converged, there is a significant difference
+between the first-order and second-order solutions; therefore, the choice flux
+limiters presented in \sref{sec:2nd-order-reconstruction} has a large impact on
+the solution.  
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/limiters/all-limiters.png}
+  \caption{Convergence of Surface Temperature with Different Flux Limiters}
+  \label{fig:all-limiters}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:all-limiters} shows that the RMS of surface temperature on the outer
+surface of the vehicle converges to significantly different results before
+the flux limiter is frozen at iteration 4000.  The minmod flux limiter exhibits
+very large oscillations after freezing, due to asymmetric re-evaluation of the
+limiter due to a large number of unrealizable reconstructions.  These
+oscillations in the solution make the minmod flux limiter unusable for design
+optimization. The Van Albada flux limiter converges to a much more steady
+solution after being frozen; however, care must be taken to ``tune'' this
+particular limiter based the grid.  The tuneable parameter, $\varepsilon$, was
+evaulated at the recommended value of $1.0$, and was found to increase the
+surface temperature by $> 20\%$ after freezing.  This is unacceptable for design
+optimization, as it indicates a high dependence on iteration that the flux
+limiter is frozen.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/limiters/vanleer-vanalbada-frozen.png}
+  \caption{Van Leer and Van Albada Flux Limiter Impact on Surface Temperature}
+  \label{fig:vl-va-impact}
+\end{figure}
+%------------------------------------------------------------------------------%
+The Van Leer flux limiter behaves much better in this regard; however,
+\fref{fig:vl-va-impact} shows that the Van Leer limiter is also prone to
+oscillations in the surface temperature RMS.  The oscillations are of small
+enough amplitude that it might be reasonable to use the the Van Leer flux
+limiter in a design optimization of this problem.  An alternative to the Van
+Leer flux function is to revisit the Van Albada flux limiter.
+\fref{fig:vl-va-impact} also shows that if $\varepsilon$ is tuned to a value of
+$0.01$ the surface temperature RMS very closely matches the average of the
+ringing value before the limiter was frozen.  For this reason, the Van Albada
+flux was used with $\varepsilon = 0.01$, as it seems to produce the most steady
+result with the least dependence on the iteration that the flux limiter is
+frozen.
+
+None of the aforementioned flux limiter choices are ideal.  Because of the
+sensitivity exhibited to freezing the limiter, integrated aerothermodynamic
+quantities results can vary between solution with the same inputs, but different
+starting states.  Tuning the Van Albada flux limiter mitigates this issue, but
+does not solve it entirely, as some cases result in a surface temperature RMS
+variance of $+/- 5 K$ with identical solver inputs but different flow starting
+conditions. This is a recognized problem, but one that is outside of the scope
+of this study.  A number of novel discretizations at at NASA Langley Research
+Center\cite{gnoffo2014global,mazaheri2014very,mazaheri2016high} show promise in
+mitigating or eliminating the need for a flux limiter, while achieving
+higher-order spatial accuracy, and future work may incorporate them.

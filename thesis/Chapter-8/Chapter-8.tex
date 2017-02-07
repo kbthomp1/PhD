@@ -222,13 +222,17 @@ rates.
 
 
 
-\subsection{Sphere Cone - Convergence Improvement with Exact Linearizations}
+\subsection{Sphere Cone - Convergence Improvement with Exact First-Order Linearizations}
 
 An important benefit of implementing an adjoint solver in FUN3D comes the
 requirement of exact linearizations, because the linearizations needed to form
 the residual in the adjoint solver can be reused by the flow solver.
-Previously, the reacting gas path employed an jacobian that approximated the
-linearizations of the Roe FDS scheme\cite{gnoffo-tp} as
+Due to the high storage requirements associated with exactly linearizing the
+gradient terms in the reconstruction, an approximate jacobian is used in the
+flow solver.  This approximate jacobian consists of linearizations of the
+first-order scheme, as is used to solve the governing equations via defect
+correction.  Previously, the reacting gas path employed a jacobian also, that
+approximated the linearizations of the Roe FDS scheme\cite{gnoffo-tp} as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \rdiff{}{\mU} = 
@@ -245,10 +249,10 @@ exact linearization of the dissipation term in the Roe FDS scheme, as well the
 large computational cost in computing those linearizations at each jacobian
 update.
 
-To demonstrate any benefit of these exact linearizations on iterative
-convergence of the flow solver, the sphere cone case was converged using both
-the jacobian employing exact linearizations of the Roe FDS scheme flux, and the
-jacobian employing the approximation in \eref{approx-roe-jac}.
+To demonstrate any benefit of the exact linearization of the Roe FDS scheme on
+iterative convergence of the flow solver, the sphere cone case was converged
+using both the jacobian employing exact linearizations of the Roe FDS scheme
+flux, and the jacobian employing the approximation in \eref{approx-roe-jac}.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering

@@ -294,3 +294,68 @@ $N_{nz} > 6N_{nodes}$; thus, this decoupled scheme provides higher relative
 memory savings on unstructured grids than structured grids when using compressed
 row storage.
 
+\section{Higher Order Reconstruction}
+\label{sec:2nd-order-reconstruction}
+
+To achieve higher-order accuracy, the FUN3D solver uses an extension of the
+unstructured MUSCL (U-MUSCL) reconstruction scheme developed by Burg et
+al\cite{burg2005higher,burg2003verification}, which is itself an extension of
+the Monotonic Upstream-centered Scheme for Conservation Laws (MUSCL) scheme
+developed by Van Leer\cite{van1979towards}.  The implementation is a combination
+of central differencing and the original U-MUSCL scheme
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    q_L &= q_1 + (1-\kappa)\left[ \phi\left( \pd{q_1}{x}dx + \pd{q_1}{y}dy +
+    \pd{q_1}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_2 - q_1 \right) \\
+    q_R &= q_2 + (1-\kappa)\left[ \phi\left( \pd{q_2}{x}dx + \pd{q_2}{y}dy +
+    \pd{q_2}{z}dz \right) \right] + \frac{\kappa}{2}\left( q_1 - q_2 \right)
+  \end{aligned}
+  \label{u-muscl}
+\end{equation}
+%------------------------------------------------------------------------------%
+\fref{fig:edge-recons} shows that $q_{L,R}$ are the primitive variables at the
+left and right sides of the edge midpoint, where the flux is evaluated,
+$q_{1,2}$ are the primitive variables at nodes 1 and 2.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/edge_reconstruction.png}
+  \caption{Edge Reconstruction}
+  \label{fig:edge-recons}
+\end{figure}
+%------------------------------------------------------------------------------%
+The variable $\phi$ is the result of the scalar flux function, that is required
+to preserve monotonicity in the second order reconstruction near
+discontinuities.  FUN3D supports a larger variety of flux functions that fall
+into two main categories: edge-based limiters, and stencil-based limiters.  The
+edge based limiters are evaluated for two nodes at each edge.  Different values
+of $\phi$ can exist at each node for edge-based limiter, and the results are not
+``freezable'' at each node in FUN3D. Stencil-based limiters are evaluated at
+each node, based on the gradients that are computed there.  For these limiters,
+the value of $\phi$ is unique to each node and can be stored with the flow
+solution as an additional variable.  The frozen state of the limiter is only
+re-evaluted if the reconstruction forces a non-physical state at dual volume
+interface.
+
+For this study, smooth Van Albada\cite{van1997comparative}, Van
+Leer\cite{vatsa2009calibration}, and minmod\cite{roe1986characteristic} flux
+limiter functions are used.  Each of these limiters is augmented with a
+heuristic pressure limiter by Park\cite{park2008anisotropic}. The choice of
+these limiters impacts solution converge and accuracy, and it is important to
+note specifics of the smooth Van Albada averaging function is given as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \phi\left( a, b \right) =
+  \frac{(b^2 + \varepsilon^2)a + (a^2 + \varepsilon^2)b}
+  {a^2 + b^2 + 2\varepsilon^2}
+  \label{van-albada-avg}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $a$ and $b$ are the left and right node gradients, and $\varepsilon$ is
+the ``smoothing coefficient''.  This smoothing coefficient is used to tune the
+flux limiter to a variety of the problems, and it is advised to be the
+reciprocal of the mean aerodynamic chord (MAC) in grid units for
+FUN3D\cite{biedron2016fun3d}.  The choice of $\varepsilon$ is critical to some
+hypersonic applications involving chemistry, and will be discussed later.
+
