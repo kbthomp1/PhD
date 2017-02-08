@@ -209,22 +209,64 @@ The decoupled system to be solved becomes:
 %------------------------------------------------------------------------------%
 \begin{gather} 
   \begin{split}
-    \rho^{n+1}&\frac{\mathbf{\delta \hat{V}}^n}{\Delta t}
-    +\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{\hat{F}}^f}{\partial
-    \mathbf{\hat{V}}^L}\delta	\mathbf{\hat{V}}^L
-    +\frac{\partial \mathbf{\hat{F}}^f}{\partial \mathbf{\hat{V}}^R}\delta
-    \mathbf{\hat{V}}^R)^{n, n+1}\mathbf{N}^f - C^{n, n+1}\delta\mathbf{V}^n \\
-    &= -\frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}^{n,n+1}\cdot\mathbf{N})^f +
-    \mathbf{W}^{n, n+1} -\mathbf{\hat{V}}^n\frac{\delta \rho^n}{\Delta t} -
-    R_\rho
+    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t}
+    &+\frac{1}{V}
+    \lsum{f}{}{
+     \left(
+       \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L
+       + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R
+      \right)^{n,n+1}}
+     - C^{n,n+1} \delta \Vhat^n \\
+    &= 
+    -\frac{1}{V}\lsum{f}{}{
+      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f
+    } + \mathbf{W}^{n, n+1} - R_\rho
   \end{split} \\ 
   R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
   {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{N})}}
+  \label{decoupled-no-scaling}
 \end{gather}
 %------------------------------------------------------------------------------%
 where $R_\rho$ is included to preserve the constraint that the mass fractions
 sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta
 c_s}=0$.
+
+Candler et al.\cite{candler2013analysis} later found that the decoupled scheme
+using a modified Steger-Warming flux splitting was much less stable than the
+fully coupled scheme when large reaction rates were present, particularly for
+exothermic reaction.  This same instability was observed in numerical
+experiments for \eref{decoupled-no-scaling}.  To mitigate this issue, Candler et
+al. proposed an alternative decoupling of variable sets that was more stable,
+particularly if endothermic reaction dominated the flow.  Instead of
+implementing this alternative decoupled scheme, \eref{decoupled-no-scaling} is
+modified with a scalar scaling factor, $\omega_r$, on the chemical source term
+$\mw^{n,n+1}$
+%------------------------------------------------------------------------------%
+\begin{equation} 
+  \begin{split}
+    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t}
+    &+\frac{1}{V}
+    \lsum{f}{}{
+     \left(
+       \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L
+       + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R
+      \right)^{n,n+1}}
+     - C^{n,n+1} \delta \Vhat^n \\
+    &= 
+    -\frac{1}{V}\lsum{f}{}{
+      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f
+    } + (\omega_r) (\mw^{n,n+1}) - R_\rho
+  \end{split}
+  \label{decoupled-with-scaling}
+\end{equation}
+%------------------------------------------------------------------------------%
+Ramping this scaling factor from zero to one of the course of
+timestepping the solution to steady-state preserves robustness of the decoupled
+scheme, and numerical experiments show that it has minimal impact on the
+convergence rate.  Typically, the large reaction rates are only present during
+the transients early on in the simulation, and damping the source term during
+this phase does not affect the final result, provided the ramping is completed
+before the end of the simulation.
 
 \section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 \label{sec:predicted-cost-mem-savings}

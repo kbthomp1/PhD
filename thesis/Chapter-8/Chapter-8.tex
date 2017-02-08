@@ -141,14 +141,12 @@ identical to that presented by Candler et. al. \cite{candler} (10 cm nose
 radius, 1.1 m length, 8$^o$ cone angle).  For this case, a simple 64$\times$64
 hexahedra grid was constructed, and freestream conditions were set as
 $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
-It was discovered that CFL limitations for the decoupled scheme were
-prohibitive, because of the stiffness of the chemical source term.  In order to
-converge the scheme in a manner competitive with the fully coupled approach, it
-was necessary to scale the magnitude of the source term contribution to the flux
-balance by a value $\omega$, such that $0 \leq \omega \leq 1$.  To ensure that
-the decoupled and fully coupled approaches yielded the same result, a ramping
-scheme was implemented such that no scaling was performed on the source term
-when the solution was in a converged state.
+Due to the large reaction rates during the transients at startup, when the
+stagnation temperatures are very high, it was necessary to employ the scaling
+factor, $\omega_r$ in order to ramp the magnitude of chemical source term.
+Ramping was only required in the first 500 iterations, and no scaling was
+performed on the source term when the solution was well with the radius of
+convergence.
 
 \subsection{Sphere-Cone - Verification of Implementation} 
 
@@ -220,9 +218,8 @@ improve the efficiency of high-velocity simulations, and that the stiffness of
 the source term can be overcome in the presence of large chemical reaction
 rates.
 
-
-
 \subsection{Sphere Cone - Convergence Improvement with Exact First-Order Linearizations}
+\label{sec:sphere-cone-exact-approx-convergence}
 
 An important benefit of implementing an adjoint solver in FUN3D comes the
 requirement of exact linearizations, because the linearizations needed to form
@@ -283,11 +280,163 @@ freestream conditions in \tref{tab:flow-conditions} were used for this
 comparison, along with the plenum conditions in \tref{tab:plenum-conditions}.
 
 \subsection{Annular Jet: Verification of Implementation}
+\label{sec:annular-jet-flow-verify}
+
+To determine consistency between the fully coupled and decoupled schemes, the
+surface temperature RMS, $T_{RMS}$, and mass flow rate, $\massflow$, were
+computed and compared.  Because of the flux limiter sensitivity and poor
+relative convergence with finite-rate chemistry discussed in
+\sref{sec:frozen-limiter}, the comparision was made for both frozen flow and
+flow in chemical non-equilibrium.
+%------------------------------------------------------------------------------%
+\begin{table}
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Quantity & Decoupled & Fully Coupled & Relative Difference \\
+    \hline
+    $\massflow$ & 0.8450858226893225E-03 & 0.8450858226893034E-03 & 2.26E-14 \\
+    $T_{RMS}$   & 0.1508600871984388E+04 & 0.1508600871984388E+04 & 0
+  \end{tabular}
+  \caption{Difference with Frozen Chemistry}
+  \label{tab:srp-frozen-flow-diff}
+\end{table}
+%------------------------------------------------------------------------------%
+\tref{tab:srp-frozen-flow-diff} shows that the decoupled and fully coupled
+schemes match discretely for surface temperature, and to within approximately
+machine precision for the mass flow rate through the plenum.  The residual was
+less than $10^{-16}$ for all equations in this comparison, and only the last
+digit of both quantities in \tref{tab:srp-frozen-flow-diff} were changing by the
+end of the solution.
+%------------------------------------------------------------------------------%
+\begin{table}
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Quantity & Decoupled & Fully Coupled & Relative Difference \\
+    \hline
+    $\massflow$ & 0.8448720721551258E-03 & 0.8448720721551088E-03 & 2.01E-14 \\
+    $T_{RMS}$   & 0.1545729169703027E+04 & 0.1545720949811712E+04 & 5.32E-06
+  \end{tabular}
+  \caption{Difference with Finite-Rate Chemistry}
+  \label{tab:srp-chem-flow-diff}
+\end{table}
+%------------------------------------------------------------------------------%
+\tref{tab:srp-chem-flow-diff} shows similar agreement with regard to the plenum
+mass flow rate, but poorer agreement of the surface temperature. Given the
+varying degrees of convergence shown in \fref{fig:chem-res-comp}, this
+difference in surface temperature is not surprising. At the point the
+convergence stall, with the residual of all equations hanging at $\sim
+10^{-8}$, only the last nine digits were still changing.  This indicates that
+improving the conditioning of the problem, in order to enable further converge
+of the flow equation residuals to machine zero, would likely decrease the relative
+difference between the fully coupled and decoupled flow solver schemes.  For
+engineering applications this difference is trivial and it has only minimal
+impact, if any, on the design optimization procedure.  The effect of the flux
+limiter sensitivity is much greater on the design optimzation procedure, and it
+was found that the using the decoupled scheme or the fully-coupled scheme in the
+optimization from \cref{chapter-five} converged to the same result if the
+limiter fields were made identical between the schemes.
+
+\subsection{Annular Jet: Convergence Quality}
 
 Due to startup transients, where reaction rates grew very large as nearly all
 $H_2$ and $O_2$, and most of $N_2$, dissociated near the stagnation region, the
-source term scaling factor, $\omega$, was employed for this problem to maintain
-stability.  It was empirically determined that the source term scaling could be
-removed within the first third of the way to convergence for this problem.
+source ferm scaling factor, $\omega_r$, was employed for this problem to
+maintain stability.  It was empirically determined that the source term scaling
+could be removed within the first third of the way to convergence for this
+problem.  
 
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+	\begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/flow-efficiency/dc-gfc-res-chem.png}
+    \caption{Finite-Rate Chemistry}
+    \label{fig:srp-dc-gfc-res-frozen}
+  \end{subfigure}
+	\begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/flow-efficiency/dc-gfc-res-frozen.png}
+    \caption{Frozen Chemistry}
+    \label{fig:srp-dc-gfc-res-chem}
+  \end{subfigure}
+  \caption{Second-Order Residual Convergence History}
+  \label{fig:srp-dc-gfc-res}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:srp-dc-gfc-res} shows a comparsion of the residual convergence for the
+fully coupled schemes, with exact first-order linearizations and the
+approximations described in \sref{sec:sphere-cone-exact-approx-convergence}, and
+the decoupled scheme.  The comparing
+\frefs{fig:srp-dc-gfc-res-frozen}{fig:srp-dc-gfc-res-chem}, there is a stark
+difference both the minimum residual convergence and the ``smoothness'' of the
+convergence profile.  When the no chemical source terms are present (frozen
+flow), the flow equation residuals are able to be converged to $ < 10^{-16}$,
+with very few high-frequency errors encountered after the limiter is frozen at
+4000 iterations.  When chemistry is engaged, the convergence of the flow
+equation residuals stalls at approximately $10^{-8}$, and there are a large
+number of high-frequency errors in the solution updates after the limiter is
+frozen, due to the frozen limiter needing to be re-evaluated.
+\fref{fig:srp-dc-gfc-res-chem} shows that the decoupled scheme is more
+sensitive to the frozen limiter than either of the fully coupled schemes.  This
+is not overly surprising, since the re-evaluation of the flux limiter is
+sensitive to subtle changes in the species densities, and the decoupled
+scheme jacobians have a large number of approximations with regard to species
+density linearizations.  As show in \sref{sec:annular-jet-flow-verify}, the
+impact of this poor convergence quality on the quantities of interest is
+minimal, and this degree of convergence is more than sufficient to obtain the
+sensitivity gradients required in design optimization.
+
+\subsection{Annular Jet: Relative Speedup}
+
+The computational cost of decoupled scheme and fully coupled scheme with exact
+first-order linearizations is compared to the previously implemented fully coupled
+scheme with approximate first-order linearizations.
+For flow with frozen chemistry, show in \fref{fig:srp-dc-gfc-res-frozen},
+the solution is considered converged when the flow residual L2 norm is less
+than $10^{-16}$, and the relative speedup is shown in
+\tref{tab:srp-rel-speedup-frozen}
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c}
+    Scheme & Time (s) & Speedup \\
+    \hline
+    Fully Coupled (Approximate) & 348.6 & 1.0 (baseline) \\
+    Fully Coupled (Exact)       & 265.6 & 1.31 \\
+    Decoupled                   & 138.7 & 2.51
+  \end{tabular}
+  \caption{Relative Speedup for Frozen Chemistry}
+  \label{tab:srp-rel-speedup-frozen}
+\end{table}
+%------------------------------------------------------------------------------%
+The decoupled scheme is considerably faster than either of the two fully coupled
+schemes, and the improved iterative convergence afforded by the exact
+linearizations prove valuable to the fully coupled scheme for this case, where
+the residuals can be converged an additional 10 orders of magnitude after the
+limiter is frozen.  Determining the relative speedup is difficult for the
+schemes in \fref{fig:srp-dc-gfc-res-chem}, where finite-rate chemistry is
+engaged, due to noise in the convergence history.  Because of this, total
+solution time is used in lieu of a residual convergence level to compute the
+relative speedup in \tref{tab:srp-rel-speedup-chem}
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c}
+    Scheme & Time (s) & Speedup \\
+    \hline
+    Fully Coupled (Exact)       & 280.6 & 1.0 (baseline) \\
+    Fully Coupled (Approximate) & 270.4 & 1.04 \\
+    Decoupled                   & 168.6 & 1.66
+  \end{tabular}
+  \caption{Relative Speedup for Finite-Rate Chemistry}
+  \label{tab:srp-rel-speedup-chem}
+\end{table}
+%------------------------------------------------------------------------------%
+The gains associated with chemistry engaged are significantly less than those
+with frozen chemistry for this annular jet case.  Due to stalled convergence,
+there is no clear advantage of using exact linearizations over approximate
+linearizations in the fully coupled scheme, although the relative savings of use
+approximate linearizations are almost negligible ($4\%$).  The decoupled scheme
+66\% faster the exact, fully coupled scheme, and the difference between this
+result and the frozen flow result is likely the additional computations required
+by the chemical source term, as well as the poor iterative convergence quality.
 
