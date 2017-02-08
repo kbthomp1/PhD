@@ -97,8 +97,17 @@ curve fits and related to $\cvs$ via
 %------------------------------------------------------------------------------%
 The thermodynamic properties curve fit tables developed by McBride, Gordon, and
 Reno\cite{McBride} were used to compute $\cps$, and quadratic blending function
+of the form
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \cps = a T^2 + b T + c
+  \label{generic-quad-blending}
+\end{equation}
+%------------------------------------------------------------------------------%
 was used to ensure that $\cps$ and enthalpy were continuous across temperature
-ranges.  The details of this blending are given in Appendix \ref{derivations}.
+ranges.  The details of coefficients $a$, $b$, and $c$, in
+\eref{generic-quad-blending} and their derivation are given in
+\aref{sec:quad-cp-blending}
 
 \section{Chemical Kinetics Model}
 

@@ -27,14 +27,14 @@ Sample inverse and direct design optimizations were completed on a hypersonic
 re-entry vehicle geometry that employed a retro-firing annular jet.  Using the
 sensitivity derivatives computed by the adjoint, the annular jet plenum
 conditions were modified to improve the surface temperature RMS and mass flow
-rate throught the annular jet plenum.  The direct design case demonstrated the
+rate through the annular jet plenum.  The direct design case demonstrated the
 ability to tune a design based on favorable engineering attributes, and serves
 as a proof-of-concept for future work to develop re-entry vehicles with active
 thermal protection systems.
 
-To determine the accuract of the sensitivity dervatives provided by the adjoint
+To determine the accuracy of the sensitivity derivatives provided by the adjoint
 solver, a complex-variable approach was employed.  By transforming the source
-code of FUN3D, complex-variable frechet derivatives were computed and compared
+code of FUN3D, complex-variable Frechet derivatives were computed and compared
 to those computed by the adjoint solver.  Both of these were found to match to a
 high degree of accuracy when both the flow solver and adjoint solver were
 sufficiently converged.  Cases involving strong chemical reactions were
@@ -51,7 +51,7 @@ adjoint scheme for the annular jet demonstration problem, if the exact
 linearizations were store rather than recomputed at each time step.  The
 decoupled adjoint scheme also afforded $20\%$ less memory required than the
 fully coupled adjoint scheme, and the decoupled scheme was over 16 times faster
-than the fully coupled scheme when the decoupled scheme utiltized storing the
+than the fully coupled scheme when the decoupled scheme utilized storing the
 exact linearizations and the fully coupled scheme did not.  Future work will
 include methods to speedup the adjoint exact linearization computation, as well
 as schemes that employ mixed storage and recomputing of these linearizations,
@@ -61,7 +61,7 @@ The ability to perform high-fidelity sensitivity analysis and design
 optimization on reacting flows is significantly helped by the increased
 computational efficiency that the decoupled flow and adjoint schemes provide.
 The improvement to iterative convergence provided by exact linearizations in the
-jacobians, also compounds the beneficial aspects of the decoupled schemes.  It
+Jacobians, also compounds the beneficial aspects of the decoupled schemes.  It
 is hoped that these improvements will encourage interest in the field of
 adjoint-based sensitivity analysis, by enabling solutions to problems that were
 intractable due to the high computational and memory cost requirements.

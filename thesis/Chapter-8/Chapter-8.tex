@@ -4,7 +4,7 @@
 At this point, the reacting gas adjoint in FUN3D has been utilized to obtain
 sensitivity information needed to drive design optimization, and the
 sensitivities of the fully coupled scheme have been validated against complex
-frechet derivatives for accuracy.  A key point of this study is to demonstrate
+Frechet derivatives for accuracy.  A key point of this study is to demonstrate
 the increase computational efficiency and relative memory saving of using a
 decoupled variable set for the flow and adjoint solvers, instead of a fully
 coupled variable set.  This chapter details the benefits of applying the
@@ -225,10 +225,10 @@ An important benefit of implementing an adjoint solver in FUN3D comes the
 requirement of exact linearizations, because the linearizations needed to form
 the residual in the adjoint solver can be reused by the flow solver.
 Due to the high storage requirements associated with exactly linearizing the
-gradient terms in the reconstruction, an approximate jacobian is used in the
-flow solver.  This approximate jacobian consists of linearizations of the
+gradient terms in the reconstruction, an approximate Jacobian is used in the
+flow solver.  This approximate Jacobian consists of linearizations of the
 first-order scheme, as is used to solve the governing equations via defect
-correction.  Previously, the reacting gas path employed a jacobian also, that
+correction.  Previously, the reacting gas path employed a Jacobian also, that
 approximated the linearizations of the Roe FDS scheme\cite{gnoffo-tp} as
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -243,13 +243,13 @@ term in the Roe RDS scheme, formed by evaluating $\rdiff{c}{\mU}$ with Roe
 averaged quantities.  This approximation has been is used by others
 \cite{rinaldi2014exact} to mitigate the development time of implementing an
 exact linearization of the dissipation term in the Roe FDS scheme, as well the
-large computational cost in computing those linearizations at each jacobian
+large computational cost in computing those linearizations at each Jacobian
 update.
 
 To demonstrate any benefit of the exact linearization of the Roe FDS scheme on
 iterative convergence of the flow solver, the sphere cone case was converged
-using both the jacobian employing exact linearizations of the Roe FDS scheme
-flux, and the jacobian employing the approximation in \eref{approx-roe-jac}.
+using both the Jacobian employing exact linearizations of the Roe FDS scheme
+flux, and the Jacobian employing the approximation in \eref{approx-roe-jac}.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -379,7 +379,7 @@ frozen, due to the frozen limiter needing to be re-evaluated.
 sensitive to the frozen limiter than either of the fully coupled schemes.  This
 is not overly surprising, since the re-evaluation of the flux limiter is
 sensitive to subtle changes in the species densities, and the decoupled
-scheme jacobians have a large number of approximations with regard to species
+scheme Jacobians have a large number of approximations with regard to species
 density linearizations.  As show in \sref{sec:annular-jet-flow-verify}, the
 impact of this poor convergence quality on the quantities of interest is
 minimal, and this degree of convergence is more than sufficient to obtain the
@@ -391,7 +391,7 @@ The computational cost of decoupled scheme and fully coupled scheme with exact
 first-order linearizations is compared to the previously implemented fully coupled
 scheme with approximate first-order linearizations.
 For flow with frozen chemistry, show in \fref{fig:srp-dc-gfc-res-frozen},
-the solution is considered converged when the flow residual L2 norm is less
+the solution is considered converged when the flow residual $L_2$ norm is less
 than $10^{-16}$, and the relative speedup is shown in
 \tref{tab:srp-rel-speedup-frozen}
 %------------------------------------------------------------------------------%

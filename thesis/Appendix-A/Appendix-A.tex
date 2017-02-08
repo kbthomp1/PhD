@@ -7,7 +7,8 @@ For the Roe flux difference splitting scheme, the species mass fluxes are given 
 %------------------------------------------------------------------------------%
 \begin{equation}
 	F_{\rho_s} = \frac{\rho_s^L\overline{U}^L+\rho_s^R\overline{U}^R}{2}
-	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_{3_s}}{2} \label{species_mass} \\
+	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_{3_s}}{2}
+  \label{species-mass} \\
 \end{equation}
 \begin{align}	
 		dv_1 &= \frac{p^R-p^L+\tilde{\rho} \tilde{a} (\overline{U}^R-\overline{U}^L)}{\tilde{a}^2} \\
@@ -23,8 +24,8 @@ For the Roe flux difference splitting scheme, the species mass fluxes are given 
 where the $\tilde{}$ notation signifies a Roe-averaged quantity, given by:
 %------------------------------------------------------------------------------%
 \begin{gather}
-	\mathbf{\tilde{U}} =w\mathbf{\tilde{U}}^L+(1-w)\mathbf{\tilde{U}}^R \\
-	w = \frac{\tilde{\rho}}{\tilde{\rho}+\rho^R} \\
+	\mathbf{\tilde{U}} =\roe \mathbf{\tilde{U}}^L+(1-\roe)\mathbf{\tilde{U}}^R \\
+	\roe = \frac{\tilde{\rho}}{\tilde{\rho}+\rho^R} \\
 	\tilde{\rho} = \sqrt{\rho^R\rho^L}
 \end{gather}
 %------------------------------------------------------------------------------%
@@ -32,7 +33,7 @@ The species mass fluxes must sum to the total mass flux; thus, the total mixture
 mass flux is given as
 %------------------------------------------------------------------------------%
 \begin{equation}
-\label{total_mass}
+\label{total-mass}
 	F_\rho = \sum\limits_{s}{F_{\rho_s}} = \frac{\rho^L\overline{U}^L+\rho^R\overline{U}^R}{2}
 	-\frac{\lambda_1 dv_1 + \lambda_2 dv_2 +\lambda_3 dv_3}{2}
 \end{equation}
@@ -40,11 +41,11 @@ mass flux is given as
 	dv_3 = \frac{\tilde{a}^2 (\rho^R-\rho^L)-(p^R-p^L)}{\tilde{a}^2}
 \end{equation}
 %------------------------------------------------------------------------------%
-Multiplying Eq.~(\ref{total_mass}) by the Roe-averaged mass fraction and
-substituting it into Eq.~(\ref{species_mass}) results in:
+Multiplying \eref{total-mass} by the Roe-averaged mass fraction and
+substituting it into \eref{species-mass} results in:
 %------------------------------------------------------------------------------%
 \begin{equation}
-\label{unsimp_sp_flux}
+\label{unsimp-sp-flux}
 	F_{\rho_s} =\tilde{c}_s F_\rho + \frac{(c_s^L-\tilde{c}_s)\rho^L(\overline{U}^L+\mid \tilde{U}\mid)}{2}
 	+ \frac{(c_s^R-\tilde{c}_s)\rho^R(\overline{U}^R-\mid \tilde{U}\mid)}{2}
 \end{equation}
@@ -57,48 +58,63 @@ through numerical experiments it has been determined that omitting this
 dependence does not adversely affect convergence.  The notation can be further
 simplified by defining the normal velocities as follows:
 %------------------------------------------------------------------------------%
-\begin{equation} \label{lambda_pm} \lambda^+ = \frac{\overline{U}^L+\mid
-  \tilde{U}\mid}{2}, \quad \lambda^- = \frac{\overline{U}^R-\mid
-  \tilde{U}\mid}{2} \end{equation}
+\begin{equation}
+  \lambda^+ = \frac{\overline{U}^L+\mid \tilde{U}\mid}{2}, \quad 
+  \lambda^- = \frac{\overline{U}^R-\mid \tilde{U}\mid}{2} 
+  \label{lambda-pm} 
+\end{equation}
 %------------------------------------------------------------------------------%
-Finally, substituting Eq.~(\ref{lambda_pm}) into Eq.~(\ref{unsimp_sp_flux})
-yields the final result for calculating the species flux in the decoupled
-system:
+Finally, substituting \eref{lambda-pm} into \eref{unsimp-sp-flux} yields the
+final result for calculating the species flux in the decoupled system:
 %------------------------------------------------------------------------------%
-\begin{equation} \label{sp_flux} F_{\rho_s} =\tilde{c}_s F_\rho +
-  (c_s^L-\tilde{c}_s)\rho^L\lambda^+ + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
+\begin{equation}
+  F_{\rho_s} =
+  \tilde{c}_s F_\rho 
+  + (c_s^L-\tilde{c}_s)\rho^L\lambda^+ 
+  + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
+  \label{sp-flux} 
 \end{equation}
 %------------------------------------------------------------------------------%
 Forming the convective contributions to the Jacobians is straightforward.
 Because the $\mathbf{U}'$ level variables are constant, only the left, right,
-and Roe-averaged state mass fractions vary.  Differentiating Eq.~(\ref{sp_flux})
+and Roe-averaged state mass fractions vary.  Differentiating \eref{sp-flux}
 with respect to the mass fraction, $c_s$, the left and right state contributions
 are
 %------------------------------------------------------------------------------%
-\begin{gather} \frac{\partial F_{\rho_s}}{\partial c^L_s} =
-  wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\ \frac{\partial
-    F_{\rho_s}}{\partial c^R_s} = (1-w)F_\rho+(w-1)\rho^L\lambda^+ +
-    w\rho^R\lambda^- \end{gather}
+\begin{gather}
+  \pd{F_{\rho_s}}{c^L_s} = \roe F_\rho+(1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^- \\
+  \pd{F_{\rho_s}}{c^R_s} = (1-\roe) F_\rho+(\roe-1)\rho^L\lambda^+ + \roe\rho^R\lambda^- 
+  \label{dc-sp-linearizations}
+\end{gather}
 %------------------------------------------------------------------------------%
 Because there is no dependence between species in decoupled convective
 formulation, the Jacobian block elements are purely diagonal for the convective
 contributions, of the form
 %------------------------------------------------------------------------------%
-\begin{equation} \begin{pmatrix} \frac{\partial F_{\rho_1}}{\partial c_1} & & 0
-    \\ & \ddots &  \\ 0 & & \frac{\partial F_{\rho_{ns}}}{\partial c_{ns}}
-  \end{pmatrix} \end{equation}
+\begin{equation} 
+  \begin{pmatrix} 
+    \pd{F_{\rho_1}}{c_1} & & 0 \\ 
+    & \ddots & \\ 
+    0 & & \pd{F_{\rho_{ns}}}{c_{ns}}
+  \end{pmatrix}
+  \label{dc-diag-Jacobian}
+\end{equation}
 %------------------------------------------------------------------------------%
 
 \section{Quadratic Interpolation Between Thermodynamic Curve Fits}
+\label{sec:quad-cp-blending}
 
-We seek to blend the two thermodynamic curve fits in such a way that we maintain $c_0$ continuity in both specific heat ($C_p$) and enthalpy ($h$).  To accomplish this, a quadratic function must be used, of the form
+We seek to blend the two thermodynamic curve fits in such a way that we maintain
+$c_0$ continuity in both specific heat ($C_p$) and enthalpy ($h$).  To
+accomplish this, a quadratic function must be used, of the form
 %------------------------------------------------------------------------------%
 \begin{equation}
   a T^2 + b T + c = C_p
   \label{generic_form}
 \end{equation}
 %------------------------------------------------------------------------------%
-The coefficients $a$, $b$, and $c$ are determined by solving the system that results from the boundary value problem
+The coefficients $a$, $b$, and $c$ are determined by solving the system that
+results from the boundary value problem
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{cases}
@@ -108,11 +124,12 @@ The coefficients $a$, $b$, and $c$ are determined by solving the system that res
   \end{cases}
 \end{equation}
 %------------------------------------------------------------------------------%
-Where the $x_1$ and $x_2$ subscripts describe the left and right states, respectively.  Solving the linear system, the coefficients are
+Where the $x_1$ and $x_2$ subscripts describe the left and right states,
+respectively.  Solving the linear system, the coefficients are
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{cases}
-f   a=\frac{3\left( C_{p_2}+ C_{p_1}\right) }{(T_2-T_1)^{2}} - \frac{6 \left(h_2 - h_1\right)}{(T_2-T_1)^{3}}\\ \\
+    a=\frac{3\left( C_{p_2}+ C_{p_1}\right) }{(T_2-T_1)^{2}} - \frac{6 \left(h_2 - h_1\right)}{(T_2-T_1)^{3}}\\ \\
     b=-\frac{2\left[(C_{p_2} + 2C_{p_1})T_2 + (2C_{p_2} + C_{p_1})T_1\right]}{(T_2-T_1)^{2}} + \frac{6(T_2+T_1)(h_2 - h_1)}{(T_2 - T_1)^3}\\ \\
     c=\frac{C_{p_1} T_2 (T_2 + 2T_1) + C_{p_2} T_1 (T_1 + 2 T_2)}{(T_2-T_1)^2} - \frac{6 T_1 T_2 (h_2 - h_1)}{(T_2 - T_1)^3}
   \end{cases}
@@ -134,9 +151,9 @@ Note that this does not ensure that entropy will be continuous across curve
 fits.
 
 \section{Temperature Linearizations and Non-Dimensionalization}
-\label{temperature-jacobian-conditioning}
+\label{temperature-Jacobian-conditioning}
 
-Following the thermodynamic state relations detailed by Gnoffo et. al.
+Following the thermodynamic state relations detailed by Gnoffo et al.
 \cite{gnoffo-tp}, the derivatives of temperature with respect to the conserved
 variable vector
 %------------------------------------------------------------------------------%
@@ -230,11 +247,11 @@ based on freestream dimensional quantities
 \end{equation}
 %------------------------------------------------------------------------------%
 where $^{'}$ denotes a dimensional quantity. Note that temperature, $T$, is not
-nondimensionalized in FUN3D, due to the large number of table look-ups that have
+non-dimensionalized in FUN3D, due to the large number of table look-ups that have
 temperature in dimensional units of Kelvin.  This is an important point when
 non-dimensionalizing the mixture specific heat at constant volume, $C_v$.  In
 the MKS system, $C_v$ has units $J/kg \cdot K$; therefore the proper
-nondimensionalization using the system in \eref{nondim-gg} is
+non-dimensionalization using the system in \eref{nondim-gg} is
 %------------------------------------------------------------------------------%
 \begin{equation}
   C_v = {C_v}^{'}/\left( V^{'}_{\infty} \right)^2
@@ -261,15 +278,15 @@ terms of dimensional quantities.
 %------------------------------------------------------------------------------%
 As the reference velocity becomes large, as is the case in hypersonic problems,
 the quadratic scaling of the final linearization in \eref{tjac-dim},
-$\pd{T}{\rho E}$ can lead to poor conditioning of the jacobian matrix.  This is
+$\pd{T}{\rho E}$ can lead to poor conditioning of the Jacobian matrix.  This is
 particular true for the chemical source term, since small changes in temperature
 can lead to very large changes in species densities.
 
 \section{Change of Variable Sets}
 \label{change-of-var-section}
 
-The decoupled scheme developed by Candler et. al is based upon the change of
-variables
+The decoupled scheme developed by Candler et. al\cite{candler} is based upon the
+change of variables
 %------------------------------------------------------------------------------%
 \begin{equation}
   \mU = \begin{pmatrix}
@@ -330,7 +347,7 @@ $\mU$ can be rewritten in terms of the new variables, $\mv$ as
   \label{u-to-v}
 \end{equation}
 %------------------------------------------------------------------------------%
-This allows the derivation of the jacobian 
+This allows the derivation of the Jacobian 
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{\mU}{\mv} = 
@@ -350,7 +367,7 @@ This allows the derivation of the jacobian
   \label{dudv-jac}
 \end{equation}
 %------------------------------------------------------------------------------%
-At this point, it is important to note that the jacobian in \eref{dudv-jac} has
+At this point, it is important to note that the Jacobian in \eref{dudv-jac} has
 two psuedo-inverse matricies, that correspond to the right and left inverse.
 The right inverse, $\pdr{\mv}{\mU}{R}$, can be constructed based on the previously
 defined steps
@@ -508,7 +525,7 @@ linearizations
 \end{equation}
 %------------------------------------------------------------------------------%
 likewise, in the adjoint the transformation is applied to the tranpose of the 
-jacobian
+Jacobian
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
@@ -532,8 +549,8 @@ jacobian
   \label{drdu-to-drdv-t}
 \end{equation}
 %------------------------------------------------------------------------------%
-Since the tranformation is right-multiplied, the matrix vector products of the 
-exact jacobian with costate variables, $\adjlam{}$, in the adjoint linear system
+Since the tranformation is left-multiplied, the matrix vector products of the 
+exact Jacobian with costate variables, $\adjlam{}$, in the adjoint linear system
 can be done first, and the transformation can then be applied to the system
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -563,12 +580,25 @@ residual is not dependent on the number of equations solved, but only the number
 of dependent variables the equations are linearized with respect to, namely
 $\mU$.
 
-In the decoupled scheme the number of equations effectively solved is one more
-than the fully-coupled scheme.  The residual vector, $R$ for the decoupled
-scheme can be written as
+\section{Change of Equation Sets}
+\label{sec:change-of-equations}
+
+In addition to a change of variables, the decoupled scheme also changes the
+equations being solved, effectively solving is one more equation than the
+fully-coupled scheme.  The residual vector for the decoupled scheme, $\rv{}$,
+and the residual vector for the fully coupled scheme, $\ru{}$, can be written as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \res{} =
+  \ru{} =
+  \begin{pmatrix}
+    \res{\rho_1} \\ \\
+    \vdots \\ \\
+    \res{\rho_{N_s}} \\ \\
+    \res{\rho \vu} \\ \\
+    \res{\rho E}
+  \end{pmatrix}
+  \rightarrow
+  \rv{} =
   \begin{pmatrix}
     \res{\rho_1} - c_1 \resrho \\ \\
     \vdots \\ \\
@@ -577,263 +607,67 @@ scheme can be written as
     \res{\rho \vu} \\ \\
     \res{\rho E}
   \end{pmatrix}
-  \label{dc-res}
+  \label{fc-dc-res}
 \end{equation}
 %------------------------------------------------------------------------------%
-The residual vector in \eref{dc-res} is composed entirely of components from
-the fully coupled system; there for the linearizations for the fully-coupled
-system can be re-used to construct the decoupled adjoint residual
-
-\section{Relationship to Adjoint Equation}
-
-The flow solver equations can be constructed by the integration of the governing
-equations.  In semi-discrete form, this is 
+\eref{fc-dc-res} shows that $\rv{}$ is completely comprised of components from
+$\ru{}$; therefore, a relationship between these equation sets can be derived in
+a similar fashion to Appendix \ref{change-of-var-section}.  Rewriting $\ru{}$ in
+terms of $\rv{}$
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \pd{\mU}{t} + \frac{1}{V} \sum_{i}^{N_{nodes}}
-  \left( \vF_i \cdot \norm_i \right) = \mw
-  \label{semi-discrete}
-\end{equation}
-%------------------------------------------------------------------------------%
-where
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \vF = 
-  \begin{pmatrix}
-    \rho_1 \vu \\
-    \vdots \\
-    \rho_{N_s} \\
-    \rho \vu^2 + p\norm \\
-    (E + p) \vu
-  \end{pmatrix}
-  \label{f-vec}
-\end{equation}
-%------------------------------------------------------------------------------%
-the next time level $n+1$ can be determined from the current time level
-$n$ if the equations are linearized by the approximations
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{aligned}
-    \vF^{n+1} &\approx \vF^{n} + \pd{\vF^{n}}{\mU} d \mU^{n} \\
-    \mw^{n+1} &\approx \mw^{n} + \pd{\mw^{n}}{\mU} d \mU^{n}
-  \end{aligned}
-  \label{linearization-flux}
-\end{equation}
-%------------------------------------------------------------------------------%
-This creates the linear system of equations which may be solved by a
-quasi-Newton method
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left[ 
-    \frac{V}{\Delta t} \mi + 
-    \begin{pmatrix}
-      \tdiff{\rho_1}{\rho_1}    & \dots  & \tdiff{\rho_{ns}}{\rho_1}    & \tdiff{\rho \vu}{\rho_1}    & \tdiff{\rho E}{\rho_1} \\ \\
-      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                   \\ \\
-      \tdiff{\rho_1}{\rho_{ns}} & \dots  & \tdiff{\rho_{ns}}{\rho_{ns}} & \tdiff{\rho \vu}{\rho_{ns}} & \tdiff{\rho E}{\rho_{ns}} \\ \\
-      \tdiff{\rho_1}{\rho \vu}  & \dots  & \tdiff{\rho_{ns}}{\rho \vu}  & \tdiff{\rho \vu}{\rho \vu}  & \tdiff{\rho E}{\rho \vu} \\ \\
-      \tdiff{\rho_1}{\rho E}    & \dots  & \tdiff{\rho_{ns}}{\rho E}    & \tdiff{\rho \vu}{\rho E}    & \tdiff{\rho E}{\rho E}
-    \end{pmatrix}
-  \right]
-  \begin{pmatrix}
-    d \rho_1     \\ \\
-    \vdots       \\ \\
-    d \rho_{N_s} \\ \\
-    d \rho \vu   \\ \\
-    d \rho E
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    \res{\rho_1}     \\ \\
-    \vdots           \\ \\
-    \res{\rho_{N_s}} \\ \\
-    \res{\rho \vu}   \\ \\
-    \res{\rho E}
-  \end{pmatrix}
-  \label{fc-flow}
-\end{equation}
-%------------------------------------------------------------------------------%
-assuming all linearizations are exact, the adjoint system of equations that
-results from the fully coupled formulation in \eref{fc-flow} is
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \begin{pmatrix}
-    \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{ns}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1}    \\ \\
-    \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                    \\ \\
-    \rdiff{\rho_1}{\rho_{ns}} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho \vu}{\rho_{ns}} & \rdiff{\rho E}{\rho_{ns}} \\ \\
-    \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{ns}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu}  \\ \\
-    \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{ns}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
-  \end{pmatrix}
-  \begin{pmatrix}
-    \adjlam{\rho_1}     \\ \\
-    \vdots              \\ \\
-    \adjlam{\rho_{N_s}} \\ \\
-    \adjlam{\rho \vu}   \\ \\
-    \adjlam{\rho E}
-  \end{pmatrix}
-  = -
-  \begin{pmatrix}
-    \pd{f}{\rho_1}     \\ \\
-    \vdots           \\ \\
-    \pd{f}{\rho_{N_s}} \\ \\
-    \pd{f}{\rho \vu}   \\ \\
-    \pd{f}{\rho E}
-  \end{pmatrix}
-  \label{fc-adj}
-\end{equation}
-%------------------------------------------------------------------------------%
-In the new variable set, $\mv$, \eref{fc-flow} is re-written as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left[ 
-    \frac{V}{\Delta t} \mi + 
-    \begin{pmatrix}
-      \tdiff{\rho_1}{\rho_1}    & \dots  & \tdiff{\rho_{ns}}{\rho_1}    & \tdiff{\rho}{\rho_1}    & \tdiff{\rho \vu}{\rho_1}    & \tdiff{\rho E}{\rho_1} \\ \\
-      \vdots                    & \ddots & \vdots                       & \vdots                  & \vdots                      & \vdots                   \\ \\
-      \tdiff{\rho_1}{\rho_{ns}} & \dots  & \tdiff{\rho_{ns}}{\rho_{ns}} & \tdiff{\rho}{\rho_{ns}} & \tdiff{\rho \vu}{\rho_{ns}} & \tdiff{\rho E}{\rho_{ns}} \\ \\
-      \tdiff{\rho_1}{\rho}      & \dots  & \tdiff{\rho_{ns}}{\rho}      & \tdiff{\rho}{\rho}      & \tdiff{\rho \vu}{\rho}      & \tdiff{\rho E}{\rho}      \\ \\
-      \tdiff{\rho_1}{\rho \vu}  & \dots  & \tdiff{\rho_{ns}}{\rho \vu}  & \tdiff{\rho}{\rho \vu}  & \tdiff{\rho \vu}{\rho \vu}  & \tdiff{\rho E}{\rho \vu} \\ \\
-      \tdiff{\rho_1}{\rho E}    & \dots  & \tdiff{\rho_{ns}}{\rho E}    & \tdiff{\rho}{\rho E}    & \tdiff{\rho \vu}{\rho E}    & \tdiff{\rho E}{\rho E}
-    \end{pmatrix}
-  \right]
-  \begin{pmatrix}
-    d c_1      \\ \\
-    \vdots     \\ \\
-    d c_{N_s}  \\ \\
-    d \rho     \\ \\
-    d \rho \vu \\ \\
-    d \rho E
-  \end{pmatrix}
-  =
-  \begin{pmatrix}
-    \res{\rho_1}^{'}     \\ \\
-    \vdots               \\ \\
-    \res{\rho_{N_s}}^{'} \\ \\
-    \res{\rho}           \\ \\
-    \res{\rho \vu}       \\ \\
-    \res{\rho E}
-  \end{pmatrix}
-  \label{dc-flow}
-\end{equation}
-%------------------------------------------------------------------------------%
-Where the new species density equations $\res{\rho_s}^{'}$ and mixture density
-equation $\res{\rho}$ are defined as
-%------------------------------------------------------------------------------%
-\begin{align}
-  \res{\rho_s}^{'} &= \res{\rho_s} - c_s \res{\rho}
-  \label{res-rhos-def} \\
-  \res{\rho} &= \sum_{i=1}^{N_s}\left( \res{\rho_i} \right)
-  \label{res-rho-def}
-\end{align}
-%------------------------------------------------------------------------------%
-\erefs{res-rhos-def}{res-rho-def} are critical to the adjoint formulation of
-\eref{dc-flow}, as primal flow equations have been altered to enforce the
-constraint that
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \sum_{i=1}^{N_s}\left( c_i \right) = 1, \quad
-  \sum_{i=1}^{N_s}\left( d c_i \right) = 0, \ 
-  \label{mass-frac-sum}
-\end{equation}
-%------------------------------------------------------------------------------%
-Just as relationships were derived for the variables set $\mU$ and $\mv$ in
-\sref{change-of-var-section}, there are also relationships between the
-equations, which we denote as $\ru{}$ and $\rv{}$ for the variable sets
-$\mU{}$ and $\mv{}$, respectively.  the equation set $\ru{}$ can be rewritten in
-terms of the equation set $\rv{}$, to form the jacobian
-%------------------------------------------------------------------------------%
-\begin{gather}
   \ru{} =
   \begin{pmatrix}
     \rv{i} + c_i \left(\rv{N_s+1} \right) \\
     \rv{N_s+2} \\
     \rv{N_s+3}
   \end{pmatrix}
-  \label{ru-to-rv} \\[12pt]
+  \label{ru-to-rv}
+\end{equation}
+%------------------------------------------------------------------------------%
+It is possible to form the transformation
+%------------------------------------------------------------------------------%
+\begin{equation}
   \pd{\ru{}}{\rv{}} =
   \begin{pmatrix}
-    1 & 0 & c_i & 0 & 0 \\ \\
-    0 & 1 & c_i & 0 & 0 \\ \\
-    0 & 0 & 0   & 1 & 0 \\ \\
-    0 & 0 & 0   & 0 & 1 \\ \\
+    1      & \dots  & 0 & c_1        & 0 & 0 \\
+    \vdots & \ddots & \vdots            & \vdots & \vdots & \vdots & \vdots \\
+    0      & \dots  & 1 & c_{N_{ns}} & 0 & 0 \\
+    0      & \dots  & 0 & 0          & 1 & 0 \\
+    0      & \dots  & 0 & 0          & 0 & 1 \\
   \end{pmatrix}
   \label{drudrv}
-\end{gather}
-%------------------------------------------------------------------------------%
-Likewise, the tranformation can be made from $\rv{}$ to $\ru{}$
-%------------------------------------------------------------------------------%
-\begin{gather}
-  \rv{} =
-  \begin{pmatrix}
-    \ru{i} + c_i \lsum{k=1}{N_s}{\left( \ru{k} \right)} \\ \\
-    \lsum{k=1}{N_s}{\left( \ru{k} \right)} \\ \\
-    \ru{N_s+1} \\ \\
-    \ru{N_s+2}
-  \end{pmatrix}
-  \label{rv-to-ru} \\[12pt]
-  \pd{\rv{}}{\ru{}} =
-  \begin{pmatrix}
-    1 - c_i & -c_i    & 0 & 0 \\ \\
-    -c_i    & 1 - c_i & 0 & 0 \\ \\
-    1       & 1       & 0 & 0 \\ \\
-    0       & 0       & 1 & 0 \\ \\
-    0       & 0       & 0 & 1
-  \end{pmatrix}
-  \label{drvdru}
-\end{gather}
-%------------------------------------------------------------------------------%
-The change of equations sets in \erefs{ru-to-rv}{drudrv} and the change of
-dependent variable in \eref{u-to-v} can be used to rewrite the fully coupled
-system in \eref{fc-flow} into the decoupled system from \eref{dc-flow}
-
-%------------------------------------------------------------------------------%
-
-%------------------------------------------------------------------------------%
-
-Based on \eref{adj-u-to-v}, it is possible to reuse the exact jacobian of the
-fully coupled scheme, $\ma_{\mU}$, instead of computing the exact jacobian of
-the decoupled system, $\ma_{\mv}$.  This is very attractive, since the
-implementation of the fully coupled scheme does not need to be changed at the
-low-level linearizations.  Instead, the residual of the adjoint can be formed in
-the exact same fashion as the fully coupled scheme, and a series of matrix
-operations can then be performed to transform the equations and dependent
-variables into those used by the decoupled scheme.
-
-The exact same preconditioners used by the flow solver can be transposed and
-used to solve the linear system of equations in the adjoint.  This is done in
-two steps and in reverse order of the iterative mechanism used in the flow
-solver. First, the adjoint costate variables associated with the species mass
-equations, $\adjlam{\rho_s}$, are solved for
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \left( \frac{V}{\Delta t} \mi + \ma_d \right) d \adjlam{\rho_s}
-  = -
-  \begin{pmatrix}
-    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{c_s}} 
-    + \rlprod{\rho}{c_s}
-    + \rlprod{\rho \vu}{c_s}
-    + \rlprod{\rho E}{c_s}
-    + \pd{f}{c_s}
-  \end{pmatrix}
-  \label{dc-solve-adj}
 \end{equation}
 %------------------------------------------------------------------------------%
-Followed by the adjoint costate variables associated with the mixture equations,
-$\adjlam{\rho}$, $\adjlam{\rho \vu}$, and $\adjlam{\rho E}$
+The adjoint costate variable vector $\adjlam{}$ is effectively defined as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \left( \frac{V}{\Delta t} \mi + \ma_m \right) 
-  \begin{pmatrix}
-    d \adjlam{\rho}     \\ \\
-    d \adjlam{\rho \vu} \\ \\
-    d \adjlam{\rho E}
-  \end{pmatrix}
-  = -
-  \begin{pmatrix}
-    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho}} + \rlprod{\rho}{\rho} + \rlprod{\rho \vu}{\rho} + \rlprod{\rho E}{\rho} + \pd{f}{\rho} \\ \\
-    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho \vu}} + \rlprod{\rho}{\rho \vu} + \rlprod{\rho \vu}{\rho \vu} + \rlprod{\rho E}{\rho \vu} + \pd{f}{\rho \vu} \\ \\
-    \lsum{i=1}{N_s}{\rlpprod{\rho_i}{\rho E}} + \rlprod{\rho}{\rho E} + \rlprod{\rho \vu}{\rho E} + \rlprod{\rho E}{\rho E} + \pd{f}{\rho E}
-  \end{pmatrix}
-  \label{mean-solve-adj}
+  \adjlam{} = \pd{f}{\mr}
+  \label{adj-lam-dfdr}
 \end{equation}
 %------------------------------------------------------------------------------%
+Thus, there are two different costate variable vectors for the equation sets
+defined in \eref{ru-to-rv}
+%------------------------------------------------------------------------------%
+\begin{align}
+  \adjlam{\mU} = \pd{f}{\ru{}}
+  \label{adj-lam-ru} \\[12pt]
+  \adjlam{\mv} = \pd{f}{\rv{}}
+  \label{adj-lam-rv}
+\end{align}
+%------------------------------------------------------------------------------%
+based on \erefs{adj-lam-ru}{adj-lam-rv}, it clear that the transformation
+defined in \eref{drudrv} is the mapping between these costate variable sets
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \adjlam{\mU} = \pd{\ru{}}{\rv{}} \adjlam{\mv}
+  \label{adj-ru-to-rv}
+\end{equation}
+%------------------------------------------------------------------------------%
+\eref{adj-ru-to-rv} enables a right preconditioning of the adjoint system of
+equations, where the costate variables associated with the decoupled system of
+equations can be transformed into the costate variables associated with fully
+coupled system of equations, as post-processing step.  This also decreases the
+length of the solution vector storage required, since the fully coupled system
+has one less equation than the decoupled system.
 

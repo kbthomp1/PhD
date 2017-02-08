@@ -83,7 +83,7 @@ matrix can be split into its diagonal and off-diagonal elements, with the latter
 moved to the RHS:
 %------------------------------------------------------------------------------%
 \begin{equation}
-\label{decomp_jac}
+\label{decomp-jac}
 	A=O+D
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -174,17 +174,19 @@ Likewise, linearizing the species mass fluxes with respect to the
 $\mathbf{\hat{V}}$ variables yields
 %------------------------------------------------------------------------------%
 \begin{align} 
-  \mathbf{\hat{F}}^{n+1} &= \mathbf{\hat{F}}^n +\frac{\partial
-  \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^L}\delta \mathbf{\hat{V}}^L
-  +\frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R}\delta
-  \mathbf{\hat{V}}^R \\ \frac{\partial \mathbf{\hat{F}}}{\partial
-  \mathbf{\hat{V}}^L} &= \roe F_\rho+(1-w)\rho^L\lambda^+ - \roe \rho^R\lambda^- \\
-  \frac{\partial \mathbf{\hat{F}}}{\partial \mathbf{\hat{V}}^R} &=
+  \Fhat^{n+1} &=\Fhat^n 
+  + \pd{\Fhat}{\Vhat^L} \delta \mathbf{\hat{V}}^L
+  + \pd{\Fhat}{\Vhat^R} \delta \mathbf{\hat{V}}^R
+  \label{flux-dc-taylor} \\
+  \pd{\Fhat}{\Vhat^L} &= 
+  \roe F_\rho+(1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^-
+  \label{dfdvl} \\
+  \pd{\Fhat}{\Vhat^R} &= 
   ( 1-\roe )F_\rho+(\roe -1)\rho^L\lambda^+ + \roe \rho^R\lambda^-
-  \label{d_last}
+  \label{dfdvr}
 \end{align}
 %------------------------------------------------------------------------------%
-A full derivation of \erefs{dc_flux}{d_last}, along with the
+A full derivation of \erefs{dc_flux}{dfdvr}, along with the
 definition of $\roe$, is included in Appendix A.  The chemical source term is
 linearized in the same manner as the fully coupled scheme; however, the updated
 $\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
@@ -279,7 +281,7 @@ fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
 are linearizations of the species mass fluxes, which results in $ns \times ns$
 matrices.  Because there is no interdependence of species, except through the
 chemical source term, all contributions due to linearizing the convective flux
-are purely diagonal $ns \times ns$ matrices.  Via \eref{decomp_jac}, we
+are purely diagonal $ns \times ns$ matrices.  Via \eref{decomp-jac}, we
 decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
 following linear system:
 %------------------------------------------------------------------------------%
@@ -377,11 +379,11 @@ of $\phi$ can exist at each node for edge-based limiter, and the results are not
 each node, based on the gradients that are computed there.  For these limiters,
 the value of $\phi$ is unique to each node and can be stored with the flow
 solution as an additional variable.  The frozen state of the limiter is only
-re-evaluted if the reconstruction forces a non-physical state at dual volume
+re-evaluated if the reconstruction forces a non-physical state at dual volume
 interface.
 
 For this study, smooth Van Albada\cite{van1997comparative}, Van
-Leer\cite{vatsa2009calibration}, and minmod\cite{roe1986characteristic} flux
+Leer\cite{vatsa2009calibration}, and Minmod\cite{roe1986characteristic} flux
 limiter functions are used.  Each of these limiters is augmented with a
 heuristic pressure limiter by Park\cite{park2008anisotropic}. The choice of
 these limiters impacts solution converge and accuracy, and it is important to

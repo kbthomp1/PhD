@@ -33,7 +33,7 @@ investigated by Gnoffo et. al \cite{gnoffo2016tapping}, the primary objective of
 this study is to efficiently cool the surface of the vehicle with minimal mass
 added to the vehicle.  Since only inviscid flow was done in this study, and the
 root-mean-square (RMS) of surface temperature is taken as an analog to the
-surface heating rate.  Likewise, the massflow rate through nozzle plenum
+surface heating rate.  Likewise, the mass flow rate through nozzle plenum
 boundary is taken as an analog to the addition of mass to the vehicle.
 
 The RMS of surface temperature is defined as
@@ -171,7 +171,7 @@ prescribed upper or lower bounds of the design variables.  Due to the
 difficulties encountered with the flux limiter that were described in
 \sref{sec:frozen-limiter}, a first-order inverse design optimization is shown in
 this section.  Results of the second-order inverse design optimization failed
-due to the high sensitivity to the interation at which the limiter is frozen.
+due to the high sensitivity to the interaction at which the limiter is frozen.
 
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
@@ -194,20 +194,20 @@ due to the high sensitivity to the interation at which the limiter is frozen.
 To demonstrate the inverse design capability of an adjoint-based design
 optimization, targets of 2000 K for the surface temperature RMS and 0.0024
 $kg/s$ for the annular nozzle mass flow rate were specified.  These targets were
-chosen semi-arbitarily, and were heuristically determined to be feasible based
-the the design variable bounds. The design variables specified for this
-optimization were the plenum total pressure, $P_{p,o}$ and the plenum ``fuel-air
-ratio'', $\fa$.  The plenum total temperature, $T_{p,o}$, was fixed at 500 K.  A
-species mixture consisting of $H_2$ and $N_2$ was blown from the plenum, with
-the mass fractions dictated by $\fa$ as described in \eref{fuel-air-def}.  For
-the cost function, the weights were chosen heuristically, such that 
+chosen semi-arbitrarily, and were heuristically determined to be feasible based
+the design variable bounds. The design variables specified for this optimization
+were the plenum total pressure, $P_{p,o}$ and the plenum ``fuel-air ratio'',
+$\fa$.  The plenum total temperature, $T_{p,o}$, was fixed at 500 K.  A species
+mixture consisting of $H_2$ and $N_2$ was blown from the plenum, with the mass
+fractions dictated by $\fa$ as described in \eref{fuel-air-def}.  For the cost
+function, the weights were chosen heuristically, such that 
 %------------------------------------------------------------------------------%
 \begin{equation}
   \frac{w_1}{w_2} = \frac{\cost{T_{RMS}}^2}{\cost{\dot{m}}^2}
   \label{weight-ratio}
 \end{equation}
 %------------------------------------------------------------------------------%
-This results in a roughly equivalent weighting beween the $T_{RMS}$ and
+This results in a roughly equivalent weighting between the $T_{RMS}$ and
 $\dot{m}$, which is desired as both targets should be met at optimality.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
@@ -333,7 +333,7 @@ mass flow rate.
 %------------------------------------------------------------------------------%
 Thus, the optimizer was able to improve both components of the cost function.
 This is an excellent problem for a high-fidelity gradient-based
-optimization, as the non-linear effects of plenum-shock interation makes the
+optimization, as the non-linear effects of plenum-shock interaction makes the
 optimum plenum condition difficult to determine intuitively.
 
 There is a much stronger dependence on the choice of cost function weights for
