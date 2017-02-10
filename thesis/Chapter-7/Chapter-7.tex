@@ -134,7 +134,7 @@ ejected in a 5-species freestream air mixture with frozen flow
 There is very strong agreement between all the design variable sensitivities
 computed by the adjoint and complex solvers, with all matching discretely to
 within 11 digits.  \tref{tab:react-deriv-check} shows the same comparison as
-that in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
+those in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -151,16 +151,13 @@ that in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
 %------------------------------------------------------------------------------%
 It is clear that these do not match as well as those in
 \trefs{tab:pg-deriv-check}{tab:frozen-deriv-check}.  The difference is explained
-by the temperature dependence of the chemical source term, and the conditioning
-of the temperature Jacobian matrices.  The dissociation reactions near the
-stagnation region and the combustion reactions that occur when $H_2$
-auto-ignites in the shock layer are sensitive to the temperature, and account
-for a significant numerical stiffness seen in the convergence of the
-conservation equation residuals.  This manifests in the residuals stalling at a
-much higher value than the previous cases that were run without a chemical
-source term.  Due to the non-dimensionalization in the generic gas path of
-FUN3D, the condition number of temperature Jacobian scales quadratically with
-the freestream velocity.  This is discussed thoroughly in Appendix
-\ref{temperature-Jacobian-conditioning}. Since this is a hypersonic problem,
-it can be expected that the conditioning of the temperature Jacobian has
-impacted the adjoint and complex solve sensitivities.
+by the relative convergence of the flow solver residuals shown in
+\fref{fig:chem-res-comp}.  Because convergence of the flow solver residuals
+involving chemistry typically stalls at eight orders of magnitude higher than
+without chemistry, it should be likewise be expected that the sensitivity
+derivatives also degrade in comparison.  The large condition number increase
+from the chemical source term linearizations being added to the Jacobian is
+believed to be the cause of the stalled convergence. Despite this poor relative
+agreement, \sref{sec:2nd-order-direct-design} demonstrates that the accuracy of
+the derivatives in \tref{tab:react-deriv-check} is more than sufficient to
+complete design optimizations.
