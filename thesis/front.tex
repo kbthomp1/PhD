@@ -1,26 +1,28 @@
 %% ------------------------------ Abstract ---------------------------------- %%
 \begin{abstract}
 
-  An approach is described to efficiently compute aerothermodynamic design
-sensitivities using a decoupled variable set.  In this approach, the species
-continuity equations are solved separately from the mixture continuity,
-momentum, and total energy equations for the Roe flux difference splitting
-scheme in both the flow and adjoint solvers. This decoupling simplifies the
-implicit system, so that the flow solver can be made significantly more
-efficient, with very little penalty on overall scheme robustness.  Most
-importantly, the computational cost of the point implicit relaxation is shown to
-scale linearly with the number of species for the decoupled system, whereas the
-fully coupled approach scales quadratically. Also, the decoupled method
-significantly reduces the cost in wall time and memory in comparison to the
-fully coupled approach. 
+  An algorithm is described to efficiently compute aerothermodynamic design
+sensitivities using a decoupled variable set.  In a conventional approach to
+computing design sensitivities for reacting flows, the species continuity
+equations are fully coupled to the conservation laws for momentum and energy. In
+this algorithm, the species continuity equations are solved separately from the
+mixture continuity, momentum, and total energy equations. This decoupling
+simplifies the implicit system, so that the flow solver can be made
+significantly more efficient, with very little penalty on overall scheme
+robustness.  Most importantly, the computational cost of the point implicit
+relaxation is shown to scale linearly with the number of species for the
+decoupled system, whereas the fully coupled approach scales quadratically. Also,
+the decoupled method significantly reduces the cost in wall time and memory in
+comparison to the fully coupled approach. 
 
-This decoupled approach is demonstrated for inviscid flow in chemical
-non-equilibrium around a re-entry vehicle with a retro-firing annular nozzle
-The sensitivities of the surface temperature and mass flow rate through the
-nozzle plenum are computed with respect plenum conditions and verified against
-complex-variable finite-difference.  The decoupled scheme significantly improved
-the computational time and memory required to complete the optimization, making
-this an attractive method for high-fidelity design of hypersonic vehicles.
+This decoupled approach for computing design sensitivities with the adjoint
+system is demonstrated for inviscid flow in chemical non-equilibrium around a
+re-entry vehicle with a retro-firing annular nozzle. The sensitivities of the
+surface temperature and mass flow rate through the nozzle plenum are computed
+with respect plenum conditions and verified against complex-variable
+finite-difference.  The decoupled scheme significantly improved the
+computational time and memory required to complete the optimization, making this
+an attractive method for high-fidelity design of hypersonic vehicles.
 
 \end{abstract}
 

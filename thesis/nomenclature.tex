@@ -19,11 +19,11 @@
   $C_{v,s}$ \> Specific heat at constant volume of species $s$ \\
   $D$ \> Decomposed diagonal Jacobian matrix \\
   $dv_1,\ dv_2,\ dv_3$ \> Eigenvector components \\
-  $e_s$ \> Internal energy of species $s$, $J/kg^3$ \\
-  $E$ \> Total energy per unit mass, $J/kg^3$ \\
-  $E_{f,r}$\> Activation energy of reaction $r$ \\
-  $F_\rho'$\> Decoupled scheme mixture mass flux \\
-  $F_{\rho_s}'$\> Decoupled scheme mass flux of species $s$ \\
+  $e_s$ \> Internal energy of species $s$, $J/kg$ \\
+  $E$ \> Total energy per unit mass, $J/kg$ \\
+  $E_{f,r}$\> Activation energy of reaction $r$, $J$ \\
+  $F_\rho'$\> Decoupled scheme mixture mass flux, $kg\ m^2/s$ \\
+  $F_{\rho_s}'$\> Decoupled scheme mass flux of species $s$, $kg\ m^2/s$ \\
   $\mathbf{F},\ \mathbf{F}',\ \mathbf{\hat{F}}$ \> Flux vectors \\
   $k_{f,r}$ \> Forward reaction rate coefficient of reaction $r$ \\
   $k_{b,r}$ \> Backward reaction rate coefficient of reaction $r$ \\
@@ -31,10 +31,11 @@
   $L$ \> Adjoint equations Lagrangian \\
   $M_s$ \> Molecular weight of species $s$ \\
   $\massflow$ \> Plenum mass flow rate $kg/s$ \\
-  $ns$ \> Number of species \\
-  $\mathbf{n}$ \> Face unit normal vector \\
+  $N_s$ \> Number of species \\
+  $\norm$ \> Face unit normal vector \\
+  $n_{f,r}$ \> Exponent of temperature preexponential term for forward reaction $r$ \\
   $n_x$, $n_y$, $n_z$ \> Face unit normal vector components \\
-  $N$ \> Face normal vector, $m^2$ \\
+  $\Norm$ \> Face normal vector, $m^2$ \\
   $N_{nodes}$ \> Number of nodes \\
   $N_{nz}$ \> Number of non-zero off-diagonal entries in Jacobian \\
   $N_{nb}$ \> Number of neighbors around local node \\
@@ -46,9 +47,9 @@
   $R_{f,r}$ \> Forward reaction rate of reaction $r$ \\
   $R_{b,r}$ \> Backward reaction rate of reaction $r$ \\
   $R_u$ \> Universal Gas Constant, $J/kg^3$ \\
-  $\mathbf{S}$ \> Face normal vector, $m^2$\\
   $\mU,\mv, \mU^{'},\mathbf{\hat{U}}$ \> Conservative variable vectors \\
   $\overline{U}$ \> Normal velocity, $m/s^2$ \\
+  $\vu$ \> Velocity vector, $m/s$ \\
   $u,\ v,\ w$ \> Components of velocity, $m/s$ \\
   $V$ \> Cell volume, $m^3$ \\
   $\roe$ \> Roe scheme weighting factor \\
@@ -70,13 +71,14 @@
   $\rho_s$ \> Species $s$ density, $kg/m^3$ \\
   $\sprod$ \> Stoichiometric coefficient of product species $s$ in reaction $r$ \\
   $\sreact$ \> Stoichiometric coefficient of reactant species $s$ in reaction $r$ \\
-  $\omega$ \> Chemical source term scaling factor \\
+  $\omega_r$ \> Chemical source term scaling factor \\
   $\omega_s$ \> Chemical source term of species $s$ \\
 \end{tabbing}
 
 \textbf{Subscripts}
 \begin{tabbing}
   XXXXXXXXX \= \kill% this line sets tab stop
+  $ns$ \> Number of species \\
   $o$ \> Reference value \\
   $\infty$ \> Freestream condition \\
 \end{tabbing}
@@ -86,7 +88,6 @@
   XXXXXXXXX \= \kill% this line sets tab stop
   $^*$ \> Cost function component target \\
   $n, n+1$ \> Time level \\
-  $n_{f,r}$ \> Preexponential factor of reaction $r$ \\
   $R,\ L$ \> Right and left state quantities \\
   $f$ \> Face
 \end{tabbing}

@@ -111,18 +111,15 @@ thus, the relative memory saved by using the decoupled scheme correctly
 approaches a factor of 1/4.
 
 \subsection{Cylinder - Computational Cost}
+\label{sec:cylinder-comp-cost}
 
 As stated before, the cost of solving the decoupled implicit system should scale
 approximately linearly with the number of species, whereas the fully coupled
 problem should scale quadratically; thus, the speedup of the implicit solve
 should be approximately linear when comparing the decoupled and fully coupled
 approaches.  Figure \ref{rel_speedup} shows this to be true for the cylinder test
-case, and that the total speedup of the problem is less than that of just
-the linear solve.  It is to be expected that the overall gains are not as large
-as those for the implicit solve, since there are many other factors that
-scale with the number of species, especially calculating the species source term
-and its linearization.
-
+case, but that the total speedup of the problem is less than that of just
+the linear solve.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -131,6 +128,29 @@ and its linearization.
   \label{rel_speedup} 
 \end{figure}
 %------------------------------------------------------------------------------%
+The fact that the overall gains are not as large as those for the implicit
+solve is due to Amdahl's law: the overall speedup is always limited by the
+slowest component.  There are many other factors that scale with the number of
+species, especially calculating the species source term and its linearization.
+%------------------------------------------------------------------------------%
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{figures/flow-efficiency/percent-cost.png}
+  \caption{Relative Cost of Flow Solver Components for 11-Species}
+  \label{fig:percent-cost-cyl}
+\end{figure}
+%------------------------------------------------------------------------------%
+\fref{fig:percent-cost-cyl} shows that jacobian evaluations and computing the
+thermo-chemical state have superceded the linear solver as the dominant cost of
+the simulation.  The overall speedup of the decoupled scheme over the fully
+coupled scheme is constrained by these, and also highlights the sensivity to the
+jacobian evaluation frequency.  When the non-linear update is rapidly converging
+the residuals, the jacobian is usually updated only one every 10 iterations.
+Likewise, when the non-linear update is not resulting a sustained residual
+decrease the jacobian is updated every iteration.  This has a large effect on
+relative computational efficiency, and poorly converging solutions can be
+expected to show less relative speedup between the fully coupled and decoupled
+schemes.
 
 \section{15 km/s Flow over Spherically-Capped Cone}
 \label{sec:15-kps-sphere-cone}
@@ -436,7 +456,15 @@ with frozen chemistry for this annular jet case.  Due to stalled convergence,
 there is no clear advantage of using exact linearizations over approximate
 linearizations in the fully coupled scheme, although the relative savings of use
 approximate linearizations are almost negligible ($4\%$).  The decoupled scheme
-66\% faster the exact, fully coupled scheme, and the difference between this
-result and the frozen flow result is likely the additional computations required
-by the chemical source term, as well as the poor iterative convergence quality.
+66\% faster than the exact, fully coupled scheme, and the difference between
+this result and the frozen flow result is the poor iterative convergence
+quality.  As discussed in \sref{sec:cylinder-comp-cost}, the the frequency of
+the jacobian evaulation is tied to the decrease in the residual from each
+non-linear solution update.  Due to the poor convergence seen in
+\fref{fig:srp-dc-gfc-res-chem}, the jacobian is reevaluated at each iteration.
+This significantly diminishes the relative speedup of the decoupled scheme.
+This causes the jacobian update to become a bottleneck in computational time
+required, and the additional cost of computing chemical source term and its
+jacobian at each timestep reduces the relative speedup further in comparison to
+frozen flow.
 

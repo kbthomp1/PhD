@@ -51,7 +51,8 @@ outward normal vector.  The vectors of conserved variables and fluxes are:
 where $\overline{U}$ is the outward pointing normal velocity, $E$ is
 the total energy of the mixture per unit mass as defined in
 \eref{tot-energy-def}, and $e_s$ is the internal energy of species $s$ as
-defined in \eref{int-energy-def}.  By using the Roe FDS scheme,
+defined in \eref{int-energy-def}.  Using the Roe FDS scheme, the flux and
+species chemical source term at the next time level can be approximated as
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\begin{matrix}
@@ -61,7 +62,7 @@ defined in \eref{int-energy-def}.  By using the Roe FDS scheme,
 	\end{matrix}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  By using an
+where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  Using an
 implicit time integration, the implicit scheme becomes:
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -87,16 +88,13 @@ moved to the RHS:
 	A=O+D
 \end{equation}
 %------------------------------------------------------------------------------%
-Each matrix element is a square $(ns+4)\times(ns+4)$ matrix.  One method of
-solving this system is a Red-Black Gauss-Seidel scheme\cite{red-black}, where
-matrix coefficients with even indices are updated first and, subsequently, the
-coefficients with odd indices are updated.  This red-black ordering enables
-better vectorization in solving the linear system.  The computational work for
-the Gauss-Seidel scheme is dominated by matrix-vector multiplications of
-elements of $O$ with $\delta\mathbf{U}$, which are $O(N^2)$ operations, where
-$N=ns+4$.  In the next section, it is shown that decoupling the system reduces
-these matrix-vector multiplications to $O(M^2 + N)$ operations, where $M=5$ and
-$N=ns$.
+Each matrix element is a square $(ns+4)\times(ns+4)$ matrix.  This system can
+be solved iteratively by using a multi-color matrix ordering to perform a series
+of Gauss-Seidel sweeps. The computational work for the Gauss-Seidel scheme is
+dominated by matrix-vector multiplications of elements of $O$ with
+$\delta \mU$, which are $O((N_s + 4)^2)$ operations.  In the next
+section, it is shown that decoupling the system reduces these matrix-vector
+multiplications to $O(5^2 + N_s)$ operations.
 
 \section{Decoupled Point Implicit Method}
 
@@ -138,34 +136,37 @@ followed by the species fluxes as
   \mathbf{\hat{W}}
 \end{equation}
 %------------------------------------------------------------------------------%
-Point relaxation uses Red-Black Gauss-Seidel to update the conserved
-variables in $\mathbf{U}'$ and all associated auxiliary variables, such as
-temperature, pressure, speed of sound, etc.  This is done by holding the
-thermo-chemical state constant, and will always result in the relaxation of a
-five-equation system.  This does trade an implicit relationship between the mixture
-and species equations for an explicit one; thus, this decoupling can have an
-impact on the stability of the scheme, especially due to the non-linearity of
-the chemical source term\cite{park}.
+The same point-implicit relaxation that uses multi-color Gauss-Seidel sweeps is
+used to update the conserved variables in $\mU '$, and all associated
+auxiliary variables, such as temperature, pressure, speed of sound, etc. are
+updated to be consistent with the new state of $\mU '$.  This is done holding
+the mass fraction state constant, and will always result in the relaxation of
+a five-equation system.  This does trade an implicit relationship between the
+mixture and species equations for an explicit one; thus, this decoupling can
+have an impact on the stability of the scheme, especially due to the
+non-linearity of the chemical source term\cite{park}.
  
 The solution of the species mass equations takes a different form.  Based on the
 work of Candler et al.\cite{candler}, the decoupled variables can be rewritten
 in terms of mass fraction, as follows:
 %------------------------------------------------------------------------------%
-\begin{equation}
-  \delta \mathbf{\hat{U}}^n =
-  \rho^{n+1}\mathbf{\hat{V}}^{n+1}-\rho^n\mathbf{\hat{V}}^n = \rho^{n+1} \delta
-  \mathbf{\hat{V}}^n + \mathbf{\hat{V}}^n \delta \rho^n 
+\begin{equation} 
+  \delta \Uhat^n 
+  = \rho^{n+1} \Vhat^{n+1} - \rho^n\Vhat^n 
+  = \rho^{n+1} \delta \Vhat^n + \Vhat^n \delta \rho^n
+  \label{du-to-dv-mass-frac}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $\mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T$, and $c_s=\rho_s/\rho$ the mass
-fraction of species $s$.  While the derivation of the species mass equations is
-different for the Roe FDS scheme from that of Steger-Warming proposed by Candler
-et al.\cite{candler}, the final result takes a similar form: 
+where $\mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T$, and $c_s=\rho_s/\rho$ is the
+mass fraction of species $s$.  While the derivation of the species mass
+equations is different for the Roe FDS scheme from that of Steger-Warming
+proposed by Candler et al.\cite{candler}, the final result takes a similar form: 
 %------------------------------------------------------------------------------%
-\begin{gather}
-  \hat{F}_{\rho_s} = c_s F'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
+\begin{gather} 
+  \hat{F}_{\rho_s} 
+  = c_s F'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
   + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
-  \label{dc_flux}
+  \label{dc-flux}
 \end{gather}
 %------------------------------------------------------------------------------%
 where $F_\rho'$ is the total mass flux computed previously using all
@@ -174,68 +175,68 @@ Likewise, linearizing the species mass fluxes with respect to the
 $\mathbf{\hat{V}}$ variables yields
 %------------------------------------------------------------------------------%
 \begin{align} 
-  \Fhat^{n+1} &=\Fhat^n 
-  + \pd{\Fhat}{\Vhat^L} \delta \mathbf{\hat{V}}^L
-  + \pd{\Fhat}{\Vhat^R} \delta \mathbf{\hat{V}}^R
+  \Fhat^{n+1} &=
+  \Fhat^n 
+  + \pd{\Fhat}{\Vhat^L} \delta \Vhat^L 
+  + \pd{\Fhat}{\Vhat^R} \delta \Vhat^R
   \label{flux-dc-taylor} \\
   \pd{\Fhat}{\Vhat^L} &= 
-  \roe F_\rho+(1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^-
+  \roe F_\rho+(1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^- 
   \label{dfdvl} \\
   \pd{\Fhat}{\Vhat^R} &= 
-  ( 1-\roe )F_\rho+(\roe -1)\rho^L\lambda^+ + \roe \rho^R\lambda^-
+  ( 1-\roe )F_\rho+(\roe -1)\rho^L\lambda^+ + \roe \rho^R\lambda^- 
   \label{dfdvr}
 \end{align}
 %------------------------------------------------------------------------------%
-A full derivation of \erefs{dc_flux}{dfdvr}, along with the
-definition of $\roe$, is included in Appendix A.  The chemical source term is
-linearized in the same manner as the fully coupled scheme; however, the updated
-$\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain rule is
-applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
+A full derivation of \erefs{dc-flux}{dfdvr}, along with the definition of
+$\roe$, is included in \aref{decoupled-flux-derivation}. The chemical source
+term is linearized in the same manner as the fully coupled scheme; however, the
+updated $\mathbf{U}'$ variables are used to evaluate the Jacobian, and the chain
+rule is applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
 fractions:
 %------------------------------------------------------------------------------%
-\begin{equation}
-  \mathbf{\hat{W}}^{n+1} = \mathbf{\hat{W}}^n+\frac{\partial
-  \mathbf{\hat{W}}}{\partial \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial
-  \mathbf{U}}{\partial \mathbf{\hat{V}}} 
+\begin{equation} 
+  \What^{n+1} = \What^n + 
+  \pd{\What}{\mU} \bigg|_{\mU '} 
+  \pd{\mU}{\Vhat}
+  \label{source-term-linearization}
 \end{equation}
 %------------------------------------------------------------------------------%
 For simplicity of notation, we define
 %------------------------------------------------------------------------------%
-\begin{equation}
-  C = \frac{\partial \mathbf{\hat{W}}}{\partial
-  \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial \mathbf{U}}{\partial
-  \mathbf{\hat{V}}}
+\begin{equation} 
+  C = \pd{\What}{\mU} \bigg|_{\mathbf{U}'} \pd{\mU}{\Vhat}
+  \label{c-source-term}
 \end{equation}
 %------------------------------------------------------------------------------%
 The decoupled system to be solved becomes:
 %------------------------------------------------------------------------------%
-\begin{gather} 
+\begin{equation} 
   \begin{split}
-    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t}
-    &+\frac{1}{V}
-    \lsum{f}{}{
-     \left(
-       \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L
-       + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R
-      \right)^{n,n+1}}
-     - C^{n,n+1} \delta \Vhat^n \\
-    &= 
-    -\frac{1}{V}\lsum{f}{}{
-      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f
-    } + \mathbf{W}^{n, n+1} - R_\rho
-  \end{split} \\ 
-  R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
-  {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{N})}}
-  \label{decoupled-no-scaling}
-\end{gather}
+    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t} &+ \frac{1}{V} 
+    \lsum{f}{}{ \left( \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L 
+    + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R \right)^{n,n+1}} 
+    - C^{n,n+1} \delta \Vhat^n \\ 
+    &= -\frac{1}{V}\lsum{f}{}{
+      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f } 
+      + \mathbf{W}^{n, n+1} - \frac{1}{V} R_\rho \Vhat
+  \end{split}
+\end{equation}
 %------------------------------------------------------------------------------%
-where $R_\rho$ is included to preserve the constraint that the mass fractions
-sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta
-c_s}=0$.
+where
+%------------------------------------------------------------------------------%
+\begin{equation}
+  R_\rho =
+  \lsum{f}{}{\lsum{s=1}{N_s}{(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{N})}} 
+  \label{decoupled-no-scaling}
+\end{equation}
+%------------------------------------------------------------------------------%
+is included to preserve the constraint that the mass fractions
+sum to unity, i.e., $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta c_s}=0$
 
-Candler et al.\cite{candler2013analysis} later found that the decoupled scheme
-using a modified Steger-Warming flux splitting was much less stable than the
-fully coupled scheme when large reaction rates were present, particularly for
+Candler et al.\cite{candler2013analysis} later found that the decoupled scheme,
+using a modified Steger-Warming flux splitting, was less stable than the fully
+coupled scheme when large reaction rates were present, particularly for
 exothermic reaction.  This same instability was observed in numerical
 experiments for \eref{decoupled-no-scaling}.  To mitigate this issue, Candler et
 al. proposed an alternative decoupling of variable sets that was more stable,
@@ -262,13 +263,13 @@ $\mw^{n,n+1}$
   \label{decoupled-with-scaling}
 \end{equation}
 %------------------------------------------------------------------------------%
-Ramping this scaling factor from zero to one of the course of
-timestepping the solution to steady-state preserves robustness of the decoupled
-scheme, and numerical experiments show that it has minimal impact on the
-convergence rate.  Typically, the large reaction rates are only present during
-the transients early on in the simulation, and damping the source term during
-this phase does not affect the final result, provided the ramping is completed
-before the end of the simulation.
+Ramping this scaling factor from zero to one over the course of timestepping the
+solution to steady-state preserves robustness of the decoupled scheme, and
+numerical experiments show that it has minimal impact on the convergence rate.
+Typically, the large reaction rates are only present during the transients early
+on in the simulation, and damping the source term during this phase does not
+affect the final result, provided the ramping is completed before the end of the
+simulation.
 
 \section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 \label{sec:predicted-cost-mem-savings}
@@ -281,7 +282,7 @@ fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
 are linearizations of the species mass fluxes, which results in $ns \times ns$
 matrices.  Because there is no interdependence of species, except through the
 chemical source term, all contributions due to linearizing the convective flux
-are purely diagonal $ns \times ns$ matrices.  Via \eref{decomp-jac}, we
+are purely diagonal $N_s \times N_s$ matrices.  Via \eref{decomp-jac}, we
 decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
 following linear system:
 %------------------------------------------------------------------------------%
@@ -306,37 +307,77 @@ following linear system:
   \end{pmatrix} 
 \end{equation} 
 %------------------------------------------------------------------------------%
-where $\Box$ represents a dense $ns \times ns$ matrix, $[\diagdown]$ represents
+where $\Box$ represents a dense $N_s \times N_s$ matrix, $[\diagdown]$ represents
 a diagonal matrix, and $\delta \mathbf{\hat{V}}_j$  is the decoupled variable
 update on the node $j$ that neighbors node $i$, where $N_{nb}$ is the number of
 nodes neighboring node $i$.  Thus, the non-zero entries in the off-diagonal
 matrix can be reduced from diagonal matrices to vectors.  This results in
-significant savings in both computational cost and memory, as the only quadratic
+significant savings in both computational cost and memory, as the only expensive
 operation left in solving the implicit system is dealing with the diagonal
-entries in the Jacobian.  Because the off-diagonal entries significantly
-outnumber the diagonal entries, we can expect nearly linear scaling in cost with
-the number of species.  If compressed row storage\cite{George} is used to
-only store non-zero off-diagonal entries, the relative memory savings in the
-limit of a large number of species for the Jacobian is given by
+entries in the Jacobian.  An LU decomposition of an $N \times N$ matrix
+requires $\sim N^3/3$ operations, whereas the the matrix vector
+products of equivalent dimension requires $N^2$ operations and the vector inner
+products cost.  Including the LU decomposition operations, the relative cost of
+the linear solves in the decoupled scheme compared to the fully coupled scheme
+is approximately
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \text{Relative Computational Cost} = 
+  \frac{
+    \frac{\left( N_s + 4 \right)^3}{3} N_{nodes} + \left( N_s + 4 \right)^2(S_{GS})(N_{nz})
+  }{
+    \frac{(N_s)^3 + (5)^3}{3} N_{nodes} + \left( N_s + 5^2\right)(S_{GS})(N_{nz})
+  }
+  \label{relative-lu-gs-cost}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $S_{GS}$ is the number of multi-color Gauss-Seidel sweeps, $N_{nodes}$ is
+the number of nodes, and $N_{nz}$ is the number of non-zero off-diagonal entries
+stored using compressed row storage\cite{George}.  Because $(S_{GS)(N_nz} >>
+N_{nodes}$, the LU decomposition cost is negligible except when the number of
+species is extremely large.  $N_{nb}(N_s)$ operations.  If the LU decomposition
+costs are dropped from \eref{relative-lu-gs-cost}, the relative cost of the
+linear solve becomes
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \text{Relative Computational Cost} = 
+  \frac{
+   \left( N_s + 4 \right)^2
+  }{
+    \left( N_s + 5^2\right)
+  }
+  \label{relative-no-lu-gs-cost}
+\end{equation}
+%------------------------------------------------------------------------------%
+and can therefore expect nearly linear speedup in the linear solver cost with the
+number of species when using the decoupled system over the fully coupled system.
+It should be noted that cost predicted by operation count of an LU decomposition
+does not usually manifest equivalently in computational cost.  Significant
+compiler optimizations are possible if a storage scheme is adopted where memory
+collocation of the diagonal block jacobians is maintained.  These optimizations
+decrease the cost of the LU decomposition relative to the Gauss-Seidel sweeps
+further, and thus the LU decomposition has never been seen as a dominant cost
+for hypersonic simulations.
+
+Using compressed row storage, the relative memory savings in the limit of a
+large number of species for the Jacobian is given by
 %------------------------------------------------------------------------------%
 \begin{equation}
   \label{mem_req_eq}
   \begin{split} 
     Relative\ Memory\ Cost &=
-    \frac{size(A_d)}{size(A)} \\ &= \lim_{ns\to\infty}
-    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nz})}{(ns+4)^2(N_{nodes}+N_{nz})} \\
+    \frac{size(A_d)}{size(A)} \\ &= \lim_{N_s\to\infty}
+    \frac{(N_s^2+5^2)(N_{nodes})+(N_s+5^2)(N_{nz})}{(N_s+4)^2(N_{nodes}+N_{nz})} \\
     &= \frac{N_{nodes}}{N_{nodes} + N_{nz}}
   \end{split}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $N_{nodes}$ is the number of nodes, and $N_{nz}$ is the number of non-zero
-off-diagonal entries stored using compressed row storage. For a structured grid,
-each node has six neighbors in 3D, i.e., $N_{nz} = 6N_{nodes}$; therefore, we can
-expect the Jacobian memory required to decrease by a factor of seven using this
-decoupled scheme. Interestingly, for a grid that is not purely hexahedra,
-$N_{nz} > 6N_{nodes}$; thus, this decoupled scheme provides higher relative
-memory savings on unstructured grids than structured grids when using compressed
-row storage.
+For a three-dimensional structured grid, each node has six neighbors,
+i.e., $N_{nz} = 6N_{nodes}$; therefore, we can expect the Jacobian memory
+required to decrease by a factor of seven using this decoupled scheme.
+Interestingly, for a grid that is not purely hexahedra, $N_{nz} > 6N_{nodes}$;
+thus, this decoupled scheme provides higher relative memory savings on
+unstructured grids than structured grids when using compressed row storage.
 
 \section{Higher Order Reconstruction}
 \label{sec:2nd-order-reconstruction}
@@ -358,6 +399,7 @@ of central differencing and the original U-MUSCL scheme
   \label{u-muscl}
 \end{equation}
 %------------------------------------------------------------------------------%
+where $\kappa = 0.5$ is usually used on unstructured grids with mixed elements.
 \fref{fig:edge-recons} shows that $q_{L,R}$ are the primitive variables at the
 left and right sides of the edge midpoint, where the flux is evaluated,
 $q_{1,2}$ are the primitive variables at nodes 1 and 2.
@@ -369,9 +411,9 @@ $q_{1,2}$ are the primitive variables at nodes 1 and 2.
   \label{fig:edge-recons}
 \end{figure}
 %------------------------------------------------------------------------------%
-The variable $\phi$ is the result of the scalar flux function, that is required
-to preserve monotonicity in the second order reconstruction near
-discontinuities.  FUN3D supports a larger variety of flux functions that fall
+The variable $\phi$ is the result of the scalar flux limiter function, that is
+required to preserve monotonicity in the second order reconstruction near
+discontinuities.  FUN3D supports a larger variety of flux limiters that fall
 into two main categories: edge-based limiters, and stencil-based limiters.  The
 edge based limiters are evaluated for two nodes at each edge.  Different values
 of $\phi$ can exist at each node for edge-based limiter, and the results are not
@@ -379,15 +421,15 @@ of $\phi$ can exist at each node for edge-based limiter, and the results are not
 each node, based on the gradients that are computed there.  For these limiters,
 the value of $\phi$ is unique to each node and can be stored with the flow
 solution as an additional variable.  The frozen state of the limiter is only
-re-evaluated if the reconstruction forces a non-physical state at dual volume
-interface.
+re-evaluated if the reconstruction forces a non-physical state at the dual
+volume interface.
 
 For this study, smooth Van Albada\cite{van1997comparative}, Van
 Leer\cite{vatsa2009calibration}, and Minmod\cite{roe1986characteristic} flux
 limiter functions are used.  Each of these limiters is augmented with a
 heuristic pressure limiter by Park\cite{park2008anisotropic}. The choice of
 these limiters impacts solution converge and accuracy, and it is important to
-note specifics of the smooth Van Albada averaging function is given as
+note specifics of the smooth Van Albada averaging function
 %------------------------------------------------------------------------------%
 \begin{equation}
   \phi\left( a, b \right) =

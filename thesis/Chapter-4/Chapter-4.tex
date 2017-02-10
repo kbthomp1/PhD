@@ -6,12 +6,11 @@ conjunction with the primal flow equations.  The primary goal of this research i
 to compute sensitivities of aerodynamic and aerothermodynamic quantities to
 design variables.  To achieve this, the sensitivity to the primal flow equation
 formulation must first be solved.  For a discrete adjoint formulation, this
-requires a solution of costate variables, relating a change in the flow equation
-residual to a change in the function of interest.  Because of the large number
-of equations required in a reacting gas solver, the adjoint solver will suffer
-from the quadratic scaling in computational cost and memory required similarly
-to the primal flow solver.  To mitigate this, a decoupled scheme is derived that
-is consistent with the decoupled flow solver.
+requires a solution of costate variables that relate a change in the flow
+equation residuals to a change in the function of interest.  The adjoint solver
+also suffers from the quadratic scaling in computational cost and memory
+required, similar to the primal flow solver.  To mitigate this, a decoupled
+scheme is derived that is consistent with the decoupled flow solver.
 
 \section{Discrete Adjoint Derivation}
 \label{sec:adj-derivation}
@@ -24,8 +23,10 @@ The derivation for the discrete adjoint begins with forming the Lagrangian as
   \label{lagrangian}
 \end{equation}
 %------------------------------------------------------------------------------%
-Where $\mr$ is the residual of the flow equations.  Differentiating with respect
-to the design variables $\md$ yields
+where $\mr$ is the residual of the flow equations, $\md$ is the vector of design
+variables, $\mq$ is the vector of conserved variables, and $\mx$ is the mesh
+coordinates.  Differentiating with respect to the design variables, $\md$,
+yields
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{L}{\md} = 
@@ -37,7 +38,7 @@ to the design variables $\md$ yields
   \label{dL}
 \end{equation}
 %------------------------------------------------------------------------------%
-To eliminate the dependence of conserved variables $\mq$ on the design
+To eliminate the dependence of conserved variables, $\mq$, on the design
 variables, we solve the adjoint equation
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -45,8 +46,8 @@ variables, we solve the adjoint equation
   \label{adjoint-main}
 \end{equation}
 %------------------------------------------------------------------------------%
-Where the Lagrange multipliers (also known as costate variables),
-$\mathbf{\Lambda}$ are the cost function dependence on the residual
+Where the Lagrange multipliers (hereafter referred to as costate variables),
+$\adjlam{}$, are the cost function dependence on the residual
 %------------------------------------------------------------------------------%
 \begin{equation}
   \mathbf{\Lambda}=-\pd{f}{\mr}
@@ -100,10 +101,10 @@ fully-coupled vector of conserved variables
 			\rho \vu \\
 			\rho E
 		\end{pmatrix},\quad &
-		\mathbf{\hat{U}}=\begin{pmatrix}
-			\rho_1 \\
+		\mathbf{\Vhat}=\begin{pmatrix}
+			c_1 \\
 			\vdots \\
-			\rho_{ns}
+			c_{ns}
 		\end{pmatrix}
 	\end{matrix}
   \label{dc-vars}
@@ -173,10 +174,10 @@ exact linearization of the converged steady-state solution, these must be
 accounted for in the decoupled adjoint formulation.
 
 The next step is to reconcile the split conserved variables, $\mathbf{U}'$ and
-$\mathbf{\hat{U}}$, with the conserved variable vector $\mq$ in the discrete
-adjoint formulation given in \eref{adjoint-main}. This begins by recognizing
-that the decoupled scheme can actually also be solved as a fully-coupled system
-of equations that involves the change of variables
+$\Vhat$, with the conserved variable vector $\mq$ in the discrete adjoint
+formulation given in \eref{adjoint-main}. This begins by recognizing that the
+decoupled scheme can actually also be solved as a fully-coupled system of
+equations that involves the change of variables
 %------------------------------------------------------------------------------%
 \begin{equation}
   \mU = \begin{pmatrix}
@@ -222,7 +223,7 @@ as well as the change of equations
   \label{fc-to-dc-res}
 \end{equation}
 %------------------------------------------------------------------------------%
-details and the derivation of the transformation matrices need to convert
+The details and derivation of the transformation matrices need to convert
 between these two systems are included in \sref{change-of-var-section}.  From
 this perspective, the decoupled scheme linear system for the flow solver can be
 viewed, with no approximations, as
@@ -259,8 +260,8 @@ viewed, with no approximations, as
   \label{dc-full-system}
 \end{equation}
 %------------------------------------------------------------------------------%
-In addition to \erefs{dfdvl}{dfdvr}, the iterative mechanism used in the solver
-makes the following approximations to the Jacobians
+In addition to \erefs{dfdvl}{dfdvr}, the iterative mechanism used in the flow
+solver makes the following approximations to the Jacobians
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
@@ -342,7 +343,7 @@ where $\drvdv$ can include all of the Jacobian approximations used by the flow
 solver Jacobians, including those in \eref{dc-approximations}.
 \eref{v-adj-time} can be solved using the same iterative mechanism
 as the flow solver; however, the exact linearizations of $\pd{\rv{}}{\mv}$
-are different, and more complex, than the linearizations required by the
+are different and more complex than the linearizations required by the
 traditional fully-coupled system, $\pd{\ru{}}{\mU}$.  This makes the decoupled
 scheme somewhat less attractive, since the re-implementing the exact
 linearizations for the change of variable and change of equations in the
@@ -369,7 +370,7 @@ scheme that can be generically written as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
-    \left(\mm \ma_{\mU} \right) \left( \mb d\mv \right) &= \mm \ru{} \\
+    \left(\mm \ma_{\mU} \right) \left( \mb \Delta \mv \right) &= \mm \ru{} \\
     \Delta \mU &= \mb \Delta \mv
   \end{aligned}
   \label{generic-fc-to-dc}
@@ -400,7 +401,7 @@ along with its transpose
   \label{adj-dc-generic-transpose}
 \end{equation}
 %------------------------------------------------------------------------------%
-Thus, in the adjoint linear system of equations $\mb$ becomes the left
+Thus, in the adjoint linear system of equations, $\mb$ becomes the left
 preconditioner, and $\mm$ becomes the right preconditioner.  Using
 \eref{adj-dc-generic-transpose}, \eref{v-adj} can be re-written as
 %------------------------------------------------------------------------------%
@@ -456,7 +457,7 @@ more flexible than the flow solver.  In the flow solver, the mixture variables
 were updated before the species mass fractions, with the former used to compute
 the later at the next time level.  This same process can be carried out on the
 costate variable vector, $\adjlam{\mv}$, in the adjoint solver, which would
-correspond to a block gauss-seidel type scheme; however, through testing, their
+correspond to a block Gauss-Seidel type scheme; however, through testing, their
 is no significant advantage found applying costate variables at the next time
 level to compute costate variables at the previous time level.  Thus, the much
 more cost effective approach is to apply a block jacobi scheme where all
@@ -478,8 +479,8 @@ derivatives. The adjoint uses a frozen flux limiter, for purposes that will be
 discussed in a later section, and is therefore held as constant in the
 linearization computations.  All gradient information in \eref{u-muscl},
 $\pd{q_{1,2}}{x}$, $\pd{q_{1,2}}{y}$, and $\pd{q_{1,2}}{z}$, are computed using
-least-squares.  For the example 2-D stencil shown in \fref{fig:lsq-gradients}
-this is effectively computed as
+least-squares.  For the example stencil shown in \fref{fig:lsq-gradients} this
+is effectively computed as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{aligned}
@@ -511,11 +512,11 @@ linearization of the residual, $\mr$, is then evaluated in two parts
 %------------------------------------------------------------------------------%
 where $\mq$ are the conserved variables at each node, and $\mq^*$ are the higher
 order terms computed in the U-MUSCL reconstruction; therefore, after computing
-the exact Jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the higher order
-linearization is computed by making a circuit around each node to pick up the
-contributions from the least squares gradient computation.  For the example
-stencil in \fref{fig:lsq-gradients}, the contribution to the residual from
-looping around node 0 would be
+the exact first-order Jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the
+higher order linearizations are computed by making a circuit around each node to
+pick up the contributions from the least squares gradient computation.  For the
+example stencil in \fref{fig:lsq-gradients}, the contribution to the residual
+from looping around node 0 would be
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{\vR_0}{\mq^*}\pd{\mq^*}{\mq_0} = \pd{\vR_0}{\mq^*} \left[\sum_{i=1}^5{(1-\kappa)
@@ -523,16 +524,17 @@ looping around node 0 would be
   \label{ho-linearization}
 \end{equation}
 %------------------------------------------------------------------------------%
-An important point that this illustrates is that the linearization of the higher
-order terms is not dependent upon the choice of the primitive variable vector
-$q$, provided that all of the linearizations are exact.  This is a powerful
-telescoping property of the reconstruction scheme from
-\sref{sec:2nd-order-reconstruction}, and it significantly decreases the
-complexity of the code required to implement the second order term
-linearizations.  The downside to looping around each node is the high number of
-cache misses, as the data structures in FUN3D are not conducive to co-locating
-memory based on stencil.  This results in the evaluation of the second order
-linearizations being the dominant computational cost in the adjoint solver.
+An important point that this illustrates is that the form of the higher order
+linearizations does not change significantly based on the primitive variable
+vector $q$, only affecting the primitive to conserved variable Jacobian,
+$\pd{q_0}{\mq_0}$, which is easily computed.  This is a powerful telescoping
+property of the reconstruction scheme from \sref{sec:2nd-order-reconstruction},
+and it significantly decreases the complexity of the code required to implement
+the second order term linearizations.  The downside of looping around each node
+is the high number of cache misses, as the data structures in FUN3D are not
+conducive to co-locating memory based on stencil.  This results in the
+evaluation of the second order linearizations being the dominant computational
+cost in the adjoint solver.
 
 \section{Memory and Computational Cost of Exact Second Order Linearizations}
 \label{sec:2nd-order-mem-cost}
@@ -544,11 +546,11 @@ nearest neighbors.  The cost of computing these linearizations can quickly
 dominate other costs of the adjoint, but can be significantly mitigated if the
 linearizations of second order Jacobian are stored.  This essentially trades all
 the memory in the simulation for computational speed, and may not be possible
-for large mesh sizes.  Since all of the linearizations on the second order
+for large mesh sizes.  Since all of the linearizations in the second order
 Jacobian must be exact, the memory saving approximations of the decoupled scheme
 can only be applied to the LHS Jacobians in \eref{adj-u-to-v-time}.  This last
 point makes the quadratic scaling of memory required with the number of species
 a significant concern of the adjoint.  The savings provided by the decoupled
-scheme become a very important boon in these cases, since the memory freed by
-the sparsity on the LHS of \eref{adj-u-to-v-time} can be used by the RHS
-linearizations to aid in computational efficiency.
+scheme become a very important boon in cases involving many species, since the
+memory freed by the sparsity on the LHS of \eref{adj-u-to-v-time} can be used by
+the RHS linearizations to increase in computational efficiency.

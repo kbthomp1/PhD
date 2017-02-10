@@ -1,52 +1,53 @@
 \chapter{Introduction}
 \label{chapter-one}
 
-In the last decades computational fluid dynamics (CFD) codes have matured to the
-point that it is possible to obtain high-fidelity design sensitivities that can
-be coupled with optimization packages to enable design optimization for a
-variety of design inputs\cite{baysal1992aerodynamic, balagangadhar2001design}.
-In recent years, the benefits of using an adjoint-based formulation to compute
-sensitivities have been realized and implemented in many compressible CFD
-codes\cite{mavriplis-2006, nemec-aftosmis-adjoint, nielsen2002recent}, because
-of the ability compute all sensitivities at the cost of a single extra adjoint
-solution, instead of an additional flow solution for each design variable.
-Reacting gas CFD codes have lagged in adopting this adjoint-based
-approach, but interest has increased in recent years\cite{Copeland, Barcelona,
-lockwood2010parameter}.  The relatively small number of reacting gas CFD codes
-that employ adjoint-based sensitivity analysis is likely due to the significant
-jump in complexity of the linearizations required, especially in regard to the
-chemical source term and the dissipation term in the Roe flux difference
-splitting (FDS) scheme\cite{roe}.
+In the last decades, computational fluid dynamics (CFD) codes have matured to
+the point that it is possible to obtain high-fidelity design sensitivities,
+which can be coupled with optimization packages to enable design optimization
+for a variety of inputs\cite{baysal1992aerodynamic, balagangadhar2001design}.
+In more recent years, adjoint-based formulations to compute sensitivities have
+been implemented in many compressible CFD codes\cite{mavriplis-2006,
+nemec-aftosmis-adjoint, nielsen2002recent}. This approach is much attractive
+over a finite-difference method, because a single flow and adjoint solution is
+required to compute sensitivities all design variables and a given cost
+function, whereas finite difference requires an additional flow solution for
+each design variable.  Reacting gas CFD codes have lagged in adopting this
+adjoint-based approach, but interest has increased in recent
+years\cite{Copeland, Barcelona, lockwood2010parameter}.  The relatively small
+number of reacting gas CFD codes that employ adjoint-based sensitivity analysis
+is likely due to the significant jump in complexity of the linearizations
+required, especially in regard to the chemical source term and the dissipation
+term in the Roe flux difference splitting (FDS) scheme\cite{roe}.
 
 In the reacting gas solver community, there is a split in the methodology used
 to compute adjoint-based sensitivity derivatives, specifically whether to
-implement a continuous or discrete version of adjoint equations.  In a
+implement a continuous or discrete version of the adjoint equations.  In a
 continuous formulation of the adjoint equations, the flow solver equations are
-linearized and then discretized, whereas in discrete formulation, the flow
-solver equations are discretized and then linearized.  Copeland et
-al.\cite{Copeland} have adopted a continuous formulation of the adjoint equations
-for flows in chemical and thermal non-equilibrium, and has implemented this
-formulation in the from Stanford University CFD code
-SU2\cite{palacios2013stanford}.  The reasoning cited for choosing a continuous
-formulation of the adjoint equations, was that, among other things, the adjoint
-system was not suited to being solved by the same methods suited for solving the
-flow solver equations and the resulting adjoint solution could lead to
-non-physical oscillations that fail to capture the continuous adjoint solution.
-Lockwood et al.\cite{lockwood2010uncertainty, lockwood2010parameter}, on the
-other hand, have published favorable results for a discrete adjoint formulation
-for both parameter sensitivity and uncertainty quantification.
+linearized and then discretized, whereas in discrete formulation the flow solver
+equations are discretized and then linearized.  Copeland et al.\cite{Copeland}
+have adopted a continuous formulation of the adjoint equations for flows in
+chemical and thermal non-equilibrium, and have implemented this formulation in
+the CFD code SU2\cite{palacios2013stanford} from Stanford University.  The
+reasoning cited for choosing a continuous formulation of the adjoint equations,
+was that, among other things, the adjoint system was not wel suited to being
+solved by the same methods used for solving the flow solver equations and the
+resulting adjoint solution could lead to non-physical oscillations that fail to
+capture the continuous adjoint solution.  Lockwood et
+al.\cite{lockwood2010uncertainty, lockwood2010parameter}, on the other hand,
+have published favorable results for a discrete adjoint formulation for both
+parameter sensitivity and uncertainty quantification.
 
 For the work presented here, a discrete adjoint formulation is chosen over a
-continuous one.  The reason for this decision is that merits a of continuous
+continuous one.  The reason for this decision is that the merits a of continuous
 adjoint formulation do not outweigh the testing and practical benefits of a
-discrete adjoint formulation.  Because the flow solver equations are discretized
-before linearizing them in a discrete formulation, the adjoint solution can be
-verified using finite-difference derivatives.  This is not possible with a
-continuous formulation, as the solution to the continuous problem will not
-exactly match the discretization; therefore, from a practical standpoint, the
-testability of a continuous adjoint solution is much more ambiguous than a
-discrete adjoint solution.  The claim that non-equilibrium flow solvers are not
-guaranteed to solve the adjoint system is disputed here, as Nielsen et
+discrete adjoint formulation.  Because the discretized flow solver equations are
+linearized in a discrete adjoint solver, the adjoint solution can be verified
+using finite-difference derivatives.  This is not possible with a continuous
+formulation, as the solution to the continuous problem will not exactly match
+the discretization; therefore, from a practical standpoint, the verification of
+a continuous adjoint solution is much more ambiguous than for a discrete adjoint
+solution.  The claim that non-equilibrium flow solvers are not guaranteed to
+solve the adjoint system is disputed here, as Nielsen et
 al.\cite{nielsen2004implicit} proved that a discrete adjoint scheme can be made
 dual exact, where the discrete adjoint approach matches the direct
 differentiation approach exactly for each time step.
@@ -55,40 +56,42 @@ An additional obstacle that may prevent adjoint-based sensitivity analysis in
 reacting gas solvers is the extreme problem size associated with high energy
 physics.  The additional equations required in reacting gas simulations lead to
 large Jacobians that scale quadratically in size to the number of governing
-equations.  This leads to a significant increase in the memory required to store
-the flux linearizations and the computational cost of the point solver.  As
-reacting gas CFD solvers are used to solve increasingly more complex problems,
-this onerous quadratic scaling of computational cost and Jacobian size will
-ultimately surpass the current limits of hardware and time constraints on
+equations.  This scaling leads to a significant increase in the memory required
+to store the flux linearizations and the computational cost of the point solver.
+As reacting gas CFD solvers are used to solve increasingly more complex
+problems, this onerous quadratic scaling of computational cost and Jacobian size
+will ultimately surpass the current limits of hardware and time constraints on
 achieving a flow solution\cite{fischer}.
 
 To mitigate this scaling issue, Candler et al.\cite{candler} proposed a scheme
 to for a modified form of the Steger-Warming flux vector splitting
 scheme\cite{MacCormack,Steger}. In that work, it was shown that quadratic
-scaling between the cost of solving the implicit system and adding species mass
-equations can be reduced from quadratic to linear scaling by decoupling the
+scaling between the cost of solving the implicit system and additional species
+mass equations can be reduced from quadratic to linear scaling by decoupling the
 species mass equations from the mixture mass, momentum, and energy equations and
 solving the two systems sequentially.  This work extends the aforementioned work
-from the modified form of the Steger-Warming flux vector splitting
-method to the Roe flux difference splitting (FDS) scheme.  Candler et
+from the modified form of the Steger-Warming flux vector splitting method to the
+Roe flux difference splitting (FDS) scheme, and, more importantly, extends it
+for the first time to the solution of the adjoint formulation.  Candler et
 al.\cite{candler2013analysis} later analyzed stability issues associated with
-the decoupled formulation in \cite{candler}.  This work also presents a chemical
-source term scaling procedure that mitigates these stability concerns.
+the decoupled formulation of the flow solver in \cite{candler}.  A new chemical
+source term scaling procedure is introduced in the present work that mitigates
+these stability concerns.
 
-As its primary focus, this work demonstrates that a variation of this decoupled
+As its primary focus, this work demonstrates that a variation of the decoupled
 point-implicit scheme can be applied to both the flow solver and adjoint solver
-in a reacting gas CFD code, and significantly improve the efficiency in both
-computational cost and memory required.  Additionally, the implementation of
-exact linearizations is shown to significantly improve performance and
-robustness in the flow solver over common approximations used when linearizing
-the Roe FDS scheme.
+in the reacting gas path of the FUN3D CFD code, and significantly improve the
+efficiency in both computational cost and memory required.  Additionally,
+exactly linearizing the Roe FDS scheme is shown to significantly improve
+performance and robustness in the flow solver over previous approximate
+linearizations used\cite{gnoffo-tp}.
 
 An axi-symmetric hypersonic re-entry vehicle with an annular jet is chosen as
 the main demonstration problem in this work.  This design was previously
 examined by Gnoffo et al.\cite{gnoffo2016tapping} for a perfect gas as a means
 of increasing the time-averaged vehicle drag via unsteady interactions between
 the annular jet plume and the bow shock.  A steady solution was found for that
-geometry and it was postulated that the annular jet plume could be used as a
+geometry and it was postulated that the annular jet plume could be used as an
 active cooling mechanism to augment or replace the passive thermal protection
 system (TPS) on the vehicle.  This work extends the previous work to inviscid
 flow in chemical non-equilibrium, and applies sensitivities computed by the
