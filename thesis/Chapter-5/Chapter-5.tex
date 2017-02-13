@@ -3,12 +3,13 @@
 
 To demonstrate the advantages and the robustness of the decoupled flow and
 adjoint solvers relative to the fully coupled flow and adjoint solvers, a
-demonstration problem is chosen with sufficiently difficult physics.  The
-problem must include a sufficient degree of chemistry to highlight the stability
-concerns of the decoupled flow solver presented in
-\sref{sec:15-kps-sphere-cone}.  This chapter details the geometry and test
-conditions of demonstration problem, as well as the characteristics of the flow
-solution.
+demonstration problem is chosen with sufficiently challenging physics.  The
+problem must include a sufficient sensitivity to the chemistry model to
+highlight the stability concerns of the decoupled flow solver presented in
+\sref{sec:15-kps-sphere-cone}.  In this case, the sensitivity manifests through
+the formation of a large, recirculating buffer gas zone that covers most of the
+vehicle outer surface. This chapter details the geometry and test conditions of
+the demonstration problem, as well as the characteristics of the flow solution.
 
 \section{Annular Jet Configuration and Test Conditions}
 
@@ -65,7 +66,10 @@ unstructured grid comprised of hexahedra and prismatic elements.
   \label{tab:annular-geom}
 \end{table}
 %------------------------------------------------------------------------------%
-The flow conditions are shown in \tref{tab:flow-conditions}
+The flow conditions for a Mach 20 condition are shown in
+\tref{tab:flow-conditions}, with all simulations conducted using a 9-species
+Hydrogen-air mixture comprised of $H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$,
+$OH$, and $H_2 O$.
 %------------------------------------------------------------------------------%
 \begin{table}[!h]
   \centering
@@ -88,11 +92,14 @@ While the reacting gas path of the FUN3D flow solver has the capability to
 simulate unsteady flows, the newly developed FUN3D reacting gas adjoint solver
 is currently limited in scope to steady flows.  A full design optimization
 covers a wide variety of flow solutions, and it is therefore important to verify
-that the geometry chosen is truly steady.  It was heuristically determined that
-blowing a light gas with a high cone angle leads to a sonic corner body.  A
-similar phenomenon was examined by Gnoffo, Weilmuenster, Braun, and
-Cruz\cite{gnoffo1996influence} for the Mars Pathfinder probe on descent into the
-Martian atmosphere.
+that the geometry chosen results in steady flow for all design perturbations.
+A $70^o$ cone angle was initially chosen, instead of $50^o$, because of a rich
+history of investigation associated with the Mars Pathfinder
+probe\cite{gnoffo1996influence}.  It was heuristically determined that blowing a
+light gas with a high cone angle leads to a sonic corner body.  Numerical
+experiments indicate that the annular jet is susceptible to very low frequency
+and low amplitude pulsing of the entrained separation bubble on sonic corner
+bodies.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -168,17 +175,19 @@ temperature and plenum mass flow rate for a nominal case.
   \label{fig:grid-convergence}
 \end{figure}
 %------------------------------------------------------------------------------%
-the fine mesh ($431,000$ Nodes) was found to be slightly unsteady, but coerced
-to be steady when the limiter was frozen.  The very fine mesh was very unsteady,
-and freezing the flux limiter did not coerce the flow back to steady-state. The
-values for surface temperature and mass flow rate on the very fine mesh are time
-averaged quantities presented for qualitative purposes only.  This grid
-convergence study shows that the demonstration problem resolves to unsteadiness
-on a fine enough mesh.  For the purposes of demonstrating the decoupled
-discrete adjoint, the discretized flow solution must remain steady; therefore,
-the coarse mesh ($11,000$ nodes) is used for the remainder of this study, with
-the caveat that the flow solution tends towards unsteady as the spatial accuracy
-increases.
+On the fine mesh ($431,000$ Nodes), a frozen limiter was required to maintain
+stead flow.  The flow solution for the very fine mesh ($3,100,000$ Nodes) was
+very unsteady, and freezing the flux limiter did not recover a steady flow
+solution.  The values for surface temperature and mass flow rate on the very
+fine mesh are time averaged quantities presented for qualitative purposes only.
+This grid convergence study shows that the demonstration problem enables
+unsteadiness on the finest mesh.  For the purposes of demonstrating the
+decoupled discrete adjoint, the discretized flow solution must remain steady;
+therefore, the coarse mesh ($11,000$ nodes) is used as a baseline for the
+remainder of this study.  The adjoint formulation only requires steady flow on
+the given grid; therefore, this test retains all of the challenging interaction
+associated with a large, recirculating buffer zone over the cone with a strong
+dependence on the reacting gas physics.
 
 \section{Sensitivity to Frozen Flux Limiter}
 \label{sec:frozen-limiter}
@@ -192,22 +201,24 @@ flow solver results, as most aerothermodynamic quantities are usually
 sufficiently converged by this point, the adjoint-formulation is predicated on
 the residual being machine zero.  Because of this last point, the stalled
 convergence can cause the adjoint solver to give incorrect results or cause the
-adjoint solution to diverge.  To prevent this, the adjoint is required to be run
-with a ``frozen'' limiter, that is only where a reconstruction is unrealisable
-is the value of the limiter function changed.  Doing this usually results in the
+adjoint solution to diverge.  To prevent this divergence, the adjoint is
+required to be run with a ``frozen'' limiter, where a limiter value is only
+updated and re-frozen where a reconstruction is unrealisable using the current
+limiter value.  Freezing the limiter in this way usually results in the
 residuals converging to machine precision.
 
-A particular difficulty of this approach comes from misaligned meshes involving
-chemical reactions.  Because the annular jet plume and bow shock cannot remain
-aligned with the mesh during a design optimization, there is a larger degree of
-ringing as the scheme captures the discontinuities of these flow phenomena.  The
-ringing is mitigated when the limiter is frozen; however, the solution will
-experience high-frequency errors as the shock and plume re-position due to the
-reconstruction changing somewhat asymmetrically.  Species will quickly deplete
-and form as the shock and plume move, potentially requiring further reevaluation
-of the flux limiter at those nodes.  This process will eventually settle out,
-and the flow solution will converge to machine zero, with the definition of
-machine zero being dependent on the conditioning of the problem being solved.  
+A particular difficulty of this approach comes from simulations on
+shock-misaligned meshes involving chemical reactions.  Because the annular jet
+plume and bow shock cannot remain aligned with the mesh during a design
+optimization, there is a larger degree of ringing as the scheme captures the
+discontinuities of these flow phenomena.  The ringing is mitigated when the
+limiter is frozen; however, the solution will experience high-frequency errors
+as the shock and plume re-position due to the reconstruction changing somewhat
+asymmetrically.  Species will quickly deplete and form as the shock and plume
+move, potentially requiring further reevaluation of the flux limiter at those
+nodes.  This process will eventually settle out, and the flow solution will
+converge to machine zero, with the definition of machine zero being dependent on
+the conditioning of the problem being solved.  
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -237,7 +248,8 @@ Fortunately, the reevaluation is only needed at a small number of nodes
 (usually $< 10$ nodes), so integrated aerothermodynamic quantities are
 unaffected by these reevaluations when convergence to steady-state is reached.
 It should be noted that while the results presented here are only on the
-coarsest mesh level, the refined meshes also exhibit similar behavior.
+coarsest (baseline) mesh level, the refined meshes also exhibit similar
+behavior.
 
 Because the solution is not grid converged, there is a significant difference
 between the first-order and second-order solutions; therefore, the choice flux
@@ -254,16 +266,16 @@ the solution.
 \fref{fig:all-limiters} shows that the RMS of surface temperature on the outer
 surface of the vehicle converges to significantly different results before
 the flux limiter is frozen at iteration 4000.  The Minmod flux limiter exhibits
-very large oscillations after freezing, due to the large number of asymmetric
+very large oscillations after freezing, due to the large number of non-smooth
 reevaluations of the flux limiter were reconstructions became unrealisable.
 These oscillations in the solution make the Minmod flux limiter unusable for
-design optimization. The Van Albada flux limiter converges to a much more steady
-solution after being frozen; however, care must be taken to ``tune'' this
-particular limiter based the grid.  The tunable parameter, $\varepsilon$, was
-evaluated at the recommended value of $1.0$, and was found to increase the
-surface temperature by $> 20\%$ after freezing.  This is unacceptable for design
-optimization, as it indicates a high dependence on iteration that the flux
-limiter is frozen.
+design optimization of this case. The Van Albada flux limiter converges to a
+much more steady solution after being frozen; however, care must be taken to
+``tune'' this particular limiter based the grid.  The tunable parameter,
+$\varepsilon$, was evaluated at the recommended value of $1.0$, and was found to
+increase the surface temperature by $> 20\%$ after freezing.  This is
+unacceptable for design optimization, as it indicates a high dependence on
+iteration that the flux limiter is frozen.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering

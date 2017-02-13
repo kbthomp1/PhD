@@ -20,9 +20,14 @@ In the field of optimization, the function of interest is referred to as the
 ``cost function'' or ``objective function''.  Optimization methods seek to
 minimize this function; therefore, if the intent is to find the maximum value
 of the function, it should be formulated as the negative of the original.  This
-section focuses on geometry and test conditions for the optimization, the
-implementation of the cost function components and design variables used in the
-optimization, as well as the interface to the optimizer that is used.
+section focuses on the optimization of the annular jet demonstration problem
+that was discussed in \cref{chapter-five}.  Details on the implementation of the
+cost function components and design variables used in the optimization are
+presented, as well a sample first-order inverse design optimization and
+second-order direct design optimization.  The purpose of an inverse design
+optimization is to match a target design by perturbing a set of design inputs,
+whereas the purpose of a direct design optimization is to improve an initial
+design by perturbing those same design inputs.
 
 \section{Integrated Quantities of Interest}
 
@@ -248,7 +253,7 @@ solution approached the target.
 \label{sec:2nd-order-direct-design}
 
 A direct design problem is possible with the second-order reconstruction scheme,
-by defining the termination of the optimization as point that changes in the
+by defining the termination of the optimization as the point where changes in the
 design variables or cost function are below a supplied threshold.  Using the
 same cost function components and design variables as in \sref{inv-design-opt},
 a direct design problem was completed to minimize both mass flow rate and

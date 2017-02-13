@@ -3,13 +3,13 @@
 
 At this point, the reacting gas adjoint in FUN3D has been utilized to obtain
 sensitivity information needed to drive design optimization, and the
-sensitivities of the fully coupled scheme have been validated against complex
-Frechet derivatives for accuracy.  A key point of this study is to demonstrate
-the increase computational efficiency and relative memory saving of using a
-decoupled variable set for the flow and adjoint solvers, instead of a fully
-coupled variable set.  This chapter details the benefits of applying the
-decoupled flow solver over the fully coupled solver for a variety of test cases,
-including the annular jet demonstration problem.
+sensitivities of the fully coupled scheme have been validated against
+finite-difference derivatives with a complex step for accuracy.  A key point of
+this study is to demonstrate the increase computational efficiency and relative
+memory saving of using a decoupled variable set for the flow and adjoint
+solvers, instead of a fully coupled variable set.  This chapter details the
+benefits of applying the decoupled flow solver over the fully coupled solver for
+a variety of test cases, including the annular jet demonstration problem.
 
 \section{5 km/s Flow over Cylinder}
 \label{sec:5-kps-cylinder}
@@ -32,7 +32,7 @@ there are no issues with a true unstructured grid topology.  The free stream
 conditions used were $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$,
 and $T_\infty = 200\ K$.  Several chemical kinetics models were used, including
 a 5-species model with 5 reactions, an 11-species model with 22 reactions, and
-an 18-species model with 29 reactions.  All cases were run in thermodynamic
+an 18-species model with 29 reactions.  All cases were run in thermal
 equilibrium, with a one-temperature model.
 
 %------------------------------------------------------------------------------%
@@ -241,7 +241,7 @@ rates.
 \subsection{Sphere Cone - Convergence Improvement with Exact First-Order Linearizations}
 \label{sec:sphere-cone-exact-approx-convergence}
 
-An important benefit of implementing an adjoint solver in FUN3D comes the
+An important benefit of implementing an adjoint solver in FUN3D derives from the
 requirement of exact linearizations, because the linearizations needed to form
 the residual in the adjoint solver can be reused by the flow solver.
 Due to the high storage requirements associated with exactly linearizing the
@@ -321,12 +321,12 @@ flow in chemical non-equilibrium.
   \label{tab:srp-frozen-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
-\tref{tab:srp-frozen-flow-diff} shows that the decoupled and fully coupled
-schemes match discretely for surface temperature, and to within approximately
-machine precision for the mass flow rate through the plenum.  The residual was
-less than $10^{-16}$ for all equations in this comparison, and only the last
-digit of both quantities in \tref{tab:srp-frozen-flow-diff} were changing by the
-end of the solution.
+\tref{tab:srp-frozen-flow-diff} shows that, for frozen chemistry, the decoupled
+and fully coupled schemes match discretely for surface temperature, and to
+within approximately machine precision for the mass flow rate through the
+plenum.  The residual was less than $10^{-16}$ for all equations in this
+comparison, and only the last digit of both quantities in
+\tref{tab:srp-frozen-flow-diff} were changing by the end of the solution.
 %------------------------------------------------------------------------------%
 \begin{table}
   \centering
@@ -340,21 +340,22 @@ end of the solution.
   \label{tab:srp-chem-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
-\tref{tab:srp-chem-flow-diff} shows similar agreement with regard to the plenum
-mass flow rate, but poorer agreement of the surface temperature. Given the
-varying degrees of convergence shown in \fref{fig:chem-res-comp}, this
-difference in surface temperature is not surprising. At the point the
-convergence stall, with the residual of all equations hanging at $\sim
-10^{-8}$, only the last nine digits were still changing.  This indicates that
-improving the conditioning of the problem, in order to enable further converge
-of the flow equation residuals to machine zero, would likely decrease the relative
-difference between the fully coupled and decoupled flow solver schemes.  For
-engineering applications this difference is trivial and it has only minimal
-impact, if any, on the design optimization procedure.  The effect of the flux
-limiter sensitivity is much greater on the design optimzation procedure, and it
-was found that the using the decoupled scheme or the fully-coupled scheme in the
-optimization from \cref{chapter-five} converged to the same result if the
-limiter fields were made identical between the schemes.
+\tref{tab:srp-chem-flow-diff} shows, for reacting chemistry, similar agreement
+with regard to the plenum mass flow rate, but poorer agreement of the surface
+temperature. Given the varying degrees of convergence shown in
+\fref{fig:chem-res-comp}, this difference in surface temperature is not
+surprising. At the point the convergence stall, with the residual of all
+equations hanging at $\sim 10^{-8}$, only the last nine digits were still
+changing.  This indicates that improving the conditioning of the problem, in
+order to enable further converge of the flow equation residuals to machine zero,
+would likely decrease the relative difference between the fully coupled and
+decoupled flow solver schemes.  For engineering applications this difference is
+trivial and it has only minimal impact, if any, on the design optimization
+procedure.  The effect of the flux limiter sensitivity is much greater on the
+design optimzation procedure, and it was found that the using the decoupled
+scheme or the fully-coupled scheme in the optimization from \cref{chapter-five}
+converged to the same result if the limiter fields were made identical between
+the schemes.
 
 \subsection{Annular Jet: Convergence Quality}
 
@@ -456,11 +457,11 @@ with frozen chemistry for this annular jet case.  Due to stalled convergence,
 there is no clear advantage of using exact linearizations over approximate
 linearizations in the fully coupled scheme, although the relative savings of use
 approximate linearizations are almost negligible ($4\%$).  The decoupled scheme
-66\% faster than the exact, fully coupled scheme, and the difference between
-this result and the frozen flow result is the poor iterative convergence
+is 66\% faster than the exact, fully coupled scheme, and the difference between
+this result and the frozen flow result is the poorer iterative convergence
 quality.  As discussed in \sref{sec:cylinder-comp-cost}, the the frequency of
 the jacobian evaulation is tied to the decrease in the residual from each
-non-linear solution update.  Due to the poor convergence seen in
+non-linear solution update.  Due to the poorer convergence seen in
 \fref{fig:srp-dc-gfc-res-chem}, the jacobian is reevaluated at each iteration.
 This significantly diminishes the relative speedup of the decoupled scheme.
 This causes the jacobian update to become a bottleneck in computational time

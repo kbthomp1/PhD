@@ -10,8 +10,8 @@ relations and chemical kinetics models used are also presented in detail here.
 
 \section{Reacting Flow Conservation Equations}
 
-Conservation equations for a fluid mixture that is chemical non-equilibrium and
-thermal equilibrium can be written as
+Conservation equations for a fluid mixture that is in chemical non-equilibrium
+and thermal equilibrium can be written as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \begin{gathered}
@@ -38,9 +38,9 @@ thermal equilibrium can be written as
   \begin{gathered}
     \text{\bf{Total Energy Conservation}}: \\
      \pd{\rho E}{t} 
-    + \pd{\rho \left( E + p \right) u}{x} 
-    + \pd{\rho \left( E + p \right) v}{y}
-    + \pd{\rho \left( E + p \right) w}{z} = 0
+    + \pd{\left( \rho E + p \right) u}{x} 
+    + \pd{\left( \rho E + p \right) v}{y}
+    + \pd{\left( \rho E + p \right) w}{z} = 0
   \end{gathered}
   \label{tot-energy-cons}
 \end{equation}
@@ -149,13 +149,15 @@ rate coefficients are defined as
 \end{align}
 %------------------------------------------------------------------------------%
 where $K_{c,r}$ is the equilibrium constant for reaction $r$, and $k$ is the
-Boltzmann constant.  The preexponential factors $C_{f,r}$ and $n_{f,r}$, as well
-as the activation energy, $E_{f,r}$, are documented by Gnoffo\cite{gnoffo-tp}.
-The equilibrium coefficient is computed according to the curve fit defined by
-Park\cite{park1985convergence}
+Boltzmann constant.  The preexponential constants $C_{f,r}$ and $n_{f,r}$, as
+well as the activation energy, $E_{f,r}$, are documented by
+Gnoffo\cite{gnoffo-tp}.  The equilibrium coefficient is computed according to
+the curve fit defined by Park\cite{park1985convergence}
+%------------------------------------------------------------------------------%
 \begin{gather}
   K_{c,r} = exp(\br{1} + \br{2}\ln{Z} + \br{3}Z + \br{4}Z^2 + \br{5}Z^3) \\
   Z = 10000/T
 \end{gather}
+%------------------------------------------------------------------------------%
 where the curve fit constants, $\br{i}$, are also documented by
 Gnoffo\cite{gnoffo-tp}

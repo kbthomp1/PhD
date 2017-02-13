@@ -60,7 +60,7 @@ be valid.  Section \ref{sec:frozen-limiter} described the need for a frozen
 limiter to satisfy the Lagrangian in \eref{lagrangian}, from which the discrete
 adjoint equations are derived.  A significant obstacle with using a frozen
 limiter is that the real-variable and complex-variable solvers do not freeze the
-limiter identically.  Although the solvers are nearly identically, their
+limiter identically.  Although the solvers are nearly identical, their
 floating-point operations will be different since complex arithmetic is involved
 in only the complex-variable solver.  The flux limiter formulation is sensitive
 to these differences and will result in a different converged state, regardless
@@ -84,7 +84,7 @@ derivatives of the drag, surface temperature, and mass flow rate cost functions
 components for the annular nozzle geometry were computed using both the adjoint
 method and the complex-variable approach.  To facilitate checking the
 linearizations of all of these components efficiently, a composite cost function
-was formed with a three components
+was formed with three components
 %------------------------------------------------------------------------------%
 \begin{equation} 
   f = w_1\left( \massflow - \massflow^{*}\right)^{2} 
