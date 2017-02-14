@@ -1,0 +1,214 @@
+\ProvidesPackage{common}
+
+%------------------------------- PACKAGES -------------------------------------%
+
+\usepackage{lmodern}% http://ctan.org/pkg/lm
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{stmaryrd}
+\usepackage{adjustbox}
+\usepackage{subfigure}
+\usepackage{graphicx}
+\usepackage{media9}
+\usepackage{multimedia}
+\usepackage{relsize}
+\usepackage{newlfont}
+\usepackage{environ}
+\usepackage[skins,theorems]{tcolorbox}
+
+%Bibliography-related stuff
+%\usepackage[style=authoryear]{biblatex}
+\usepackage[style=authortitle,firstinits=true,backend=biber]{biblatex}
+\addbibresource{presentation.bib}
+\DeclareNameAlias{sortname}{last-first}
+\renewcommand{\footnotesize}{\tiny}
+\newrobustcmd*{\fcite}{\AtNextCite{\renewbibmacro{title}{}\renewbibmacro{in:}{}}\footfullcite}
+
+\setbeamertemplate{footline}[frame number]
+
+% If we're using the navigation bar, this formats the slide numbers
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+    \hspace{1em}%
+    \insertframenumber/\inserttotalframenumber
+}
+\setbeamercolor{footline}{fg=black}
+\setbeamerfont{footline}{series=\bfseries}
+
+\usepackage{xcolor}% http://ctan.org/pkg/xcolor
+\newcommand{\mred}[1]{%
+  \ooalign{\hss\makebox[0pt]{\fcolorbox{red!20}{red!20}{$#1$}}\hss\cr\phantom{$#1$}}%
+}
+\newcommand{\mblue}[1]{%
+  \ooalign{\hss\makebox[0pt]{\fcolorbox{green!10}{blue!15}{$#1$}}\hss\cr\phantom{$#1$}}%
+}
+
+%\usepackage{caption}
+%\usepackage{subcaption}
+
+%-------------------------- CUSTOM ENVIRONMENTS -------------------------------%
+\NewEnviron{myequation}{%
+    \begin{equation}
+    \scalebox{1.1}{$\BODY$}
+    \end{equation}
+    }
+
+\NewEnviron{smallequation}{%
+    \begin{equation*}
+    \scalebox{0.7}{$\BODY$}
+    \end{equation*}
+    }
+
+\NewEnviron{cboxt}[1][black]{%
+  \tcbset{size=tight}
+  \tcbhighmath[boxrule=5pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
+
+\NewEnviron{cboxf}[1][black]{%
+  \tcbset{size=fbox}
+  \tcbhighmath[boxrule=2pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
+
+\NewEnviron{cboxn}[1][black]{%
+  \tcbset{size=normal}
+  \tcbhighmath[boxrule=2pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  fuzzy shadow=red]{\BODY}
+}
+
+
+%----------------------- CUSTOM SECTION PAGE BREAK ----------------------------%
+\let\oldsection\section
+\renewcommand\section{\clearpage\oldsection}
+
+%-------------------------- CUSTOM DEFINITIONS --------------------------------%
+\newcommand{\uv}[1]{\ensuremath{\mathbf{\hat{#1}}}}
+\newcommand{\bo}{\ensuremath{\boldsymbol{\Omega}}}
+\newcommand{\fref}[1]{Figure~\ref{#1}}
+\newcommand{\frefs}[2]{Figures~(\ref{#1}-\ref{#2})}
+\newcommand{\tref}[1]{Table~\ref{#1}}
+\newcommand{\trefs}[2]{Tables~(\ref{#1}-\ref{#2})}
+\newcommand{\eref}[1]{Eq.~\ref{#1}}
+\newcommand{\erefs}[2]{Eq.s~(\ref{#1}-\ref{#2})}
+\newcommand{\cref}[1]{Chapter~\ref{#1}}
+\newcommand{\crefs}[2]{Chapters~(\ref{#1}-\ref{#2})}
+\newcommand{\aref}[1]{Appendix~\ref{#1}}
+\newcommand{\sref}[1]{Section~\ref{#1}}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
+\newcommand{\pdr}[3]{\left. \frac{\partial #1}{\partial #2}\right|_{#3}}
+
+% Nondimensionalization macro
+%\newcommand{\nondim}[1]{{#1}^{'}/{#1}_{ref}}
+
+% Cost function target eqn
+\newcommand{\cost}[1]{\left( {#1} - {#1}^{*} \right)}
+
+% residual and its derivatives
+\newcommand{\res}[1]{\vR_{#1}}
+\newcommand{\resp}[1]{\vR_{#1}^{'}}
+\newcommand{\resrho}{\sum_{i=1}^{N_s}\left(\vR_{\rho_i}\right)}
+
+\newcommand{\rdiff}[2]{\pd{\vR_{#1}}{#2}}
+\newcommand{\rpdiff}[2]{\pd{\vR^{'}_{#1}}{#2}}
+
+\newcommand{\rlprod}[2]{\pd{\vR_{#1}}{#2} \adjlam{#1}}
+\newcommand{\rlpprod}[2]{\pd{\vR^{'}_{#1}}{#2} \adjlam{#1}}
+
+\newcommand{\tdiff}[2]{\pd{\vR_{#2}}{#1}}
+\newcommand{\tpdiff}[2]{\pd{\vR_{#2}^{'}}{#1}}
+\newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
+
+\newcommand{\drvdv}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
+
+% Sum with limits on top and bottom of sigma
+\newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
+
+% Species sum
+\newcommand{\ssum}{\sum\limits_{s=1}^{N_{ns}}}
+
+% velocity magnitude (squared)
+\newcommand{\qs}{u^2 + v^2 + w^2}
+\newcommand{\qsp}{(u^{'})^2 + (v^{'})^2 + (w^{'})^2}
+
+% adjoint lambda with subscript
+\newcommand{\adjlam}[1]{\Lambda_{#1}}
+
+% Equation sets
+\newcommand{\ru}[1]{\res{{\mU}_{#1}}}
+\newcommand{\rv}[1]{\res{{\mv}_{#1}}}
+
+% specific heats
+\newcommand{\cvs}{C_{v,s}}
+\newcommand{\cps}{C_{p,s}}
+
+% stoichiometric coefficients
+\newcommand{\sprod}{\nu_{s,r}^{''}}
+\newcommand{\sreact}{\nu_{s,r}^{'}}
+
+% Roe average weighting
+\newcommand{\roe}{\tilde{w}}
+
+% fuel-air ratio for plenum
+\newcommand{\fa}{\phi_p}
+
+% plenum mass flow rate
+\newcommand{\massflow}{\dot{m}_p}
+
+\newcommand{\br}[1]{B_{#1}^{r}}
+
+\newcommand{\real}{\mathbf R}
+\newcommand{\rnn}{\real^{N \times N}}
+\newcommand{\rmn}{\real^{M \times N}}
+\newcommand{\diag}{\mbox{diag}}
+\newcommand{\norm}{\mathbf{n}}
+\newcommand{\Norm}{\mathbf{N}}
+\newcommand{\vf}{\mathbf f}
+\newcommand{\vF}{\mathbf F}
+\newcommand{\Fhat}{\mathbf{\hat{F}}}
+\newcommand{\vx}{\mathbf x}
+\newcommand{\vc}{\mathbf c}
+\newcommand{\vd}{\mathbf d}
+\newcommand{\vy}{\mathbf y}
+\newcommand{\vz}{\mathbf z}
+\newcommand{\ve}{\mathbf e}
+\newcommand{\me}{\mathbf E}
+\newcommand{\mg}{\mathbf G}
+\newcommand{\vw}{\mathbf w}
+\newcommand{\mw}{\mathbf W}
+\newcommand{\What}{\mathbf{\hat{W}}}
+\newcommand{\mr}{\mathbf R}
+\newcommand{\mh}{\mathbf H}
+\newcommand{\mc}{\mathbf C}
+\newcommand{\ms}{\mathbf S}
+\newcommand{\mi}{\mathbf I}
+\newcommand{\vb}{\mathbf b}
+\newcommand{\vq}{\mathbf q}
+\newcommand{\va}{\mathbf a}
+\newcommand{\vv}{\mathbf v}
+\newcommand{\vu}{\mathbf u}
+\newcommand{\vU}{\mathbf U}
+\newcommand{\vR}{\mathbf R}
+\newcommand{\Up}{\mathbf{U}'}
+\newcommand{\Uhat}{\mathbf{\hat{U}}}
+\newcommand{\ma}{\mathbf A}
+\newcommand{\mb}{\mathbf B}
+\newcommand{\md}{\mathbf D}
+\newcommand{\vr}{\mathbf r}
+\newcommand{\mm}{\mathbf M}
+\newcommand{\ml}{\mathbf L}
+\newcommand{\mU}{\mathbf U}
+\newcommand{\mUp}{\mathbf U'}
+\newcommand{\ul}{\mathbf{U^L}}
+\newcommand{\ur}{\mathbf{U^R}}
+\newcommand{\mv}{\mathbf V}
+\newcommand{\Vhat}{\mathbf{\hat{V}}}
+\newcommand{\mP}{\mathbf P}
+\newcommand{\mq}{\mathbf Q}
+\newcommand{\mx}{\mathbf X}
+\newcommand{\pbar}{\overline p}
+%------------------------------------------------------------------------------%
+

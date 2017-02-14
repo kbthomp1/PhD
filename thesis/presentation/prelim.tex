@@ -1,0 +1,1155 @@
+%        File: presentation.tex
+%     Created: Tue Apr 12 03:00 PM 2016 E
+% Last Change: Tue Apr 12 03:00 PM 2016 E
+%
+
+\documentclass{beamer}
+\usetheme{Frankfurt}
+\usepackage{common}
+
+  \title{Aerothermodynamic Design Sensitivities for a Reacting Gas Flow Solver
+  on an Unstructured Mesh Using a Discrete Adjoint Formulation}
+
+  \author{ Kyle B. Thompson }
+  \institute[North Carolina State University and NASA Langley Research Center]{
+    Mechanical and Aerospace Engineering Department \\
+    North Carolina State University
+    \and
+    Aerothermodynamics Branch \\
+    NASA Langley Research Center}
+
+% Date of the Oral Preliminary Exam
+\date{April 20, 2016}
+
+% This turns off the navigation bar at the bottom of each frame
+\beamertemplatenavigationsymbolsempty
+
+\begin{document}
+\setbeamertemplate{caption}{\raggedright\insertcaption\par}
+\begin{frame}
+  \titlepage
+\end{frame}
+\begin{frame}
+  \frametitle{Outline}
+  \tableofcontents
+\end{frame}
+\section{Introduction}
+\stepcounter{subsection}
+\begin{frame}
+  \frametitle{Introduction - Design}
+  \vspace{-.6cm}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.45\linewidth}
+         \centering
+         \begin{cboxt}[white]
+           \includemedia[ activate=pageopen, width=0.85\textwidth, transparent]
+           {\includegraphics{movies/surface_animation.png}}{movies/mesh_animation.swf}
+         \end{cboxt}
+         \vspace{-0.4cm}
+         \caption{\tiny Shape Design Mesh Movement\footnotemark}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.45\linewidth}
+         \centering
+         \begin{cboxt}[white]
+           \includemedia[ activate=pageopen, width=0.8\textwidth, transparent]
+           {\includegraphics{movies/obj_fxn.png}}{movies/obj_fxn.swf}
+         \end{cboxt}
+         \vspace{-0.4cm}
+         \caption{\tiny Lift/Drag Objective Function$^1$}
+     \end{minipage}
+  \end{figure}
+  \footcitetext{Credit: FUN3D Tutorial Examples}
+  \vspace{-1.2cm}
+  \begin{itemize}
+    \item Exploring design space using high-fidelity CFD is challenging
+    \item zero-order methods (sampling) are prohibitively expensive
+    \item Need to be intelligent about techniques for evaluating sensitivity to
+      design parameters
+    \item Gradient-based optimization much more efficient than sampling, but
+      requires calculating sensitivity derivatives
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Design}
+  \begin{itemize}
+    \item \textbf{$\mathbf{>100}$ design variables} in OM6 wing shape optimization
+    \item<2-> How do you to compute sensitivity of that many DVs?
+  \end{itemize}
+  \only<3>{\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black, 
+    title = Direct differentiation approach - Expensive]
+    \begin{itemize}
+      \item Navier-Stokes equations can be directly differentiated to yield
+        sensitivity derivatives necessary for gradient-based optimization
+      \item Finite difference requires a minimum of \textbf{one flow solution
+        for each design variable sensitivity}
+      \item Prohibitively expensive for large number of design parameters
+    \end{itemize}
+  \end{tcolorbox}}
+  \only<4>{\begin{tcolorbox}[colback=green!5!white,colframe=green!75!black,
+    title = Adjoint approach - More efficient]
+    \begin{itemize}
+      \item Solve adjoint equations in addition to Navier Stokes flow equations to
+        obtain sensitivity derivatives
+      \item \textbf{One flow and adjoint solution needed for each cost function},
+      regardless of number of design variables
+      \item Considerably more efficient than direct differentiation approach for
+        large number of design parameters
+    \end{itemize}
+  \end{tcolorbox}}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Design}
+  \begin{itemize}
+    \item Adjoint-based design optimization has recieved considerable attention
+      in compressible, perfect gas CFD
+      solvers\fcite{Nielsen-adjoint}$^,$\fcite{Peter-Dwight}, but very little in
+      reacting flow solvers
+    \item Difficulty of adjoint approach lies in implementating exact
+      linearizations for 2nd-order flux construction scheme
+    \item Particularly difficult for reacting flows, due to 
+      \begin{itemize}
+        \item Complexity of linearizing the additional equations for
+          multi-species chemical kinetics
+        \item Resorting to Automatic Differentiation tools incurs performance
+          overhead that is implementation-specific\fcite{AD-adjoint}
+        \item Serious memory and computational cost concerns when simulating a
+          large number of species
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Improvement to State of the Art}
+  \begin{itemize}
+    \item Current state of the art
+      \begin{itemize}
+        \item Attempts made at both continuous\fcite{Copeland} and
+          discrete\fcite{Lockwood} adjoint formulations
+          for a compressible reacting flow solver
+        \item These attempts suffer from quadratic scaling in memory and
+          computational cost with number of species
+        \item Recent scheme at Barcelona Supercomputing
+          Center\fcite{Esfahani:2016aa} is promising, but only for
+          incompressible reacting flows
+      \end{itemize}
+    \item Proposed improvement to the state of the art
+      \begin{itemize}
+        \item New decoupled scheme for both hypersonic flow solver and adjoint
+          solver that is robust for high-speed flows in chemical non-equilibrium
+        \item New scheme significantly improves scaling in computational cost and
+          memory with number of species
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Decoupled Approach}
+  \begin{itemize}
+    \item Reacting gas simulations require solving a large number of conservation
+      equations
+    \item Memory concerns
+    \begin{itemize}
+        \item Size of Jacobians scales quadratically with number species in gas mixture
+        \item Solving system of equations in a tightly-coupled fashion can be
+          limited by memory constraints
+    \end{itemize}
+    \item Cost concerns
+    \begin{itemize}
+      \item Cost of solving the linear system scales quadratically with number
+      of species in gas mixture
+    \end{itemize}
+    \item Efficiently solving adjoint problem is a primary motivator
+      \begin{itemize}
+        \item Solving adjoint system particularly costly if linear solver is
+          slow
+        \item Can be necessary to store jacobian twice $\to$ large memory
+          overhead
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Introduction - Decoupled Approach}
+  \begin{itemize}
+    \item Loosely-coupled solvers have become popular in the combustion
+      community\fcite{Sankaran}
+      \begin{itemize}
+        \item Decouple species conservation equations from meanflow equations,
+          and solve two smaller systems
+         \[
+           \underset{(4+ns) \times (4+ns)}
+           {\begin{pmatrix}
+             \boxempty & \boxempty & \dots  & \boxempty \\
+             \boxempty & \boxempty & \dots  & \vdots \\
+             \vdots    & \vdots    & \ddots & \vdots \\
+             \boxempty & \dots     & \dots  & \boxempty
+           \end{pmatrix}}
+           \to
+           \underset{5 \times 5}
+           {\begin{pmatrix}
+             \boxempty & \dots  & \boxempty \\
+             \vdots    & \ddots & \vdots \\
+             \boxempty & \dots  & \boxempty
+           \end{pmatrix}}
+           \text{and}
+           \underset{ns \times ns}
+           {\begin{pmatrix}
+             \boxempty  & \boxbslash & \dots  & \boxbslash \\
+             \boxbslash & \boxempty  & \dots  & \vdots \\
+             \vdots     & \vdots     & \ddots & \vdots \\
+             \boxbslash & \dots      & \dots  & \boxempty
+           \end{pmatrix}}
+         \]
+    \end{itemize}
+  \item Candler, et al.\fcite{candler} originally derived this for
+    Steger-Warming scheme, this work extends to Roe FDS scheme
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \vspace{-0.2cm}
+  \frametitle{Introduction - Choice of Code and Implementation}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/fun3d_logo.png}
+    \label{fig:fun3d}
+  \end{figure}
+  \begin{itemize}
+    \item FUN3D chosen as code to facilitate all research presented, because
+      \begin{itemize}
+        \item Excellent infrastructure for adjoint-based design analysis and optimization
+        \item Robust hypersonic flow solver
+        \item NASA Langley Research Center supporting me through the Pathways
+          program
+      \end{itemize}
+    \item Decision to pursue discrete adjoint, rather than continuous adjoint,
+      due to current FUN3D implementation
+  \end{itemize}
+\end{frame}
+
+\AtBeginSection[]
+{
+ \begin{frame}<beamer>
+ \frametitle{Outline}
+ \tableofcontents[currentsection]
+ \end{frame}
+}
+\section{Flow Solver}
+
+\subsection{Fully-Coupled Method}
+\stepcounter{subsection}
+\begin{frame}
+  \frametitle{Fully-Coupled Point Implicit Method}
+  \begin{itemize}
+    \item All work presented is for inviscid flows in chemical non-equilibrium,
+      using a one-temperature model, but is extendable to viscous flows.
+    \item Beginning with the semi-discrete form
+    \begin{equation*}
+    	\label{inv_flux_fv}
+    	\frac{\partial \mU}{\partial t}
+    	 + \frac{1}{V}\sum\limits_{f}(\vF\cdot\ms)^f = \mw
+    \end{equation*}
+    \begin{equation*}
+    	\begin{matrix}
+    	\mU=\begin{pmatrix}
+       		\rho_1\\
+    		\vdots \\
+    		\rho_{ns} \\
+    		\rho u \\
+    		\rho v \\
+    		\rho w \\
+    		\rho E \\
+    	\end{pmatrix},      &
+     	\mathbf{F \cdot S} = \begin{pmatrix}
+    		\rho_1  \overline{U} \\
+    		\vdots \\
+    		\rho_{ns} \overline{U} \\
+    		\rho u \overline{U} + p s_x\\
+    		\rho u \overline{U} + p s_y\\
+    		\rho u \overline{U} + p s_z\\
+    		(\rho E + p) \overline{U} \\
+    	\end{pmatrix}S,    &
+     	\mw = \begin{pmatrix}
+        \dot\rho_1\\
+    		\vdots \\
+    		\dot\rho_{ns} \\
+        0 \\
+        0 \\
+        0 \\
+        0
+      \end{pmatrix}
+
+  	\end{matrix}
+  \end{equation*}
+
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Fully-Coupled Point Implicit Method}
+  \begin{itemize}
+  \item Using the Roe FDS scheme to compute the inviscid flux at the face,
+    $\vF^f$, and linearizing the system results in
+  \begin{multline*}
+  	\frac{\mathbf{\delta U}^n}{\Delta t}
+    +\frac{1}{V}\sum\limits_{f}(\frac{\partial \vF^f}
+    {\partial \ul}\delta\mU^L
+  	+\frac{\partial \vF^f}{\partial \ur}\delta\mU^R)^n \ms^f
+  	- \frac{\partial \mw}{\partial \mU}\delta\mU^n \\
+  	= -\frac{1}{V}\sum\limits_{f}(\vF^f\cdot\ms^f)^n + \mw^n
+  \end {multline*}
+  \item Which can be thought of more simply as
+  \[
+    \ma\vu = \vb
+  \]
+  \vspace{-0.7cm}
+  \begin{align*}
+    \ma &\to
+    \begin{array}{c}
+      (4+ns) \times (4+ns) \\
+      \text{Jacobian Block}
+    \end{array} \\
+    \vb &\to
+    \begin{array}{c}
+      (4+ns) \times 1 \\
+      \text{Residual}
+    \end{array}
+  \end{align*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Fully-Coupled Point Implicit Method}
+  \begin{itemize}
+    \item Constructing the Jacobian in a fully-coupled fashion results in large,
+      dense block matricies
+    \item Using a stationary iterative method (i.e., Gauss-Seidel, SSOR, etc.),
+      work is dominated by matrix-vector products
+      \[
+        \text{Cost} \to O((4+ns)^2)
+      \]
+    \item Leads to onerous quadratic scaling with respect to number of species
+  \end{itemize}
+\end{frame}
+
+\subsection{Decoupled Method}
+\stepcounter{subsection}
+
+\begin{frame}
+  \frametitle{Decoupled Point Implicit Method}
+  \begin{itemize}
+    \item The main idea is to separate the meanflow and species composition
+      equations, adding a new equation for the total mixture density
+    \item Leads to two sets of conserved variables
+      \begin{equation*}
+      	\begin{matrix}
+      		\mU'=\begin{pmatrix}
+      			\rho \\
+      			\rho u \\
+      			\rho v \\
+      			\rho w \\
+      			\rho E
+      		\end{pmatrix} &
+      		\mathbf{\hat{U}}=\begin{pmatrix}
+      			\rho_1 \\
+      			\vdots \\
+      			\rho_{ns}
+      		\end{pmatrix} \\ \\
+          \text{Meanflow} & \text{Species Composition}
+      	\end{matrix} 
+      \end{equation*}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Decoupled Point Implicit Method}
+  \begin{itemize}
+    \item The fluxes are solved in two sequential steps
+      \begin{itemize}
+        \item  The mixture fluxes are first solved as
+        \[
+          \frac{\partial \mU'}{\partial t} +
+          \frac{1}{V}\sum\limits_{f}(\vF'\cdot\ms)^f = 0
+        \]
+      \item Followed by the species fluxes
+      \[
+        \frac{\partial \mathbf{\hat{U}}}{\partial t} +
+        \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot \ms)^f =
+        \mathbf{\hat{W}}
+      \]
+    \end{itemize}
+    \item Since the mixture density was determined in the first step, step two
+      actually solves for the species mass fractions
+      \begin{gather*}
+        \delta \mathbf{\hat{U}}^n 
+        = \rho^{n+1} \hat{\mv}^{n+1}-\rho^n\mathbf{\hat{V}}^n = \rho^{n+1} \delta
+        \mathbf{\hat{V}}^n + \mathbf{\hat{V}}^n \delta \rho^n \\
+        \mathbf{\hat{V}}=(c_1,\hdots,c_{ns})^T, c_s=\rho_s/\rho
+      \end{gather*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Decoupled Point Implicit Method}
+  \begin{itemize}
+    \item The Roe FDS scheme species mass fluxes can be rewritten as
+      \begin{align*}
+  	\hat{\vF}_{\rho_s} &= c_s \vF'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
+  	+ (c_s^R-\tilde{c}_s)\rho^R\lambda^- \\
+	\frac{\partial \hat{\vF}_{\rho_s}}{\partial c_s^L} 
+	&= w\vF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\
+	\frac{\partial \hat{\vF}_{\rho_s}}{\partial c_s^R} 
+	&= (1-w)\vF_\rho+(w-1)\rho^L\lambda^+ + w\rho^R\lambda^- \label{d_last}
+      \end{align*}
+    \item Jacobian Approximations
+      \begin{align*}
+	\text{Step 1:}\quad &
+	\frac{\partial \vF}{\partial \mU'}\bigg|_{\mathbf{\hat{V}}} =
+	\underset{c_s = \text{Constant}}{5 \times 5\,\text{Roe FDS Jacobian}} \\
+	\text{Step 2:}\quad & 
+	\frac{\partial \vF}{\partial \hat{\mv}}\bigg|_{\mathbf{\hat{U'}}} = 
+        \begin{pmatrix} 
+          \frac{\partial F_{\rho_1}}{\partial c_1} & & 0
+          \\ & \ddots &  \\ 0 & & \frac{\partial F_{\rho_{ns}}}{\partial c_{ns}}
+        \end{pmatrix} 
+      \end{align*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Decoupled Point Implicit Method}
+  \vspace{-0.2cm}
+  \begin{itemize}
+    \item Chemical source term linearized via
+    \vspace{-0.1cm}
+    \begin{align*}
+      \mathbf{\hat{W}}^{n+1} &= \mathbf{\hat{W}}^n+\frac{\partial
+      \mathbf{\hat{W}}}{\partial \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial
+      \mathbf{U}}{\partial \mathbf{\hat{V}}} \\
+       \mc &= \frac{\partial \mathbf{\hat{W}}}{\partial
+       \mathbf{U}}\bigg|_{\mathbf{U}'} \frac{\partial \mathbf{U}}{\partial
+       \mathbf{\hat{V}}}
+    \end{align*}
+    \item Full system to be solved in step two
+    \vspace{-0.2cm}
+    \begin{gather*}
+      \begin{split} \rho^{n+1}&\frac{\delta \hat{\mv}^n}{\Delta t}
+        +\frac{1}{V}\sum\limits_{f}(\frac{\partial \hat{\vF}^f}{\partial
+        \mv^L}\delta \mv^L +\frac{\partial
+        \hat{\vF}^f}{\partial \hat{\mv}^R}\delta
+        \hat{\mv}^R)^{n, n+1}\ms^f - \mc^{n, n+1}\delta\mv^n \\ &=
+        -\frac{1}{V}\sum\limits_{f}(\hat{\vF}^{n,n+1}\cdot\ms)^f +
+        \mw^{n, n+1} -\hat{\mv}^n\left(\frac{\delta \rho^n}{\Delta t} -
+        R_\rho\right)
+      \end{split} \\ 
+    \end{gather*}
+    \vspace{-1.4cm}
+    \[
+      R_\rho = -\frac{1}{V}\sum\limits_{f}{\sum\limits_{s}
+      {(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{S})}}
+    \]
+  \item $R_\rho$ is included to preserve $\sum\limits_{s}{c_s}=1$, $\sum\limits_{s}{\delta c_s}=0$.
+  \end{itemize}
+\end{frame}
+
+\section{Cost and Memory Savings}
+\stepcounter{subsection}
+\subsection{Cost and Memory Savings of the Decoupled Flow Solver}
+
+\begin{frame}
+  \frametitle{Cost and Memory Savings of the Decoupled Flow Solver}
+\begin{itemize}
+  \item Most significant savings comes from the source term linearization being purely node-based
+    \begin{itemize}
+      \item Convective contributions to block Jacobians are diagonal
+      \item Source term jacobian is dense block Jacobian
+      \item In the global system (w/chemistry), all off-diagonal block jacobians
+        are diagonal
+    \end{itemize}
+  \end{itemize}
+  \[
+    \begin{pmatrix} 
+      \Box & & & & \\ 
+      & \ddots & & & \\ 
+      & & \Box \\ 
+      & & & \ddots & \\ 
+      & & & & \Box
+    \end{pmatrix} \begin{pmatrix} \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta
+      \mathbf{\hat{V}}_i \\ \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
+    \end{pmatrix} = \begin{pmatrix} \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\
+      \hat{b}_{nodes} \end{pmatrix} - \begin{pmatrix}
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
+    \end{pmatrix} 
+  \]
+  \begin{itemize}
+    \item Matrix-vector products $\to$ inner products: $O(ns^2) \to O(ns)$
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Cost and Memory Savings of the Decoupled Flow Solver}
+  \begin{itemize}
+    \item Comparing size of Jacobian systems, using Compressed Row Storage
+  \end{itemize}
+  \begin{align*}
+    \ma_d &= \text{Decoupled system Jacobians} \\
+    \ma &= \text{Fully-coupled system Jacobians}
+  \end{align*}
+  \[
+  \begin{split} Relative\ Memory\ Cost &=
+    \frac{size(\ma_d)}{size(\ma)} \\ &= \lim_{ns\to\infty}
+    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nbrs})}{(ns+4)^2(N_{nodes}+N_{nbrs})} \\
+    &= \frac{N_{nodes}}{N_{nodes} + N_{nbrs}}
+  \end{split}
+  \]
+\end{frame}
+
+\subsection{Numerical Results: 2D Cylinder}
+
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{figure}[h]
+  	\centering
+    \adjincludegraphics[width=0.8\textwidth,trim={0 7cm 0 7cm},clip]{figures/grid}
+  \end{figure}
+  \begin{itemize}
+    \item Fully-coupled and decoupled methods both implemented in the Generic
+      Gas Path of FUN3D
+    \item Tested on 2D cylinder case
+      \begin{itemize}
+        \item $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
+          and $T_\infty = 200\ K$
+      \end{itemize}
+    \item Inviscid flow, with 1-Temperature model
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{itemize}
+    \item Verification of implementation
+    \begin{itemize}
+      \item 5-species air model: N, $\text{N}_2$, O, $\text{O}_2$, and NO with five reactions
+      \begin{columns}[t]
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_pressure}
+          \end{figure}
+        \end{column}
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/surface_temperature}
+          \end{figure}
+        \end{column}
+        \begin{column}{0.33\textwidth}
+          \begin{figure}[h!]
+            \includegraphics[width=\textwidth,trim={0 0 0 2cm}]{figures/stag_line_mf}
+          \end{figure}
+        \end{column}
+      \end{columns}
+      \vspace{3mm}
+      \item Surface pressure, surface temperature, and mass fractions on
+        stagnation line agree between decoupled and fully coupled
+        implementations
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: 2D Cylinder}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+    \begin{figure}[h]
+      \centering
+      \includegraphics[width=0.8\textwidth,trim={0 0 1cm 2.5cm}]{figures/mem_req}
+    \end{figure}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.8\textwidth,trim={1cm 0 0 2.5cm}]{figures/speedup} 
+      \end{figure}
+    \end{column}
+  \end{columns}
+  \begin{itemize}
+    \item On structured grids $N_{nbrs} \approx 6 N_{nodes}$
+    \begin{itemize}
+      \item Half precision off-diagonal $N_{nbrs} = \frac{6N_{nodes}}{2}$
+        \[ 
+          Memory\ Cost \approx 
+           \frac{N_{nodes}}{N_{nodes} + N_{nbrs}} =
+           \frac{N_{nodes}}{N_{nodes} + 6N_{nodes}/2} = \frac{1}{4}
+        \]
+      \item Linear speedup in solver: $\frac{O(ns^2)}{O(ns)} = O(ns)$
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\subsection{Numerical Results: Axisymmetric Spherically Capped Cone}
+
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+  \begin{figure}[h]
+  	\centering
+   \adjincludegraphics[width=0.6\textwidth,trim={0 3.5cm 0 3cm},clip]{figures/cone_mesh}
+  \end{figure}
+  \begin{itemize}
+    \item Verify that the decoupled scheme is robust at high velocities
+    \begin{itemize}
+      \item $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, 
+        $T_\infty = 200\ K$.
+      \item 11-species air model N, $\text{N}_2$, O,
+        $\text{O}_2$, NO, N$^+$, $\text{N}_2^+$, O$^+$, 
+        $\text{O}_2^+$, NO$^+$, and electrons, with 22 possible reactions.
+      \item Inviscid flow, with 1-Temperature model
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+    \begin{columns}[t]
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+          \includegraphics[width=\textwidth]{figures/surface_pressure_cone}
+        \end{figure}
+      \end{column}
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+          \includegraphics[width=\textwidth]{figures/surface_temperature_cone}
+        \end{figure}
+      \end{column}
+    \end{columns}
+    \begin{itemize}
+      \item Surface pressure and surface temperature agree between decoupled and
+        fully coupled implementations
+    \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Numerical Results: Axisymmetric Spherically Capped Cone}
+    \begin{columns}[t]
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+    	  \includegraphics[width=\textwidth]{figures/cone_iteration}
+        \end{figure}
+      \end{column}
+      \begin{column}{0.5\textwidth}
+        \begin{figure}[h!]
+	  \includegraphics[width=\textwidth]{figures/cone_walltime}
+        \end{figure}
+      \end{column}
+    \end{columns}
+  \begin{itemize}
+    \item Necessary to scale source term magnitude by $0.001 \leq w \leq 1$ 
+      for the first 500 iterations, due to extreme reaction rates
+    \item Both schemes converge in a similar number of iterations
+    \item Decoupled scheme $\approx$ 2x faster
+  \end{itemize}
+\end{frame}
+
+\section{Adjoint Solver}
+\stepcounter{subsection}
+\subsection{Derivation of Discrete Adjoint Formulation}
+\begin{frame}
+  \frametitle{Derivation of Discrete Adjoint Formulation}
+  \begin{itemize}
+    \item The derivation of the adjoint approach to compute design sensitivities
+      begins with forming the Lagrangian and differentiating with respect to the
+      design variables
+      \begin{gather*}
+        L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
+        +\mathbf{\Lambda}^T\mr(\md,\mq,\mx) \\
+        \uncover<2->{
+       	\pd{L}{\md} =
+       	\Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+       	\pd{f}{\mx}\Bigg\}\ + 
+        \only<2>{
+        \begin{cboxf}[white]
+          \bigg[\pd{\mq}{\md}\bigg]^T
+       	  \Bigg\{\pd{f}{\mq} + \bigg[\pd{\mr}{\mq}\bigg]^T \bLam \Bigg\}
+        \end{cboxf}
+        }
+        \only<3>{
+        \begin{cboxf}[green]
+          \bigg[\pd{\mq}{\md}\bigg]^T
+       	  \Bigg\{\pd{f}{\mq} + \bigg[\pd{\mr}{\mq}\bigg]^T \bLam \Bigg\}
+        \end{cboxf}
+        } \\
+       	+ \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+        + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam} \\
+        \begin{aligned} 
+          \md &= \text{design variables}\quad & f &= \text{cost function} \\
+          \mq &= \text{flow variables}\quad & \mr &= \text{flow residual} \\ 
+          \mx &= \text{computational grid}\quad & \bLam &= \text{costate variables} 
+        \end{aligned}
+      \end{gather*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{Derivation of Discrete Adjoint Formulation}
+    \begin{itemize}
+      \item Need to eliminate flow variable dependence on design variables,
+	$\pd{\mq}{\md}$
+      \item Adjoint equation
+	\[ \bigg[\pd{\mr}{\mq}\bigg]^T\bLam = -\pd{f}{\mq} \]
+      \item Solve for $\bLam$ and compute sensitivity derivatives
+      	\[
+      	  \pd{L}{\md} =
+      	  \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+      	  \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+      	  + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
+      	\]
+    \end{itemize}
+\end{frame}
+
+\subsection{Fully Coupled Iterative Method}
+
+\begin{frame}
+  \frametitle{Fully Coupled Iterative Method}
+  \begin{itemize}
+    \item Adjoint problem is a linear system
+      \begin{equation*}
+        \begin{pmatrix}
+          \rtdiff{\rho_i}{\rho_j} & 
+          \rtdiff{\rho \vu}{\rho_j} & 
+          \rtdiff{\rho E}{\rho_j} \\
+          \\
+          \rtdiff{\rho_i}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho \vu} \\
+          \\
+          \rtdiff{\rho_i}{\rho E} &
+          \rtdiff{\rho \vu}{\rho E} &
+          \rtdiff{\rho E}{\rho E}
+        \end{pmatrix}
+        \begin{pmatrix}
+          \adjlam{\rho_i} \\ \\
+          \adjlam{\rho \vu} \\ \\
+          \adjlam{\rho E}
+        \end{pmatrix}
+        = -
+        \begin{pmatrix}
+          \pd{f}{\rho_i} \\ \\
+          \pd{f}{\rho \vu} \\ \\
+          \pd{f}{\rho E}
+        \end{pmatrix}
+      \end{equation*}
+    \item Can be solved with Krylov method (i.e. GMRES), but time marching
+      similar to flow solver shown to be more robust
+      \begin{equation*}
+        \left( \frac{V}{\Delta t} \mi + \rtdiff{1}{\mq} \right)
+        \Delta \adjlam{}
+        = -\pd{f}{\mq}
+        - \rtdiff{2}{\mq} \adjlam{}
+      \end{equation*}
+    \item Straightforward to formulate, but cost and memory requirements
+      scale quadratically with number of species
+      
+  \end{itemize}
+\end{frame}
+
+\subsection{Decoupled Iterative Method}
+
+\begin{frame}[fragile]
+  \frametitle{Decoupled Iterative Method}
+  \begin{itemize}
+    \item Rewrite conserved variables similar to decoupled flow solver
+      \only<1>{\begin{equation*}
+        \begin{pmatrix}
+          \rtdiff{\rho}{\rho} &
+          \rtdiff{\rho \vu}{\rho} &
+          \rtdiff{\rho E}{\rho} &
+          \rtdiff{\rho_s}{\rho} \\
+          \\
+          \rtdiff{\rho}{\rho \vu} & 
+          \rtdiff{\rho \vu}{\rho \vu} & 
+          \rtdiff{\rho E}{\rho \vu} &
+          \rtdiff{\rho_s}{\rho \vu} \\
+          \\
+          \rtdiff{\rho}{\rho E} &
+          \rtdiff{\rho \vu}{\rho E} &
+          \rtdiff{\rho E}{\rho E} &
+          \rtdiff{\rho_s}{\rho E} \\
+          \\
+          \rtdiff{\rho}{c_s} &
+          \rtdiff{\rho \vu}{c_s} &
+          \rtdiff{\rho E}{c_s} &
+          \rtdiff{\rho_s}{c_s}
+        \end{pmatrix}
+        \begin{pmatrix}
+          \adjlam{\rho} \\ \\
+          \adjlam{\rho \vu} \\ \\
+          \adjlam{\rho E} \\ \\
+          \adjlam{c_s}
+        \end{pmatrix}
+        = -
+        \begin{pmatrix}
+          \pd{f}{\rho} \\ \\
+          \pd{f}{\rho \vu} \\ \\
+          \pd{f}{\rho E} \\ \\
+          \pd{f}{c_s}
+        \end{pmatrix}
+        \label{full-adjoint}
+      \end{equation*}}
+      \only<2>{\begin{equation*}
+        \left( \begin{array}{*6{c}}
+          \mred{\rtdiff{\rho}{\rho}} & 
+          \mred{\rtdiff{\rho \vu}{\rho}} & 
+          \mred{\rtdiff{\rho E}{\rho}} & 
+          \mblue{\rtdiff{\rho_s}{\rho}} \\
+          \\
+          \mred{\rtdiff{\rho}{\rho \vu}} & 
+          \mred{\rtdiff{\rho \vu}{\rho \vu}} & 
+          \mred{\rtdiff{\rho E}{\rho \vu}} & 
+          \mblue{\rtdiff{\rho_s}{\rho \vu}} \\
+          \\
+          \mred{\rtdiff{\rho}{\rho E}} & 
+          \mred{\rtdiff{\rho \vu}{\rho E}} & 
+          \mred{\rtdiff{\rho E}{\rho E}} & 
+          \mblue{\rtdiff{\rho_s}{\rho E}} \\
+          \\
+          \mblue{\rtdiff{\rho}{c_s}} &
+          \mblue{\rtdiff{\rho \vu}{c_s}} &
+          \mblue{\rtdiff{\rho E}{c_s}} &
+          \mblue{\rtdiff{\rho_s}{c_s}}
+        \end{array} \right)
+        \begin{pmatrix}
+          \mred{\adjlam{\rho}} \\ \\
+          \mred{\adjlam{\rho \vu}} \\ \\
+          \mred{\adjlam{\rho E}} \\ \\
+          \mblue{\adjlam{c_s}}
+        \end{pmatrix}
+        = -
+        \begin{pmatrix}
+          \mred{\pd{f}{\rho}} \\ \\
+          \mred{\pd{f}{\rho \vu}} \\ \\
+          \mred{\pd{f}{\rho E}} \\ \\
+          \mblue{\pd{f}{c_s}}
+        \end{pmatrix}
+      \end{equation*}}
+    \item<2> Recognize that there is an analogue to the species mass equation
+      decoupling used in the flow solver
+    \item<2> Linear system can be decomposed as block jacobi scheme
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Decoupled Iterative Method}
+  \begin{itemize}
+    \item Separate into two systems and solve as block jacobi scheme
+      \begin{smallequation}
+        \begin{cboxn}[blue]
+          \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
+          \adjlam{c_s}
+          = -\pd{f}{c_s}
+          - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
+          - \rtdiff{\rho_s}{\rho} \adjlam{\rho}
+          - \rtdiff{\rho_s}{\rho \vu} \adjlam{\rho \vu}
+          - \rtdiff{\rho_s}{\rho E} \adjlam{\rho E}
+        \end{cboxn}
+      \end{smallequation}
+      \begin{smallequation}
+        \begin{cboxn}[red]
+          \begin{split}
+            \left[
+              \frac{V}{\Delta t} \mi +
+              \begin{pmatrix}
+                \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} 
+                & \rtdiff{\rho}{\rho E} \\ \\
+                \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} 
+                & \rtdiff{\rho \vu}{\rho E} \\ \\
+                \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} 
+                & \rtdiff{\rho E}{\rho E}
+              \end{pmatrix}
+            \right]
+            \begin{pmatrix}
+              \Delta \adjlam{\rho} \\ \\
+              \Delta \adjlam{\rho \vu} \\ \\
+              \Delta \adjlam{\rho E}
+            \end{pmatrix}
+            &= \\ -
+            \begin{pmatrix}
+              \pd{f}{\rho} \\ \\
+              \pd{f}{\rho \vu} \\ \\
+              \pd{f}{\rho E}
+            \end{pmatrix}
+            -
+            \begin{pmatrix}
+              \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} 
+              & \rtdiff{\rho}{\rho E} \\ \\
+              \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} 
+              & \rtdiff{\rho \vu}{\rho E} \\ \\
+              \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} 
+              & \rtdiff{\rho E}{\rho E}
+            \end{pmatrix}
+            &
+            \begin{pmatrix}
+              \adjlam{\rho} \\ \\
+              \adjlam{\rho \vu} \\ \\
+              \adjlam{\rho E}
+            \end{pmatrix}
+            -
+            \begin{pmatrix}
+              \rtdiff{\rho}{c_s} \\ \\
+              \rtdiff{\rho \vu}{c_s} \\ \\
+              \rtdiff{\rho E}{c_s}
+            \end{pmatrix}
+            \adjlam{c_s}
+          \end{split}
+        \end{cboxn}
+      \end{smallequation}
+      
+  \end{itemize}
+\end{frame}
+
+\section{Design Problem}
+\stepcounter{subsection}
+\begin{frame}
+  \frametitle{Design Problem: Hypersonic Retro Propulsion Vehicle}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.2,trim={0 8cm 0 8cm}]{figures/from_peter/annular_grid}
+         \caption{Annular nozzle mesh}
+         \label{fig:annular_grid}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.2,trim={0 8cm 0 9cm}]{figures/from_peter/T_annular}
+         \caption{Temperature Contour}
+         \label{fig:b}
+     \end{minipage}
+  \end{figure}
+  \vspace{-0.5cm}
+  \begin{itemize}
+    \item Apply adjoint to design Reaction Control System (RCS) jet system to
+      shape shock interaction to maintain maximum drag at minimum surface temperature
+    \item This annular nozzle configuration has been shown to have a steady
+      solution for inviscid flow
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Design Problem: Parameterization}
+  \begin{itemize}
+    \item Design sensitivities given by
+      \[
+        \pd{L}{\md} =
+        \Bigg\{\pd{f}{\md} + \bigg[\pd{\mx}{\md}\bigg]^T
+        \pd{f}{\mx}\Bigg\} + \Bigg\{\bigg[\pd{\mr}{\md}\bigg]^T
+        + \bigg[\pd{\mx}{\md}\bigg]^T\bigg[ \pd{\mr}{\mx}\bigg]^T\Bigg\}\bLam
+      \]
+    \item Define cost functions $=> f$
+      \begin{itemize}
+        \item Total vehicle drag (with and without jet thrust contribution)
+        \item Total vehicle surface temperature (in lieu of heating, since
+          these are inviscid simulations)
+      \end{itemize}
+    \item Define design parameters $=> \md$
+      \begin{itemize}
+        \item Plenum pressure
+        \item Plenum temperature
+        \item Jet placement and geometry
+      \end{itemize}
+    \item Define mesh parameters $=> \mx$
+      \begin{itemize}
+        \item Custom grid generation utility
+        \item Faciliate all grid dependencies by wrapping in complex variables
+      \end{itemize}
+
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Design Problem: Grid Generation and Governing Equations}
+  \begin{itemize}
+    \item Grid generation tool provides straightforward way to get mesh
+      sensitivities
+      \begin{itemize}
+        \item All parameters can be perturbed by a complex source term, and
+          jacobian calculated via frechet derivatives
+        \item Structured mesh generation is fast and robust
+        \item Easy to convert to unstructured grid accepted by FUN3D
+      \end{itemize}
+    \item Propose to limit research to inviscid flow, due to large jump in
+      complexity going to full Navier-Stokes
+      \begin{itemize}
+        \item Decoupled approach changes very little with addition of viscous
+          terms
+        \item Viscous terms considerably more exhausting to implement
+        \item Grid generation process significantly more complicated
+        \item Scope of research is to demonstrate the new decoupled formulation
+          for flow and adjoint solvers
+      \end{itemize}
+  \end{itemize}
+  
+\end{frame}
+
+\section{Concluding Remarks}
+\stepcounter{subsection}
+\begin{frame}
+  \frametitle{Concluding Remarks - Summary of work}
+  \begin{itemize}
+    \item \color<1->[rgb]{0,0,1.0}Completed work
+      \begin{itemize}\color<1->[rgb]{0,0,1.0}
+        \item Derivation of decoupled method for Roe FDS in adjoint and flow solver
+        \item Implementation/verification of decoupled scheme in flow solver
+        \item Exact linearization of 2nd-order Roe FDS scheme and chemical
+          source term for both fully coupled and decoupled methods
+        \item Implementation of fully coupled adjoint scheme for inviscid flow
+      \end{itemize}
+    \item \color<1->[rgb]{1.0,0,0}Proposed work
+      \begin{itemize}\color<1->[rgb]{1.0,0.2,0}
+        \item Implementation of decoupled adjoint scheme
+        \item Optimization of Hypersonic Retro Propulsion configuration
+          using fully coupled and decoupled schemes for inviscid flow and
+          adjoint solvers
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Concluding Remarks}
+  \begin{itemize}
+      \item Design problem provides good testbed for a truly unique hypersonic
+        application
+        \begin{itemize}
+          \item Parameterization is well defined
+          \item Non-linearity of design space is a concern
+          \item Optimal steady solution exists?
+        \end{itemize}
+    \item Decoupling the species equations yield impressive benefits at minimal cost in robustness
+      \begin{itemize}
+        \item 2 times faster and 1/3 required memory for both 2D Cylinder and
+          Sphere-Cone 11-species cases
+        \item Convergence issues at very high velocities can be offset by
+          scaling source term as solution progresses
+      \end{itemize}
+      \item Decoupled adjoint approach is a significant improvement to the
+        state of the art
+        \begin{itemize}
+          \item Preliminary testing has shown that memory overhead in adjoint is
+            significantly reduced with decoupled scheme
+          \item Can expect speedup in adjoint solve similar to flow solve
+        \end{itemize}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Acknowledgements}
+  \begin{itemize}
+    \item Thanks to the FUN3D team at NASA Langley Research Center, for their
+      support in integrating aspects of the compressible gas path into the
+      reacting gas path of FUN3D.
+   \item Thanks to the Entry Systems Modeling Project within the NASA
+     Game Changing Development Program for their funding and support of this research.  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[t,allowframebreaks]
+  \frametitle{References}
+  %\printbiblist{presentation}
+  \printbibliography
+\end{frame}
+
+\section*{Backup}
+
+\begin{frame}
+  \frametitle{Design Problem: Hypersonic Retro Propulsion Vehicle}
+  \begin{figure}[ht]
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.15,trim={0 8cm 0 8cm}]{figures/from_peter/annular_grid}
+         \caption{\tiny Annular nozzle mesh}
+     \end{minipage}
+     \hspace{0.5cm}
+     \begin{minipage}[b]{0.4\linewidth}
+         \centering
+         \includegraphics[scale=0.15,trim={0 8cm 0 9cm}]{figures/from_peter/T_annular}
+         \caption{\tiny Temperature Contour}
+     \end{minipage}
+  \end{figure}
+  \vspace{-0.5cm}
+  \begin{itemize}
+    \item Benefits of using RCS jet
+      shape shock interaction to maintain maximum drag at minimum surface temperature
+      \begin{itemize}
+        \item \textbf{Lower total mass}: Jet propellent mass is less than
+          equivalent TPS material required
+        \item \textbf{Lower surface temperature}: Jet stream ``shrouds'' surface in
+           cooler pocket
+        \item \textbf{Higher total drag}: Jet could propel combustable gas (i.e.
+           methane) to ignite in shock layer and increase drag
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Backup: Derivation}
+  \begin{itemize}
+    \item For the Roe flux difference splitting scheme, the species mass fluxes are given by
+  \[
+  	F_{\rho_s} = \frac{\rho_s^L{\mU}^L+\rho_s^R{\mU}^R}{2}
+  	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_{3_s}}{2}
+  \]
+  \begin{align*}	
+  		dv_1 &= \frac{p^R-p^L+\tilde{\rho} \tilde{a}
+      ({\mU}^R-{\mU}^L)}{\tilde{a}^2} \\
+  		dv_2 &= \frac{p^R-p^L-\tilde{\rho} \tilde{a}
+      ({\mU}^R-{\mU}^L)}{\tilde{a}^2} \\
+  		dv_{3_s} &= \frac{\tilde{a}^2 (\rho_s^R-\rho_s^L)- \tilde{c}_s (p^R-p^L)}{\tilde{a}^2}
+  \end{align*}
+  \begin{align*}
+  	\lambda_1 = \mid \tilde{\mU}+\tilde{a} \mid,\quad 
+  	\lambda_2 = \mid \tilde{\mU}-\tilde{a} \mid,\quad 
+  	\lambda_3 = \mid \tilde{\mU} \mid
+  \end{align*}
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Backup: Derivation}
+  \begin{itemize}
+    \item The $\tilde{}$ notation signifies a Roe-averaged quantity
+    \begin{gather*}
+    	\tilde{{\mU}} =w{U}^L+(1-w){\mU}^R \\
+    	w = \frac{\tilde{\rho}}{\tilde{\rho}+\rho^R} \\
+    	\tilde{\rho} = \sqrt{\rho^R\rho^L}
+    \end{gather*}
+    \item The species mass fluxes must sum to the total mass flux
+    \[ F_\rho = \sum\limits_{s}{F_{\rho_s}} =
+      \frac{\rho^L{\mU}^L+\rho^R{\mU}^R}{2}
+    	-\frac{\tilde{c}_s(\lambda_1 dv_1 + \lambda_2 dv_2)+\lambda_3 dv_3}{2} \]
+    \[ dv_3 = \frac{\tilde{a}^2 (\rho^R-\rho^L)-(p^R-p^L)}{\tilde{a}^2} \]
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Backup: Derivation}
+  \begin{itemize}
+    \item Substituting back into species mass flux equation
+    \[
+      F_{\rho_s} =\tilde{c}_s F_\rho +
+      \frac{(c_s^L-\tilde{c}_s)\rho^L({\mU}^L+\mid \tilde{\mU}\mid)}{2} +
+      \frac{(c_s^R-\tilde{c}_s)\rho^R({\mU}^R-\mid \tilde{\mU}\mid)}{2}
+    \]
+  \item This can be simplified to yield a form similar to that derived by
+    Candler, et. al for the Steger-Warming scheme
+  \[
+    F_{\rho_s} =\tilde{c}_s F_\rho +
+    (c_s^L-\tilde{c}_s)\rho^L\lambda^+ + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
+  \]
+  \[
+    \lambda^+ = \frac{{\mU}^L+\mid
+    \tilde{\mU}\mid}{2}, \quad \lambda^- = \frac{{\mU}^R-\mid
+    \tilde{\mU}\mid}{2}
+  \]
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \frametitle{Backup: Derivation}
+  \begin{itemize}
+    \item Differentiating with respect to the mass fraction, $c_s$, the left and
+      right state contributions are
+    \begin{align*} \frac{\partial F_{\rho_s}}{\partial c^L_s} &=
+      wF_\rho+(1-w)\rho^L\lambda^+ - w\rho^R\lambda^- \\ 
+      \frac{\partial F_{\rho_s}}{\partial c^R_s} &=
+      (1-w)F_\rho+(w-1)\rho^L\lambda^+ + w\rho^R\lambda^- 
+    \end{align*}
+  \item Again, where $w$ is the Roe-averaged density weighting
+    \[
+    	w = \frac{\tilde{\rho}}{\tilde{\rho}+\rho^R},\quad
+    	\tilde{\rho} = \sqrt{\rho^R\rho^L}
+    \]
+  \end{itemize}
+\end{frame}
+
+\end{document}
+
