@@ -101,7 +101,7 @@ cost is:
 \begin{figure}[h] 
   \begin{center} 
     \includegraphics[width=0.45\textwidth]{figures/scitech/mem_req}
-    \caption{Memory required convergence study} 
+    \caption{Memory required convergence study.} 
     \vspace{-2em}
     \label{mem_req}
     \end{center} 
@@ -136,28 +136,28 @@ species, especially calculating the species source term and its linearization.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/flow-efficiency/percent-cost.png}
-  \caption{Relative Cost of Flow Solver Components for 11-Species}
+  \caption{Relative cost of flow solver components for 11-species.}
   \label{fig:percent-cost-cyl}
 \end{figure}
 %------------------------------------------------------------------------------%
-\fref{fig:percent-cost-cyl} shows that jacobian evaluations and computing the
-thermo-chemical state have superceded the linear solver as the dominant cost of
+\fref{fig:percent-cost-cyl} shows that Jacobian evaluations and computing the
+thermo-chemical state have superseded the linear solver as the dominant cost of
 the simulation.  The overall speedup of the decoupled scheme over the fully
-coupled scheme is constrained by these, and also highlights the sensivity to the
-jacobian evaluation frequency.  When the non-linear update is rapidly converging
-the residuals, the jacobian is usually updated only one every 10 iterations.
-Likewise, when the non-linear update is not resulting a sustained residual
-decrease the jacobian is updated every iteration.  This has a large effect on
-relative computational efficiency, and poorly converging solutions can be
-expected to show less relative speedup between the fully coupled and decoupled
-schemes.
+coupled scheme is constrained by these, and also highlights the sensitivity to
+the Jacobian evaluation frequency.  When the non-linear update is rapidly
+converging the residuals, the Jacobian is usually updated only one every 10
+iterations.  Likewise, when the non-linear update is not resulting a sustained
+residual decrease the Jacobian is updated every iteration.  This has a large
+effect on relative computational efficiency, and poorly converging solutions can
+be expected to show less relative speedup between the fully coupled and
+decoupled schemes.
 
 \section{15 km/s Flow over Spherically-Capped Cone}
 \label{sec:15-kps-sphere-cone}
 
 To ensure that the decoupled scheme is robust and accurate at higher velocities, both the
 fully coupled and decoupled approaches were run on a sphere-cone geometry
-identical to that presented by Candler et. al. \cite{candler} (10 cm nose
+identical to that presented by Candler et al. \cite{candler} (10 cm nose
 radius, 1.1 m length, 8$^o$ cone angle).  For this case, a simple 64$\times$64
 hexahedra grid was constructed, and freestream conditions were set as
 $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
@@ -197,7 +197,7 @@ temperature.
 		\caption{Surface temperature}
 		\label{cone_temp}
 	\end{subfigure}
-  \caption{ Sphere-cone predicted quantities. }
+  \caption{Sphere-cone predicted quantities.}
   \label{cone_predictions}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -229,7 +229,7 @@ computational time and, interestingly, fewer timesteps.
     \caption{Computational time to convergence}
 		\label{cone_walltime}
 	\end{subfigure}
-  \caption{ Sphere-cone convergence details. }
+  \caption{Sphere-cone convergence details.}
   \label{cone_convergence}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -274,7 +274,7 @@ flux, and the Jacobian employing the approximation in \eref{approx-roe-jac}.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/flow-efficiency/exact-approx-speedup.png}
-  \caption{Relative Speedup Using Exact Linearizations}
+  \caption{Relative speedup using exact linearizations.}
   \label{fig:exact-approx-speedup}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -282,7 +282,7 @@ flux, and the Jacobian employing the approximation in \eref{approx-roe-jac}.
 convergence to steady state is completed in $58\%$ to $90\%$ less simulation
 time.  For the 11 species air mixture, involving ionization, the speed up
 promptly plateaus, as the additional costs incurred by computing the exact
-linearizations supercede the improved iterative convergence.  It can be inferred
+linearizations supersede the improved iterative convergence.  It can be inferred
 from \fref{fig:exact-approx-speedup} that the improvements compounded by the
 decoupled scheme, which affords iterative converge similar to the exact fully
 coupled scheme, will be significantly faster than the baseline scheme that was
@@ -306,7 +306,7 @@ To determine consistency between the fully coupled and decoupled schemes, the
 surface temperature RMS, $T_{RMS}$, and mass flow rate, $\massflow$, were
 computed and compared.  Because of the flux limiter sensitivity and poor
 relative convergence with finite-rate chemistry discussed in
-\sref{sec:frozen-limiter}, the comparision was made for both frozen flow and
+\sref{sec:frozen-limiter}, the comparison was made for both frozen flow and
 flow in chemical non-equilibrium.
 %------------------------------------------------------------------------------%
 \begin{table}
@@ -317,7 +317,7 @@ flow in chemical non-equilibrium.
     $\massflow$ & 0.8450858226893225E-03 & 0.8450858226893034E-03 & 2.26E-14 \\
     $T_{RMS}$   & 0.1508600871984388E+04 & 0.1508600871984388E+04 & 0
   \end{tabular}
-  \caption{Difference with Frozen Chemistry}
+  \caption{Difference with frozen chemistry.}
   \label{tab:srp-frozen-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -336,7 +336,7 @@ comparison, and only the last digit of both quantities in
     $\massflow$ & 0.8448720721551258E-03 & 0.8448720721551088E-03 & 2.01E-14 \\
     $T_{RMS}$   & 0.1545729169703027E+04 & 0.1545720949811712E+04 & 5.32E-06
   \end{tabular}
-  \caption{Difference with Finite-Rate Chemistry}
+  \caption{Difference with finite-rate chemistry.}
   \label{tab:srp-chem-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -352,7 +352,7 @@ would likely decrease the relative difference between the fully coupled and
 decoupled flow solver schemes.  For engineering applications this difference is
 trivial and it has only minimal impact, if any, on the design optimization
 procedure.  The effect of the flux limiter sensitivity is much greater on the
-design optimzation procedure, and it was found that the using the decoupled
+design optimization procedure, and it was found that the using the decoupled
 scheme or the fully-coupled scheme in the optimization from \cref{chapter-five}
 converged to the same result if the limiter fields were made identical between
 the schemes.
@@ -361,7 +361,7 @@ the schemes.
 
 Due to startup transients, where reaction rates grew very large as nearly all
 $H_2$ and $O_2$, and most of $N_2$, dissociated near the stagnation region, the
-source ferm scaling factor, $\omega_r$, was employed for this problem to
+source term scaling factor, $\omega_r$, was employed for this problem to
 maintain stability.  It was empirically determined that the source term scaling
 could be removed within the first third of the way to convergence for this
 problem.  
@@ -371,19 +371,19 @@ problem.
   \centering
 	\begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/flow-efficiency/dc-gfc-res-chem.png}
-    \caption{Finite-Rate Chemistry}
+    \caption{Finite-rate chemistry}
     \label{fig:srp-dc-gfc-res-frozen}
   \end{subfigure}
 	\begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/flow-efficiency/dc-gfc-res-frozen.png}
-    \caption{Frozen Chemistry}
+    \caption{Frozen chemistry}
     \label{fig:srp-dc-gfc-res-chem}
   \end{subfigure}
-  \caption{Second-Order Residual Convergence History}
+  \caption{Second-order residual convergence history.}
   \label{fig:srp-dc-gfc-res}
 \end{figure}
 %------------------------------------------------------------------------------%
-\fref{fig:srp-dc-gfc-res} shows a comparsion of the residual convergence for the
+\fref{fig:srp-dc-gfc-res} shows a comparison of the residual convergence for the
 fully coupled schemes, with exact first-order linearizations and the
 approximations described in \sref{sec:sphere-cone-exact-approx-convergence}, and
 the decoupled scheme.  The comparing
@@ -425,7 +425,7 @@ than $10^{-16}$, and the relative speedup is shown in
     Fully Coupled (Exact)       & 265.6 & 1.31 \\
     Decoupled                   & 138.7 & 2.51
   \end{tabular}
-  \caption{Relative Speedup for Frozen Chemistry}
+  \caption{Relative speedup for frozen chemistry.}
   \label{tab:srp-rel-speedup-frozen}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -448,7 +448,7 @@ relative speedup in \tref{tab:srp-rel-speedup-chem}
     Fully Coupled (Approximate) & 270.4 & 1.04 \\
     Decoupled                   & 168.6 & 1.66
   \end{tabular}
-  \caption{Relative Speedup for Finite-Rate Chemistry}
+  \caption{Relative speedup for finite-rate chemistry.}
   \label{tab:srp-rel-speedup-chem}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -459,13 +459,13 @@ linearizations in the fully coupled scheme, although the relative savings of use
 approximate linearizations are almost negligible ($4\%$).  The decoupled scheme
 is 66\% faster than the exact, fully coupled scheme, and the difference between
 this result and the frozen flow result is the poorer iterative convergence
-quality.  As discussed in \sref{sec:cylinder-comp-cost}, the the frequency of
-the jacobian evaulation is tied to the decrease in the residual from each
+quality.  As discussed in \sref{sec:cylinder-comp-cost}, the frequency of
+the Jacobian evaluation is tied to the decrease in the residual from each
 non-linear solution update.  Due to the poorer convergence seen in
-\fref{fig:srp-dc-gfc-res-chem}, the jacobian is reevaluated at each iteration.
+\fref{fig:srp-dc-gfc-res-chem}, the Jacobian is reevaluated at each iteration.
 This significantly diminishes the relative speedup of the decoupled scheme.
-This causes the jacobian update to become a bottleneck in computational time
+This causes the Jacobian update to become a bottleneck in computational time
 required, and the additional cost of computing chemical source term and its
-jacobian at each timestep reduces the relative speedup further in comparison to
+Jacobian at each timestep reduces the relative speedup further in comparison to
 frozen flow.
 

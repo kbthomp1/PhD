@@ -38,7 +38,7 @@ to the angle of attack, $\alpha$, is computed by both schemes and compared.
     Cylinder    &  0.764409218044021E-07 &  0.764409218054372E-07 & $1 \times 10^{-11}$ \\
     Sphere-Cone & -0.877773486565165E-02 & -0.877773486565157E-02 & $2 \times 10^{-14}$
   \end{tabular}
-  \caption{Angle of Attack Sensitivity Relative Difference}
+  \caption{Angle of attack sensitivity relative difference.}
   \label{tab:cylinder-adj-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -63,7 +63,7 @@ coupled adjoint solutions matched to give the same sensitivity.
     $T_{p,o}$ &  0.19089941243495E-03 &  0.19089941237390E-03 & $2 \times 10^{-14}$ \\
     $\fa$     & -0.28035409093945E-01 & -0.28035409045530E-01 & $2 \times 10^{-14}$
   \end{tabular}
-  \caption{Annular Jet Plenum Sensitivity Relative Difference}
+  \caption{Annular jet plenum sensitivity relative difference.}
   \label{tab:srp-adj-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -97,16 +97,16 @@ scheme
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/adj-efficiency/adj-recompute.png}
-    \caption{Linearizations Always Recomputed}
+    \caption{Linearizations always recomputed}
     \label{fig:always-recompute}
   \end{subfigure}
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/adj-efficiency/adj-stored.png}
-    \caption{Linearizations Stored}
+    \caption{Linearizations stored}
     \label{fig:stored}
   \end{subfigure}
-  \caption{Simulation Time Comparison}
+  \caption{Simulation time comparison.}
   \label{fig:sim-time-comp}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -126,7 +126,7 @@ rather than recomputed at each timestep.
     Fully Coupled & Stored      & 61.22 & 5.05 \\
     Decoupled     & Stored      & 18.69 & $\mathbf{16.6}$ \\
   \end{tabular}
-  \caption{Relative Speedup}
+  \caption{Relative speedup.}
   \label{tab:srp-rel-speedup}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -151,16 +151,16 @@ refinement study in \sref{sec:mesh-refinement-study}.
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/adj-efficiency/mem-req-srp.png}
-    \caption{Absolute Memory Required}
+    \caption{Absolute memory required}
     \label{fig:abs-mem-req}
   \end{subfigure}
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/adj-efficiency/mem-rel-savings.png}
-    \caption{Relative Memory Required}
+    \caption{Relative memory required}
     \label{fig:relative-mem-req}
   \end{subfigure}
-  \caption{Memory Required to Store Full Linearizations}
+  \caption{Memory required to store full linearizations.}
   \label{fig:srp-mem-req}
 \end{figure}
 %------------------------------------------------------------------------------%

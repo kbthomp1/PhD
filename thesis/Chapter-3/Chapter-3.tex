@@ -1,6 +1,16 @@
 \chapter{Numerical Solution of Flow Equations}
 \label{chapter-three}
 
+In this section, the discretization and method of solution of the governing
+equations from \cref{chapter-two} is derived.  Traditionally, the reacting gas
+path of FUN3D\cite{biedron2016fun3d} has employed an implicit, fully coupled
+scheme in the flow solver.  In addition to providing details of this fully
+coupled scheme, a decoupled scheme based on the Roe FDS scheme\cite{roe} is
+derived to improve the computational efficiency of the flow solver and decrease
+the relative memory required.  Details on the reconstruction scheme used in
+FUN3D to extend the baseline finite-volume scheme to higher-order accuracy are
+also provided in this section.
+
 \section{Fully-Coupled Point Implicit Method}
 
 The governing equations presented in \erefs{species-cons}{tot-energy-cons} can
@@ -429,7 +439,7 @@ $q_{1,2}$ are the primitive variables at nodes 1 and 2.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/edge_reconstruction.png}
-  \caption{Edge Reconstruction}
+  \caption{Edge reconstruction.}
   \label{fig:edge-recons}
 \end{figure}
 %------------------------------------------------------------------------------%

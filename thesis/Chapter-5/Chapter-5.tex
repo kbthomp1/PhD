@@ -26,7 +26,7 @@ nozzle, as shown in \fref{fig:annular-jet-side}.
     \centering
     \includegraphics[width=\textwidth]{figures/all_side.png}
   \end{subfigure}
-  \caption{Annular Jet Geometry}
+  \caption{Annular jet geometry.}
   \label{fig:annular-jet-side}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -45,9 +45,6 @@ rigorously derived from the discretized governing equations, the relationship
 between the plenum and surface can be directly determined, making this an
 excellent showcase problem for adjoint-based sensitivity information.
 
-The geometry was generated with the parameters shown in \tref{tab:annular-geom},
-with the mesh originally created as structured grid and then converted to an
-unstructured grid comprised of hexahedra and prismatic elements.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -62,14 +59,16 @@ unstructured grid comprised of hexahedra and prismatic elements.
     $l_{conv}$         &   distance from plenum to throat, $m$       & 0.05 \\
     $\theta_c$         &   cone half angle, deg                      & 50.0
   \end{tabular}
-  \caption{Annular Nozzle Geometry Inputs}
+  \caption{Annular nozzle geometry inputs.}
   \label{tab:annular-geom}
 \end{table}
 %------------------------------------------------------------------------------%
-The flow conditions for a Mach 20 condition are shown in
-\tref{tab:flow-conditions}, with all simulations conducted using a 9-species
-Hydrogen-air mixture comprised of $H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$,
-$OH$, and $H_2 O$.
+The geometry was generated with the parameters shown in \tref{tab:annular-geom},
+with the mesh originally created as structured grid and then converted to an
+unstructured grid comprised of hexahedra and prismatic elements.  The flow
+conditions for a Mach 20 condition are shown in \tref{tab:flow-conditions}, with
+all simulations conducted using a 9-species Hydrogen-air mixture comprised of
+$H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$, $OH$, and $H_2 O$.
 %------------------------------------------------------------------------------%
 \begin{table}[!h]
   \centering
@@ -81,56 +80,104 @@ $OH$, and $H_2 O$.
     $T_{\infty}$    & freestream temperature, $K$       & 200.0 \\
     $M_{\infty}$    & freestream Mach number (derived)  & 20.0
   \end{tabular}
-  \caption{Flow Conditions}
+  \caption{Flow conditions.}
   \label{tab:flow-conditions}
 \end{table}
 %------------------------------------------------------------------------------%
 
-\section{Steadiness Dependence on Cone Angle}
+\section{Annular Jet Flow Features and Steadiness Dependence on Cone Angle}
 
-While the reacting gas path of the FUN3D flow solver has the capability to
-simulate unsteady flows, the newly developed FUN3D reacting gas adjoint solver
-is currently limited in scope to steady flows.  A full design optimization
-covers a wide variety of flow solutions, and it is therefore important to verify
-that the geometry chosen results in steady flow for all design perturbations.
-A $70^o$ cone angle was initially chosen, instead of $50^o$, because of a rich
-history of investigation associated with the Mars Pathfinder
-probe\cite{gnoffo1996influence}.  It was heuristically determined that blowing a
-light gas with a high cone angle leads to a sonic corner body.  Numerical
-experiments indicate that the annular jet is susceptible to very low frequency
-and low amplitude pulsing of the entrained separation bubble on sonic corner
-bodies.
+\frefs{fig:cone-angle-temperature}{fig:cone-angle-water} show contours for
+annular plenum blowing pure hydrogen at 200,000 $Pa$ and 500$K$, and illustrate the
+complexity of the physics associated with this annular jet configuration.  The
+temperature contours in \fref{fig:cone-angle-temperature} show that the annular
+jet configuration creates a buffer gas region behind the bow shock.  This buffer
+gas provides a beneficial cooling mechanism for the outer surface of the
+vehicle.  The production of water can be seen in \fref{fig:cone-angle-water},
+with the overlayed streamlines indicating that a separation bubble forms just
+downstream of the annular nozzle exit.  The degree of separation in this flow is
+sensitive to the cone angle of the vehicle, and it has been observed that
+lowering the cone angle reduces the size of this separation bubble.
+%------------------------------------------------------------------------------%
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/srp/70deg-temperature.png}
+    \caption{$70^o$ Cone angle}
+    \label{fig:70deg-temperature-contour}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/srp/50deg-temperature.png}
+    \caption{$50^o$ Cone angle}
+    \label{fig:50deg-temperature-contour}
+  \end{subfigure}
+  \caption{Annular jet temperature contours, blowing pure $H_2$.}
+  \label{fig:cone-angle-temperature}
+\end{figure}
+%------------------------------------------------------------------------------%
+%------------------------------------------------------------------------------%
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/srp/70deg-water.png}
+    \caption{$70^o$ Cone angle}
+    \label{fig:70deg-water-contour}
+  \end{subfigure}
+  \begin{subfigure}{0.45\textwidth}
+    \includegraphics[width=\textwidth]{figures/srp/50deg-water.png}
+    \caption{$50^o$ Cone angle}
+    \label{fig:50deg-water-contour}
+  \end{subfigure}
+  \caption{Annular jet $H_2 O$ density contours, blowing pure $H_2$.}
+  \label{fig:cone-angle-water}
+\end{figure}
+%------------------------------------------------------------------------------%
+
+The size of the separation bubble shown in \fref{fig:cone-angle-water} has
+implications on the steadiness of the flow.  While the reacting gas path of the
+FUN3D flow solver has the capability to simulate unsteady flows, the newly
+developed FUN3D reacting gas adjoint solver is currently limited in scope to
+steady flows.  A full design optimization covers a wide variety of flow
+solutions, and it is therefore important to verify that the geometry chosen
+results in steady flow for all design perturbations.  A $70^o$ cone angle was
+initially chosen, instead of $50^o$, because of a rich history of investigation
+associated with the Mars Pathfinder probe\cite{gnoffo1996influence}.  It was
+heuristically determined that blowing a light gas with a high cone angle leads
+to a sonic corner body.  Numerical experiments indicate that the annular jet is
+susceptible to very low frequency and low amplitude pulsing of the entrained
+separation bubble on sonic corner bodies, where the separation bubble near the
+nozzle exit is relatively large.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
   \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/sonic-bubble/sonic_bubble.png}
-    \caption{$70^o$ Cone angle blowing pure $H_2$}
+    \caption{$70^o$ Cone angle}
     \label{fig:70-deg-cone}
   \end{subfigure}
   \begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/sonic-bubble/no_bubble.png}
-    \caption{$50^o$ Cone angle blowing pure $H_2$}
+    \caption{$50^o$ Cone angle}
     \label{fig:50-deg-cone}
   \end{subfigure}
-  \caption{Cone angle comparison}
+  \caption{Annular jet sonic line comparison, blowing pure $H_2$.}
   \label{fig:cone-angle-comp}
 \end{figure}
 %------------------------------------------------------------------------------%
-\fref{fig:cone-angle-comp} shows a comparison of blowing pure $H_2$ from the
-plenum at a total pressure of 200,000 $kPa$ and total temperature 500 K, on a
-vehicle with a $50^o$ cone angle and $70^o$ cone angle.  \fref{fig:70-deg-cone}
-highlights the subsonic bubble that is indicative of a sonic corner body,
-whereas \fref{fig:50-deg-cone} shows that decreasing the cone angle moves the
-sonic line upstream and eliminates the subsonic bubble.  The strong dependence
-between the position of the sonic line on the vehicle and the cone angle is the
-primary reason that the cone angle was chosen to be decreased to $50^o$, rather
-that using the $70^o$ chosen by Gnoffo et al.\cite{gnoffo2016tapping}.  The
-comparison between the $50^o$ and $70^o$ cone angle geometries was done for a
-wide range of plenum conditions spanning the design space to be discussed in the
-next chapter, and no subsonic bubble was ever found for the $50^o$ cone angle.
+\fref{fig:cone-angle-comp} shows a comparison of mach number for the same flow
+conditions as those in \frefs{fig:cone-angle-temperature}{fig:cone-angle-water}.
+\fref{fig:70-deg-cone} highlights the subsonic bubble that is indicative of a
+sonic corner body, whereas \fref{fig:50-deg-cone} shows that decreasing the cone
+angle moves the sonic line upstream and eliminates the subsonic bubble.  The
+strong dependence between the position of the sonic line on the vehicle and the
+cone angle is the primary reason that the cone angle was chosen to be decreased
+to $50^o$, rather that using the $70^o$ chosen by Gnoffo et
+al.\cite{gnoffo2016tapping}.  The comparison between the $50^o$ and $70^o$ cone
+angle geometries was done for a wide range of plenum conditions spanning the
+design space to be discussed in the next chapter, and no subsonic bubble was
+ever found for the $50^o$ cone angle.
 
 \section{Mesh Refinement Study}
 \label{sec:mesh-refinement-study}
@@ -149,7 +196,7 @@ element in the mesh.
     Plenum Temperature, $T_{p,o}$, K &  500 \\
     Plenum Fuel-Air Ratio $\fa$      &  0.7
   \end{tabular}
-  \caption{Plenum Conditions}
+  \caption{Plenum conditions.}
   \label{tab:plenum-conditions}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -161,7 +208,7 @@ of refined meshes generated by this method,
 \begin{figure}[h]
   \centering
   \includegraphics[width=\textwidth]{figures/mesh-progression.png}
-  \caption{Uniformly Refined Meshes}
+  \caption{Uniformly refined meshes.}
   \label{fig:mesh-refined}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -171,7 +218,7 @@ temperature and plenum mass flow rate for a nominal case.
 \begin{figure}[!h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/t-m-conv.png}
-  \caption{Grid convergence }
+  \caption{Grid convergence.}
   \label{fig:grid-convergence}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -223,7 +270,7 @@ the conditioning of the problem being solved.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/limiters/chem-res-comp.png}
-  \caption{Typical Residual Convergence Behavior}
+  \caption{Typical residual convergence behavior.}
   \label{fig:chem-res-comp}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -259,7 +306,7 @@ the solution.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/limiters/all-limiters.png}
-  \caption{Convergence of Surface Temperature with Different Flux Limiters}
+  \caption{Convergence of surface temperature with different flux limiters.}
   \label{fig:all-limiters}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -280,7 +327,7 @@ iteration that the flux limiter is frozen.
 \begin{figure}[h]
   \centering
   \includegraphics[width=0.5\textwidth]{figures/limiters/vanleer-vanalbada-frozen.png}
-  \caption{Van Leer and Van Albada Flux Limiter Impact on Surface Temperature}
+  \caption{Van Leer and Van Albada flux limiter impact on surface temperature.}
   \label{fig:vl-va-impact}
 \end{figure}
 %------------------------------------------------------------------------------%

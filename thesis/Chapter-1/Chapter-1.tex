@@ -5,37 +5,62 @@ In the last decades, computational fluid dynamics (CFD) codes have matured to
 the point that it is possible to obtain high-fidelity design sensitivities,
 which can be coupled with optimization packages to enable design optimization
 for a variety of inputs\cite{baysal1992aerodynamic, balagangadhar2001design}.
-In more recent years, adjoint-based formulations to compute sensitivities have
-been implemented in many compressible CFD codes\cite{mavriplis-2006,
-nemec-aftosmis-adjoint, nielsen2002recent}. This approach is much attractive
-over a finite-difference method, because a single flow and adjoint solution is
-required to compute sensitivities all design variables and a given cost
-function, whereas finite difference requires an additional flow solution for
-each design variable.  Reacting gas CFD codes have lagged in adopting this
-adjoint-based approach, but interest has increased in recent
-years\cite{Copeland, Barcelona, lockwood2010parameter}.  The relatively small
-number of reacting gas CFD codes that employ adjoint-based sensitivity analysis
-is likely due to the significant jump in complexity of the linearizations
-required, especially in regard to the chemical source term and the dissipation
-term in the Roe flux difference splitting (FDS) scheme\cite{roe}.
+Typically, CFD codes are coupled with a numerical optimization
+package\cite{SNOPT-alg, KSOPT, fletcher1963rapidly, npsol-manual}, where the CFD
+analysis evaluates an aerodynamic ``cost function'' of interest, based on a set
+of design variables, and passes this cost function to the optimizer.  The
+optimizer then returns a new set of inputs to the CFD code to improve the
+previous design.  These optimization procedures also require the sensitivity
+derivatives of the cost function with respect to the design variables.  
 
-In the reacting gas solver community, there is a split in the methodology used
-to compute adjoint-based sensitivity derivatives, specifically whether to
-implement a continuous or discrete version of the adjoint equations.  In a
-continuous formulation of the adjoint equations, the flow solver equations are
-linearized and then discretized, whereas in discrete formulation the flow solver
-equations are discretized and then linearized.  Copeland et al.\cite{Copeland}
-have adopted a continuous formulation of the adjoint equations for flows in
-chemical and thermal non-equilibrium, and have implemented this formulation in
-the CFD code SU2\cite{palacios2013stanford} from Stanford University.  The
-reasoning cited for choosing a continuous formulation of the adjoint equations,
-was that, among other things, the adjoint system was not wel suited to being
-solved by the same methods used for solving the flow solver equations and the
-resulting adjoint solution could lead to non-physical oscillations that fail to
-capture the continuous adjoint solution.  Lockwood et
-al.\cite{lockwood2010uncertainty, lockwood2010parameter}, on the other hand,
-have published favorable results for a discrete adjoint formulation for both
-parameter sensitivity and uncertainty quantification.
+The most straightforward approach to computing design sensitivities is a
+finite-difference approach.  The finite-difference approach effectively turns a
+CFD code into ``black box'', where each design variables is perturbed and used
+as an input to a CFD code.  This requires very little effort to implement, and
+can be attractive if the number of cost functions is large in comparison to the
+number of design variables, since the sensitivity of all cost functions to a
+single design variable can be computed from a single finite-difference
+evaluation.  The finite-difference approach, however, requires at least one
+analysis from the CFD code per design variable, making it ill-suited for design
+optimization problems with a large number of design inputs.
+
+In recent years, an adjoint-based approach to computing sensitivities has been
+implemented in many compressible CFD codes\cite{mavriplis-2006,
+nemec-aftosmis-adjoint, nielsen2002recent, reuther1999constrained}. This
+adjoint-based approach requires a single flow and ``adjoint'' solution to
+compute the sensitivity of all design variables to a given cost function.
+In essence, the adjoint-based approach requires an additional solution per cost
+function, whereas the finite-difference approach requires an additional solution
+per design variable.  Because the number of design variables is, usually, much
+larger than the number of cost functions in CFD applications, the adjoint-based
+approach is much more efficient than the finite-difference approach for
+computing design sensitivities.
+
+
+Reacting gas CFD codes have lagged in adopting this adjoint-based approach, but
+interest has increased in recent years\cite{Copeland, Barcelona,
+lockwood2010parameter}.  The relatively small number of reacting gas CFD codes
+that employ adjoint-based sensitivity analysis is likely due to the significant
+jump in complexity of the linearizations required, especially in regard to the
+chemical source term and the dissipation term in the Roe flux difference
+splitting (FDS) scheme\cite{roe}.  There is also a split in the reacting gas
+solver community over the methodology used to compute adjoint-based sensitivity
+derivatives, specifically whether to implement a continuous or discrete version
+of the adjoint equations.  In a continuous formulation of the adjoint equations,
+the flow solver equations are linearized and then discretized, whereas in
+discrete formulation the flow solver equations are discretized and then
+linearized.  Copeland et al.\cite{Copeland} have adopted a continuous
+formulation of the adjoint equations for flows in chemical and thermal
+non-equilibrium, and have implemented this formulation in the CFD code
+SU2\cite{palacios2013stanford} from Stanford University.  The reasoning cited
+for choosing a continuous formulation of the adjoint equations, was that, among
+other things, the adjoint system was not well suited to being solved by the same
+methods used for solving the flow solver equations and the resulting adjoint
+solution could lead to non-physical oscillations that fail to capture the
+continuous adjoint solution.  Lockwood et al.\cite{lockwood2010uncertainty,
+lockwood2010parameter}, on the other hand, have published favorable results for
+a discrete adjoint formulation for both parameter sensitivity and uncertainty
+quantification.
 
 For the work presented here, a discrete adjoint formulation is chosen over a
 continuous one.  The reason for this decision is that the merits a of continuous
@@ -80,11 +105,11 @@ these stability concerns.
 
 As its primary focus, this work demonstrates that a variation of the decoupled
 point-implicit scheme can be applied to both the flow solver and adjoint solver
-in the reacting gas path of the FUN3D CFD code, and significantly improve the
-efficiency in both computational cost and memory required.  Additionally,
-exactly linearizing the Roe FDS scheme is shown to significantly improve
-performance and robustness in the flow solver over previous approximate
-linearizations used\cite{gnoffo-tp}.
+in the reacting gas path of the FUN3D CFD code\cite{biedron2016fun3d}, and
+significantly improve the efficiency in both computational cost and memory
+required.  Additionally, exactly linearizing the Roe FDS scheme is shown to
+significantly improve performance and robustness in the flow solver over
+previous approximate linearizations used\cite{gnoffo-tp}.
 
 An axi-symmetric hypersonic re-entry vehicle with an annular jet is chosen as
 the main demonstration problem in this work.  This design was previously

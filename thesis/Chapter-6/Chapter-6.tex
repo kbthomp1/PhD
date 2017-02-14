@@ -65,15 +65,17 @@ danger of burn-through.
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/surface2.png}
-    \caption{$T_{RMS}$ Integrated Area}
+    \caption{Surface temperature RMS integrated area}
     \label{fig:t-rms-area}
   \end{subfigure}
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/plenum_bc.png}
-    \caption{Mass Flow Rate Integrated Area}
+    \caption{Mass flow rate integrated area}
     \label{fig:plenum-face}
   \end{subfigure}
+  \caption{Cost function component integrated areas.}
+  \label{fig:cost-func-integrated-areas}
 \end{figure}
 %------------------------------------------------------------------------------%
 
@@ -184,16 +186,16 @@ due to the high sensitivity to the interaction at which the limiter is frozen.
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/1st-H2/cost_func.png}
-    \caption{Composite Value}
+    \caption{Composite value}
     \label{fig:cost-func-1st-H2}
   \end{subfigure}
 	\begin{subfigure}[b]{0.45\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/1st-H2/func_components.png}
-    \caption{Component Values}
+    \caption{Component values}
     \label{fig:components-1st-H2}
   \end{subfigure}
-  \caption{Cost Function and Component History}
+  \caption{Cost function and component history.}
 \end{figure}
 %------------------------------------------------------------------------------%
 To demonstrate the inverse design capability of an adjoint-based design
@@ -219,15 +221,15 @@ $\dot{m}$, which is desired as both targets should be met at optimality.
   \centering
   \begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/1st-H2/dv_hist.png}
-    \caption{Design Variable History}
+    \caption{Design variable history}
     \label{fig:dv-hist-1st-H2}
   \end{subfigure}
   \begin{subfigure}[b]{0.45\textwidth}
     \includegraphics[width=\textwidth]{figures/1st-H2/fm_hist.png}
-    \caption{Design Variable History}
+    \caption{Design variable history}
     \label{fig:fm-hist-1st-H2}
   \end{subfigure}
-  \caption{Inverse Design History}
+  \caption{Inverse design history.}
 \end{figure}
 %------------------------------------------------------------------------------%
 Using the SNOPT optimizer, \fref{fig:cost-func-1st-H2} shows that the target
@@ -285,16 +287,16 @@ made after that point.
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/direct_design/cost-func.png}
-    \caption{Composite Cost Function Value}
+    \caption{Composite cost function value}
     \label{fig:dd-cost-func-value}
   \end{subfigure}
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/direct_design/components.png}
-    \caption{Cost Function Components}
+    \caption{Cost function components}
     \label{fig:dd-components}
   \end{subfigure}
-  \caption{Direct Design Cost Function}
+  \caption{Direct design cost function.}
   \label{fig:dd-cost-func}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -307,16 +309,16 @@ $T_{RMS}$ contributions to the composite cost function.
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/direct_design/dv-hist.png}
-    \caption{Design Variable History}
+    \caption{Design variable history.}
     \label{fig:dd-dv-hist}
   \end{subfigure}
 	\begin{subfigure}[b]{0.4\textwidth}
     \centering
     \includegraphics[width=\textwidth]{figures/direct_design/mass-tt.png}
-    \caption{$\massflow$ and $T_{RMS}$ Design History}
+    \caption{$\massflow$ and $T_{RMS}$ design history}
     \label{fig:dd-mass-tt}
   \end{subfigure}
-  \caption{Direct Design History}
+  \caption{Direct design history.}
   \label{fig:dd-history}
 \end{figure}
 %------------------------------------------------------------------------------%
@@ -333,7 +335,7 @@ mass flow rate.
     $\dot{m}$, $kg/s$ & 1.268e-3 & 1.028e-3 & 18.93\% \\
     $T_{RMS}$, $K$    & 1088     & 1044     & 4.044\%
   \end{tabular}
-  \caption{Direct Design Optimization Improvement}
+  \caption{Direct design optimization improvement.}
   \label{tab:design-improvement}
 \end{table}
 %------------------------------------------------------------------------------%
