@@ -500,7 +500,7 @@ It is possible to form the transformation
   \pd{\ru{}}{\rv{}} =
   \begin{pmatrix}
     1      & \dots  & 0 & c_1        & 0 & 0 \\
-    \vdots & \ddots & \vdots            & \vdots & \vdots & \vdots & \vdots \\
+    \vdots & \ddots & \vdots            & \vdots & \vdots & \vdots \\
     0      & \dots  & 1 & c_{N_{ns}} & 0 & 0 \\
     0      & \dots  & 0 & 0          & 1 & 0 \\
     0      & \dots  & 0 & 0          & 0 & 1 \\
@@ -511,7 +511,7 @@ It is possible to form the transformation
 The adjoint costate variable vector $\adjlam{}$ is effectively defined as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \adjlam{} = \pd{f}{\mr}
+  \adjlam{} = -\pd{f}{\mr}
   \label{adj-lam-dfdr}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -519,9 +519,9 @@ Thus, there are two different costate variable vectors for the equation sets
 defined in \eref{ru-to-rv}
 %------------------------------------------------------------------------------%
 \begin{align}
-  \adjlam{\mU} = \pd{f}{\ru{}}
+  \adjlam{\mU} = -\pd{f}{\ru{}}
   \label{adj-lam-ru} \\[12pt]
-  \adjlam{\mv} = \pd{f}{\rv{}}
+  \adjlam{\mv} = -\pd{f}{\rv{}}
   \label{adj-lam-rv}
 \end{align}
 %------------------------------------------------------------------------------%
@@ -529,7 +529,7 @@ based on \erefs{adj-lam-ru}{adj-lam-rv}, it clear that the transformation
 defined in \eref{drudrv} is the mapping between these costate variable sets
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \adjlam{\mU} = \pd{\ru{}}{\rv{}} \adjlam{\mv}
+  \adjlam{\mU} = \left(\pd{\ru{}}{\rv{}} \right)^{T} \adjlam{\mv}
   \label{adj-ru-to-rv}
 \end{equation}
 %------------------------------------------------------------------------------%
