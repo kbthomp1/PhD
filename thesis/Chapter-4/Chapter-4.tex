@@ -441,7 +441,7 @@ Where the adjoint costate variables associated with the fully coupled equations,
 $\ru{}$ can be recovered from the right preconditioning
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \Delta \adjlam{\mU} = \pd{\ru{}}{\rv{}} \Delta \adjlam{\mv}
+  \Delta \adjlam{\mU} = \left(\pd{\rv{}}{\ru{}} \right)^{T} \Delta \adjlam{\mv}
   \label{adj-lam-v-to-u}
 \end{equation}
 %------------------------------------------------------------------------------%
@@ -453,7 +453,7 @@ to be changed at the low-level linearizations.  Instead, the residual of the
 adjoint can be formed in the exact same fashion as the fully coupled scheme, and
 a series of matrix operations can then be performed to transform the equations
 and dependent variables into those used by the decoupled scheme. A full
-derivation of the change of equation sets, $\pd{\ru{}}{\rv{}}$, is included
+derivation of the change of equation sets, $\pd{\rv{}}{\ru{}}$, is included
 in \aref{sec:change-of-equations}
 
 The iterative mechanism required by the adjoint solver has been found to be much
@@ -463,14 +463,14 @@ the later at the next time level.  This same process can be carried out on the
 costate variable vector, $\adjlam{\mv}$, in the adjoint solver, which would
 correspond to a block Gauss-Seidel type scheme; however, through testing, their
 is no significant advantage found applying costate variables at the next time
-level to compute costate variables at the previous time level.  Thus, the much
-more cost effective approach is to apply a block jacobi scheme where all
-costate variables are updated at the same time level, regardless of order.
-Because information is not passed between the costate variables for the mixture
+level to compute costate variables at the previous time level.  A much more cost
+effective approach is to apply a block jacobi scheme, where all costate
+variables are updated at the same time level, regardless of order.  Because
+information is not passed between the costate variables for the mixture
 equations and costate variables for the species equations, only a single
 residual vector is required to be computed per timestep in the block jacobi
 adjoint solver, rather than two required by a block gauss-seidel type adjoint
-solver.  This algorithm is also more efficient than the flow solver iterative
+solver.  This algorithm is more efficient than the flow solver iterative
 mechanism, which requires two residual vectors to be computed per timestep.
 
 

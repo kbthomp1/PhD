@@ -481,29 +481,32 @@ and the residual vector for the fully coupled scheme, $\ru{}$, can be written as
 %------------------------------------------------------------------------------%
 \eref{fc-dc-res} shows that $\rv{}$ is completely comprised of components from
 $\ru{}$; therefore, a relationship between these equation sets can be derived in
-a similar fashion to Appendix \ref{change-of-var-section}.  Rewriting $\ru{}$ in
-terms of $\rv{}$
+a similar fashion to Appendix \ref{change-of-var-section}.  Rewriting $\rv{}$ in
+terms of $\ru{}$
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \ru{} =
+  \rv{} =
   \begin{pmatrix}
-    \rv{i} + c_i \left(\rv{N_s+1} \right) \\
-    \rv{N_s+2} \\
-    \rv{N_s+3}
+    \ru{s} - c_s \left( \lsum{i=1}{N_s}{\ru{i}} \right) \\
+    \lsum{i=1}{N_s}{\ru{i}} \\
+    \ru{N_s + 1} \\
+    \ru{N_s + 2}
   \end{pmatrix}
   \label{ru-to-rv}
 \end{equation}
 %------------------------------------------------------------------------------%
-It is possible to form the transformation
+it is possible to form the transformation
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \pd{\ru{}}{\rv{}} =
+  \pd{\rv{}}{\ru{}} =
   \begin{pmatrix}
-    1      & \dots  & 0 & c_1        & 0 & 0 \\
-    \vdots & \ddots & \vdots            & \vdots & \vdots & \vdots \\
-    0      & \dots  & 1 & c_{N_{ns}} & 0 & 0 \\
-    0      & \dots  & 0 & 0          & 1 & 0 \\
-    0      & \dots  & 0 & 0          & 0 & 1 \\
+    1 - c_1  & -c_1     & \dots  & -c_1      & 0      & 0      \\
+    -c_2     & 1-c_2    & \dots  & -c_2      & 0      & 0      \\
+    \vdots   & \vdots   & \ddots & \vdots    & \vdots & \vdots \\
+    -c_{N_s} & -c_{N_s} & \dots  & 1-c_{N_s} & 0      & 0      \\
+    1        & 1        & \dots  & 1         & 0      & 0      \\
+    0        & 0        & \dots  & 0         & 1      & 0      \\
+    0        & 0        & \dots  & 0         & 0      & 1      \\
   \end{pmatrix}
   \label{drudrv}
 \end{equation}
@@ -529,7 +532,7 @@ based on \erefs{adj-lam-ru}{adj-lam-rv}, it clear that the transformation
 defined in \eref{drudrv} is the mapping between these costate variable sets
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \adjlam{\mU} = \left(\pd{\ru{}}{\rv{}} \right)^{T} \adjlam{\mv}
+  \adjlam{\mU} = \left(\pd{\rv{}}{\ru{}} \right)^{T} \adjlam{\mv}
   \label{adj-ru-to-rv}
 \end{equation}
 %------------------------------------------------------------------------------%
