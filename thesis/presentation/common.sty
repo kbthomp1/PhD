@@ -16,6 +16,8 @@
 \usepackage{newlfont}
 \usepackage{environ}
 \usepackage[skins,theorems]{tcolorbox}
+\usepackage{tikz}
+\usetikzlibrary{fit}
 
 %Bibliography-related stuff
 %\usepackage[style=authoryear]{biblatex}
@@ -45,6 +47,31 @@
   \ooalign{\hss\makebox[0pt]{\fcolorbox{green!10}{blue!15}{$#1$}}\hss\cr\phantom{$#1$}}%
 }
 
+%------------------------------- TIKZ STUFF -----------------------------------%
+
+\tikzset{%
+  bhighlight/.style={rectangle,rounded corners,fill=blue!15,draw,fill opacity=0.5,thick,inner sep=0pt}
+}
+\tikzset{%
+  rhighlight/.style={rectangle,rounded corners,fill=red!15,draw,fill opacity=0.5,thick,inner sep=0pt}
+}
+\newcommand{\tikzmark}[2]{\tikz[overlay,remember picture,baseline=(#1.base)] \node (#1) {#2};}
+%
+\newcommand{\Bhighlight}[1][submatrix]{%
+    \tikz[overlay,remember picture]{
+    \node[bhighlight,fit=(left.north west) (right.south east)] (#1) {};}
+}
+\newcommand{\Rhighlight}[1][submatrix]{%
+    \tikz[overlay,remember picture]{
+    \node[rhighlight,fit=(left.north west) (right.south east)] (#1) {};}
+}
+\newcommand{\Nohighlight}[1][submatrix]{%
+    \tikz[overlay,remember picture]{
+    \node[fit=(left.north west) (right.south east)] (#1) {};}
+}
+
+%------------------------------------------------------------------------------%
+
 %\usepackage{caption}
 %\usepackage{subcaption}
 
@@ -61,11 +88,17 @@
     \end{equation*}
     }
 
-    \NewEnviron{sequation}[1][1.0]{%
+\NewEnviron{sequation}[1][1.0]{%
     \begin{equation*}
     \scalebox{#1}{$\BODY$}
     \end{equation*}
     }
+
+\NewEnviron{parray}[1][1]{%
+    \left( \begin{array}{*#1c}
+      \BODY
+    \end{array} \right)
+}
 
 \NewEnviron{cboxt}[1][black]{%
   \tcbset{size=tight}

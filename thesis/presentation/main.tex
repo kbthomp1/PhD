@@ -629,7 +629,7 @@
   \end{itemize}
   \vspace{0.5cm}
 %------------------------------------------------------------------------------%
-\begin{equation*}
+\begin{sequation}[0.8]
   \pd{\mU}{\mv} = 
   \begin{pmatrix}
     \rho   & \dots  & 0      & c_1     & 0      & 0      \\
@@ -638,144 +638,247 @@
     0      & \dots  &0       & 0       & 1      & 0      \\
     0      & \dots  &0       & 0       & 0      & 1
   \end{pmatrix}, \ 
-  \pd{\ru{}}{\rv{}} =
+  \pd{\rv{}}{\ru{}} =
   \begin{pmatrix}
-    1      & \dots  & 0 & c_1        & 0 & 0 \\
-    \vdots & \ddots & \vdots            & \vdots & \vdots & \vdots \\
-    0      & \dots  & 1 & c_{N_{ns}} & 0 & 0 \\
-    0      & \dots  & 0 & 0          & 1 & 0 \\
-    0      & \dots  & 0 & 0          & 0 & 1 \\
+    1 - c_1  & -c_1     & \dots  & -c_1      & 0      & 0      \\
+    -c_2     & 1-c_2    & \dots  & -c_2      & 0      & 0      \\
+    \vdots   & \vdots   & \ddots & \vdots    & \vdots & \vdots \\
+    -c_{N_s} & -c_{N_s} & \dots  & 1-c_{N_s} & 0      & 0      \\
+    1        & 1        & \dots  & 1         & 0      & 0      \\
+    0        & 0        & \dots  & 0         & 1      & 0      \\
+    0        & 0        & \dots  & 0         & 0      & 1      \\
   \end{pmatrix}
-\end{equation*}
+\end{sequation}
 %------------------------------------------------------------------------------%
 \end{frame}
 \begin{frame}
   \frametitle{Decoupled Adjoint Scheme}
   \begin{itemize}
-    \item Using the transformation matricies, $\pd{\mU}{\mv}$ and
+    \item<1-> Using the transformation matricies, $\pd{\mU}{\mv}$ and
       $\pd{\ru{}}{\rv{}}$, it possible to treat the decoupled approach as a
       series of matrix operations
       \begin{equation*}
-        \pd{\rv{}}{\mv} = \pd{\ru{}}{\rv{}} 
+        \pd{\rv{}}{\mv} = \pd{\rv{}}{\ru{}} \pd{\ru{}}{\mU} \pd{\mU}{\mv}
       \end{equation*}
+    \item<2-> These matrix operations can be thought of as left and right
+      preconditioning
+      \begin{equation*}
+        \pd{\rv{}}{\mv} = 
+        \underbrace{ \left(\pd{\rv{}}{\ru{}}\right) }_{\text{Left Preconditioner}}
+        \left(\pd{\ru{}}{\mU}\right)
+        \underbrace{ \left(\pd{\mU}{\mv}\right) }_{\text{Right Preconditioner}}
+      \end{equation*}
+    \item<3-> This transformation avoids having to explicitly form the jacobian
+      $\pd{\rv{}}{\mv}$, which are complicated than $\pd{\ru{}}{\mU}$
   \end{itemize}
 \end{frame}
-
-\begin{frame}[fragile]
+\begin{frame}
+  \frametitle{Decoupled Adjoint Scheme}
+  \begin{itemize}
+    \item Rewrite the adjoint system from 
+      $\rv{}\left( \mv \right) \only<2->{\rightarrow \ru{}\left( \mU \right)}$
+      \begin{gather*}
+        \left( \pd{\rv{}}{\mv} \right)^T \adjlam{\mv} = -\pd{f}{\mv} \\
+        \only<2->{
+          \left( \pd{\mU}{\mv} \right)^T 
+          \left( \pd{\ru{}}{\mU} \right)^T 
+          \left( \pd{\rv{}}{\ru{}} \right)^T 
+          \adjlam{\mv} = -\left( \pd{\mU}{\mv} \right)^T
+          \left(\pd{f}{\mU}\right)
+        }
+      \end{gather*}
+    \item<3-> Effectively another Left/Right Preconditioning
+  \end{itemize}
+  \vspace{0.2cm}
+  \only<3->{
+  \begin{sequation}[0.9]
+    \underbrace{
+      \left( \pd{\mU}{\mv} \right)^T 
+    }_\text{Left Preconditioning}
+    \left( \pd{\ru{}}{\mU} \right)^T 
+    \underbrace{
+      \left( \pd{\rv{}}{\ru{}} \right)^T \adjlam{\mv}
+    }_\text{Right Preconditioning}
+    = -
+    \underbrace{
+      \left( \pd{\mU}{\mv} \right)^T
+    }_\text{Left Preconditioning}
+    \left(\pd{f}{\mU}\right)
+  \end{sequation}
+  \begin{sequation}[0.9]
+    \left( \pd{\rv{}}{\ru{}} \right)^T \adjlam{\mv} = \adjlam{\mU}
+  \end{sequation}
+  }
+\end{frame}
+\begin{frame}
   \frametitle{Decoupled Adjoint Solver}
   \begin{itemize}
-    \item Rewrite conserved variables similar to decoupled flow solver
-      \only<1>{\begin{equation*}
-        \begin{pmatrix}
-          \rtdiff{\rho}{\rho} &
-          \rtdiff{\rho \vu}{\rho} &
-          \rtdiff{\rho E}{\rho} &
-          \rtdiff{\rho_s}{\rho} \\
-          \\
-          \rtdiff{\rho}{\rho \vu} & 
-          \rtdiff{\rho \vu}{\rho \vu} & 
-          \rtdiff{\rho E}{\rho \vu} &
-          \rtdiff{\rho_s}{\rho \vu} \\
-          \\
-          \rtdiff{\rho}{\rho E} &
-          \rtdiff{\rho \vu}{\rho E} &
-          \rtdiff{\rho E}{\rho E} &
-          \rtdiff{\rho_s}{\rho E} \\
-          \\
-          \rtdiff{\rho}{c_s} &
-          \rtdiff{\rho \vu}{c_s} &
-          \rtdiff{\rho E}{c_s} &
-          \rtdiff{\rho_s}{c_s}
-        \end{pmatrix}
-        \begin{pmatrix}
-          \adjlam{\rho} \\ \\
-          \adjlam{\rho \vu} \\ \\
-          \adjlam{\rho E} \\ \\
-          \adjlam{c_s}
-        \end{pmatrix}
-        = -
-        \begin{pmatrix}
-          \pd{f}{\rho} \\ \\
-          \pd{f}{\rho \vu} \\ \\
-          \pd{f}{\rho E} \\ \\
-          \pd{f}{c_s}
-        \end{pmatrix}
-        \label{full-adjoint}
-      \end{equation*}}
-      \only<2>{\begin{equation*}
-        \left( \begin{array}{*6{c}}
-          \mred{\rtdiff{\rho}{\rho}} & 
-          \mred{\rtdiff{\rho \vu}{\rho}} & 
-          \mred{\rtdiff{\rho E}{\rho}} & 
-          \mblue{\rtdiff{\rho_s}{\rho}} \\
-          \\
-          \mred{\rtdiff{\rho}{\rho \vu}} & 
-          \mred{\rtdiff{\rho \vu}{\rho \vu}} & 
-          \mred{\rtdiff{\rho E}{\rho \vu}} & 
-          \mblue{\rtdiff{\rho_s}{\rho \vu}} \\
-          \\
-          \mred{\rtdiff{\rho}{\rho E}} & 
-          \mred{\rtdiff{\rho \vu}{\rho E}} & 
-          \mred{\rtdiff{\rho E}{\rho E}} & 
-          \mblue{\rtdiff{\rho_s}{\rho E}} \\
-          \\
-          \mblue{\rtdiff{\rho}{c_s}} &
-          \mblue{\rtdiff{\rho \vu}{c_s}} &
-          \mblue{\rtdiff{\rho E}{c_s}} &
-          \mblue{\rtdiff{\rho_s}{c_s}}
-        \end{array} \right)
-        \begin{pmatrix}
-          \mred{\adjlam{\rho}} \\ \\
-          \mred{\adjlam{\rho \vu}} \\ \\
-          \mred{\adjlam{\rho E}} \\ \\
-          \mblue{\adjlam{c_s}}
-        \end{pmatrix}
-        = -
-        \begin{pmatrix}
-          \mred{\pd{f}{\rho}} \\ \\
-          \mred{\pd{f}{\rho \vu}} \\ \\
-          \mred{\pd{f}{\rho E}} \\ \\
-          \mblue{\pd{f}{c_s}}
-        \end{pmatrix}
-      \end{equation*}}
-    \item<2> Recognize that there is an analogue to the species mass equation
-      decoupling used in the flow solver
-    \item<2> Linear system can be decomposed as block jacobi scheme
+    \item Time march adjoint solution with approximate jacobians
+      \begin{equation*}
+        \left( \frac{V}{\Delta t} \mi + \pd{\rv{1}}{\mv}^T \right) \adjlam{\mv}
+        =
+        - \left( \pd{\mU}{\mv} \right)^T
+        \underbrace{
+          \left( \pd{\ru{2}}{\mU} \adjlam{\mU} + \pd{f}{\mU} \right)
+        }_\text{Fully Coupled Residual}
+      \end{equation*}
+    \item Split $\pd{\rv{1}}{\mv}$ in same fashion as flow solver
   \end{itemize}
+  \only<2>{\begin{sequation}[0.6]
+    \begin{pmatrix}
+      \rpdiff{\rho_1}{c_1} & \dots & \rpdiff{\rho_1}{c_{N_s}} &
+      \rpdiff{\rho_1}{\rho} &
+      \rpdiff{\rho_1}{\rho \vu} & 
+      \rpdiff{\rho_1}{\rho E}  \\
+      \\
+      \vdots & \ddots & \vdots & \vdots & \vdots & \vdots \\
+      \\
+      \rpdiff{\rho_{N_s}}{c_1}  & \dots  & \rpdiff{\rho_{N_s}}{c_{N_s}} & 
+      \rpdiff{\rho_{N_s}}{\rho} & 
+      \rpdiff{\rho_{N_s}}{\rho \vu} &
+      \rpdiff{\rho_{N_s}}{\rho E} \\
+      \\
+      \rdiff{\rho}{c_1} & \dots & \rdiff{\rho}{c_{N_s}} &
+      \rdiff{\rho}{\rho} & 
+      \rdiff{\rho}{\rho \vu} & 
+      \rdiff{\rho}{\rho E} \\
+      \\
+      \rdiff{\rho \vu}{c_1} & \dots  & \rdiff{\rho \vu}{c_{N_s}} &
+      \rdiff{\rho \vu}{\rho} &
+      \rdiff{\rho \vu}{\rho \vu} &
+      \rdiff{\rho \vu}{\rho E} \\
+      \\
+      \rdiff{\rho E}{c_1} & \dots & \rdiff{\rho E}{c_{N_s}} &
+      \rdiff{\rho E}{\rho} &
+      \rdiff{\rho E}{\rho \vu} &
+      \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \end{sequation}}
+  \only<3>{\begin{sequation}[0.6]
+    \begin{parray}[6]
+      \tikzmark{left}{$\rpdiff{\rho_1}{c_1}$} & \dots & \rpdiff{\rho_1}{c_{N_s}} &
+      \rpdiff{\rho_1}{\rho} &
+      \rpdiff{\rho_1}{\rho \vu} & 
+      \rpdiff{\rho_1}{\rho E}  \\
+      \\
+      \vdots & \ddots & \vdots & \vdots & \vdots & \vdots \\
+      \\
+      \rpdiff{\rho_{N_s}}{c_1}  & \dots  &
+      \tikzmark{right}{$\rpdiff{\rho_{N_s}}{c_{N_s}}$} & 
+      \rpdiff{\rho_{N_s}}{\rho} & 
+      \rpdiff{\rho_{N_s}}{\rho \vu} &
+      \rpdiff{\rho_{N_s}}{\rho E} \\
+      \Rhighlight[dc-jac]
+      \\
+      \rdiff{\rho}{c_1} & \dots & \rdiff{\rho}{c_{N_s}} &
+      \tikzmark{left}{$\rdiff{\rho}{\rho}$} & 
+      \rdiff{\rho}{\rho \vu} & 
+      \rdiff{\rho}{\rho E} \\
+      \\
+      \rdiff{\rho \vu}{c_1} & \dots  & \rdiff{\rho \vu}{c_{N_s}} &
+      \rdiff{\rho \vu}{\rho} &
+      \rdiff{\rho \vu}{\rho \vu} &
+      \rdiff{\rho \vu}{\rho E} \\
+      \\
+      \rdiff{\rho E}{c_1} & \dots & \rdiff{\rho E}{c_{N_s}} &
+      \rdiff{\rho E}{\rho} &
+      \rdiff{\rho E}{\rho \vu} &
+      \tikzmark{right}{$\rdiff{\rho E}{\rho E}$}
+      \Bhighlight[fc-jac]
+    \end{parray}
+  \end{sequation}}
+  \only<4>{\begin{sequation}[0.6]
+    \begin{parray}[6]
+      \tikzmark{left}{$\rpdiff{\rho_1}{c_1}$} & \dots & \rpdiff{\rho_1}{c_{N_s}} &
+      \rpdiff{\rho_1}{\rho} &
+      \rpdiff{\rho_1}{\rho \vu} & 
+      \rpdiff{\rho_1}{\rho E}  \\
+      \\
+      \vdots & \ddots & \vdots & \vdots & \vdots & \vdots \\
+      \\
+      \rpdiff{\rho_{N_s}}{c_1}  & \dots  &
+      \tikzmark{right}{$\rpdiff{\rho_{N_s}}{c_{N_s}}$} & 
+      \rpdiff{\rho_{N_s}}{\rho} & 
+      \rpdiff{\rho_{N_s}}{\rho \vu} &
+      \rpdiff{\rho_{N_s}}{\rho E} \\
+      \Rhighlight[dc-jac]
+      \\
+      \rdiff{\rho}{c_1} & \dots & \rdiff{\rho}{c_{N_s}} &
+      \tikzmark{left}{$\rdiff{\rho}{\rho}$} & 
+      \rdiff{\rho}{\rho \vu} & 
+      \rdiff{\rho}{\rho E} \\
+      \\
+      \rdiff{\rho \vu}{c_1} & \dots  & \rdiff{\rho \vu}{c_{N_s}} &
+      \rdiff{\rho \vu}{\rho} &
+      \rdiff{\rho \vu}{\rho \vu} &
+      \rdiff{\rho \vu}{\rho E} \\
+      \\
+      \rdiff{\rho E}{c_1} & \dots & \rdiff{\rho E}{c_{N_s}} &
+      \rdiff{\rho E}{\rho} &
+      \rdiff{\rho E}{\rho \vu} &
+      \tikzmark{right}{$\rdiff{\rho E}{\rho E}$}
+      \Bhighlight[fc-jac]
+    \end{parray}
+    \rightarrow
+    \begin{parray}[3]
+      \tikzmark{left}{$\rdiff{\rho_1}{c_1}$} & \dots & \rdiff{\rho_1}{c_{N_s}} \\
+      \vdots & \ddots & \vdots \\
+      \rdiff{\rho_{N_s}}{c_1}  & \dots &
+      \tikzmark{right}{$\rdiff{\rho_{N_s}}{c_{N_s}}$}
+    \end{parray}
+    \Nohighlight[dc-jac2]
+    , \quad
+    \begin{parray}[3]
+      \tikzmark{left}{$\rdiff{\rho}{\rho}$} & \rdiff{\rho}{\rho \vu} &
+      \rdiff{\rho}{\rho E} \\ \\
+      \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho
+      \vu}{\rho E} \\ \\
+      \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} &
+      \tikzmark{right}{$\rdiff{\rho E}{\rho E}$}
+    \end{parray}
+    \Nohighlight[fc-jac2]
+    \tikz[overlay,remember picture] {
+      \draw[->,thick,red,dashed] (dc-jac) -- (dc-jac2) 
+      node [pos=0.45,sloped,above] {Species Equations};
+    }
+    \tikz[overlay,remember picture] {
+      \draw[->,thick,blue,dashed] (fc-jac) .. controls (-3,-2.5) .. (fc-jac2) 
+      node [pos=0.2,sloped,above] {Mixture Equations};
+    }
+  \end{sequation}}
 \end{frame}
+
 \begin{frame}
   \frametitle{Decoupled Adjoint Solver}
   \begin{itemize}
     \item Separate into two systems and solve as block jacobi scheme
       \begin{smallequation}
-        \begin{cboxn}[blue]
-          \left( \frac{V}{\Delta t} \mi + \rtdiff{\rho_s}{c_s} \right) \Delta
-          \adjlam{c_s}
-          = -\pd{f}{c_s}
-          - \rtdiff{\rho_s}{c_s} \adjlam{c_s}
-          - \rtdiff{\rho_s}{\rho} \adjlam{\rho}
-          - \rtdiff{\rho_s}{\rho \vu} \adjlam{\rho \vu}
-          - \rtdiff{\rho_s}{\rho E} \adjlam{\rho E}
+        \begin{cboxn}[red]
+          \left( \frac{\rho V}{\Delta t} \mi + \rdiff{\mv_i}{c_s} \right) 
+          \Delta \adjlam{\mv_{c_i}}
+          = -\rho \left( 
+            \pd{f}{\rho_s} + \rdiff{\mU}{\rho_s} \adjlam{\mU}
+          \right)
         \end{cboxn}
       \end{smallequation}
       \begin{smallequation}
-        \begin{cboxn}[red]
+        \begin{cboxn}[blue]
           \begin{split}
             \left[
               \frac{V}{\Delta t} \mi +
               \begin{pmatrix}
-                \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} 
-                & \rtdiff{\rho}{\rho E} \\ \\
-                \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} 
-                & \rtdiff{\rho \vu}{\rho E} \\ \\
-                \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} 
-                & \rtdiff{\rho E}{\rho E}
+                \tdiff{\rho}{\rho} & \tdiff{\rho}{\rho \vu} 
+                & \tdiff{\rho}{\rho E} \\ \\
+                \tdiff{\rho \vu}{\rho} & \tdiff{\rho \vu}{\rho \vu} 
+                & \tdiff{\rho \vu}{\rho E} \\ \\
+                \tdiff{\rho E}{\rho} & \tdiff{\rho E}{\rho \vu} 
+                & \tdiff{\rho E}{\rho E}
               \end{pmatrix}
             \right]
             \begin{pmatrix}
-              \Delta \adjlam{\rho} \\ \\
-              \Delta \adjlam{\rho \vu} \\ \\
-              \Delta \adjlam{\rho E}
+              \Delta \adjlam{\mv_{\rho}} \\ \\
+              \Delta \adjlam{\mv_{\rho \vu}} \\ \\
+              \Delta \adjlam{\mv_{\rho E}}
             \end{pmatrix}
             &= \\ -
             \begin{pmatrix}
@@ -785,12 +888,12 @@
             \end{pmatrix}
             -
             \begin{pmatrix}
-              \rtdiff{\rho}{\rho} & \rtdiff{\rho}{\rho \vu} 
-              & \rtdiff{\rho}{\rho E} \\ \\
-              \rtdiff{\rho \vu}{\rho} & \rtdiff{\rho \vu}{\rho \vu} 
-              & \rtdiff{\rho \vu}{\rho E} \\ \\
-              \rtdiff{\rho E}{\rho} & \rtdiff{\rho E}{\rho \vu} 
-              & \rtdiff{\rho E}{\rho E}
+              \tdiff{\rho}{\rho} & \tdiff{\rho}{\rho \vu} 
+              & \tdiff{\rho}{\rho E} \\ \\
+              \tdiff{\rho \vu}{\rho} & \tdiff{\rho \vu}{\rho \vu} 
+              & \tdiff{\rho \vu}{\rho E} \\ \\
+              \tdiff{\rho E}{\rho} & \tdiff{\rho E}{\rho \vu} 
+              & \tdiff{\rho E}{\rho E}
             \end{pmatrix}
             &
             \begin{pmatrix}
