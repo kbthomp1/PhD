@@ -103,13 +103,47 @@ the decoupled formulation of the flow solver in \cite{candler}.  A new chemical
 source term scaling procedure is introduced in the present work that mitigates
 these stability concerns.
 
-As its primary focus, this work demonstrates that a variation of the decoupled
-point-implicit scheme can be applied to both the flow solver and adjoint solver
-in the reacting gas path of the FUN3D CFD code\cite{biedron2016fun3d}, and
-significantly improve the efficiency in both computational cost and memory
-required.  Additionally, exactly linearizing the Roe FDS scheme is shown to
-significantly improve performance and robustness in the flow solver over
-previous approximate linearizations used\cite{gnoffo-tp}.
+\section{Contributions}
+
+\begin{enumerate}
+
+  \item {\bf Improved stability for solving inviscid flows in chemical
+    non-equilibrium using a decoupled, point-implicit approach.}
+
+To mitigate the quadratic scaling in computational cost and memory required with
+respect to each additional species continuity equation, Candler et
+al.\cite{candler} proposed a scheme to for a modified form of the Steger-Warming
+flux vector splitting scheme\cite{MacCormack,Steger}. In that work, it was shown
+that the quadratic scaling could be reduced from quadratic to linear scaling by
+decoupling the species mass equations from the mixture mass, momentum, and
+energy equations and solving the two systems sequentially. Candler et
+al.\cite{candler2013analysis} later analyzed stability issues associated with
+the decoupled formulation of the flow solver in \cite{candler}. This work
+extends the aforementioned work from the modified form of the Steger-Warming
+flux vector splitting method to the Roe flux difference splitting (FDS) scheme,
+and introduces a new chemical source term scaling procedure to mitigate these
+stability concerns.  To the author's knowledge, this decoupled flow solver
+procedure, involving chemical source term scaling, is a novel extension to the
+work by Candler et al.\cite{candler}, and enables the decoupled approach to be
+used on more challenging problems involving very large chemical reaction rates.
+
+  \item {\bf Improved computational cost and memory required scaling with number of
+    species continuity equations in adjoint solver.}
+
+A discrete adjoint formulation is derived and implemented in the reacting gas
+path of the FUN3D CFD code\cite{biedron2016fun3d} for the first time, and both a
+fully coupled point-implicit and decoupled point-implicit solution procedure are
+described to solve the adjoint equations.  This decoupled point-implicit
+approach to solving the adjoint system of equation is an analog to the method
+used by the flow solver decoupled approach, and, to the best of the author's
+knowledge, represents the first of its kind in published literature.  This novel
+approach to solving the adjoint system of equations significantly improves the
+computational cost and memory required by the adjoint solver in the same manner
+as the decoupled flow solver approach, and is shown to speedup the time to
+solution by more than an order of magnitude in some cases.
+
+  \item {\bf Design optimization off a hypersonic reentry vehicle with a
+    retro-firing annular jet}
 
 An axi-symmetric hypersonic re-entry vehicle with an annular jet is chosen as
 the main demonstration problem in this work.  This design was previously
@@ -123,3 +157,4 @@ flow in chemical non-equilibrium, and applies sensitivities computed by the
 adjoint solver to minimize the vehicle outer surface temperature and mass flow
 rate through the annular jet plenum by changing the conditions at the plenum.
 
+\end{enumerate}

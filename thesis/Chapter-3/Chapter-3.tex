@@ -118,32 +118,31 @@ from the system
 with global system of equations written generically as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \left( \frac{\vol}{\Delta t} \mi + \rdiff{\mU}{\mU} \right)\Delta \mU = \ru{}
+  \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right)\Delta \mU = \ru{}
   \label{fc-global}
 \end{equation}
 %------------------------------------------------------------------------------%
 where $\ru{}$ is global residual vector, corresponding to the RHS of
-\eref{fc-explicit}, and $\rdiff{\mU}{\mU}$ is global Jacobian matrix,
-corresponding the linearizations in the LHS of \eref{fc-explicit}. This
-non-linear system can be relaxed to steady state, where $\ru{} \approx 0$, by
-means of point implicit relaxation.  The LHS of \eref{fc-global}, $\ma_{\mU}$,
-is split into its diagonal and off-diagonal elements, with the latter moved to
-the RHS:
+\eref{fc-explicit}, and $\druduapprox$ is the approximate, first-order global
+Jacobian matrix, corresponding the linearizations in the LHS of
+\eref{fc-explicit}. This non-linear system can be relaxed to steady state, where
+$\ru{} \approx 0$, by means of point implicit relaxation.  The LHS of
+\eref{fc-global}, $\ma_{\mU}$, is split into its diagonal and off-diagonal
+elements, with the latter moved to the RHS:
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \left( \frac{\vol}{\Delta t} \mi + \rdiff{\mU}{\mU} \right) = 
+  \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right) = 
   \ma_{\mU} = O+D
   \label{decomp-jac}
 \end{equation}
 %------------------------------------------------------------------------------%
 As shown in \eref{drdu-fc-flow}, each block matrix element is a square
 $(N_s+4)\times(N_s+4)$ matrix.  This system can be solved iteratively by using a
-multi-color matrix ordering to perform a series
-of Gauss-Seidel sweeps. The computational work for the Gauss-Seidel scheme is
-dominated by matrix-vector multiplications of elements of $O$ with
-$\Delta \mU$, which are $O((N_s + 4)^2)$ operations.  In the next
-section, it is shown that decoupling the system reduces these matrix-vector
-multiplications to $O(5^2 + N_s)$ operations.
+multi-color matrix ordering to perform a series of Gauss-Seidel sweeps. The
+computational work for the Gauss-Seidel scheme is dominated by matrix-vector
+multiplications of elements of $O$ with $\Delta \mU$, which are $O((N_s + 4)^2)$
+operations.  In the next section, it is shown that decoupling the system reduces
+these matrix-vector multiplications to $O(5^2 + N_s)$ operations.
 
 \section{Decoupled Point Implicit Method}
 
@@ -339,20 +338,27 @@ on in the simulation, and damping the source term during this phase does not
 affect the final result, provided the ramping is completed before the end of the
 simulation.
 
-In this decoupled scheme, the mixture and species continuity equations for
-single point in the global system of the decoupled flow solve can be written as
+In this decoupled scheme, the systems of equations for the mixture and species
+continuity equations can be written as
 %------------------------------------------------------------------------------%
-\begin{equation}
+\begin{gather}
   \begin{gathered}
     \text{\bf{Mixture Equations}}: \\
     \left[ 
-    \frac{V}{\Delta t}\mi + 
+    \frac{\vol}{\Delta t}\mi + \drup
+    \right] \Delta \Up
+  =
+  \res{\Up}
+  \end{gathered}
+  \label{approx-dc-flow-mixture} \\[6pt]
+  \left[ 
+    \frac{\vol}{\Delta t}\mi + 
     \begin{pmatrix}
       \rdiff{\rho}{\rho} & \rdiff{\rho}{\rho \vu} & \rdiff{\rho}{\rho E} \\
       \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho \vu}{\rho E} \\
       \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho E}{\rho E}
     \end{pmatrix}
-    \right]
+  \right]
   \begin{pmatrix}
     \Delta \rho \\
     \Delta \rho \vu \\
@@ -364,40 +370,51 @@ single point in the global system of the decoupled flow solve can be written as
     \res{\rho \vu} \\
     \res{\rho E}
   \end{pmatrix}
-  \end{gathered}
   \label{approx-jac}
-\end{equation}
+\end{gather}
 %------------------------------------------------------------------------------%
-\begin{equation}
+%------------------------------------------------------------------------------%
+\begin{gather}
   \begin{gathered}
     \text{\bf{Species Continuity Equations}}: \\
-    \left[
-      \frac{\rho V}{\Delta t}\mi + 
-      \begin{pmatrix}
-        \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\
-        \vdots & \ddots & \vdots \\
-        \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
-      \end{pmatrix}
-    \right]
-    \begin{pmatrix}
-      \Delta c_1 \\
-      \vdots \\
-      \Delta c_{ns}
-    \end{pmatrix}
+    \left[ 
+    \frac{\vol}{\Delta t}\mi + \drvhat
+    \right] \Delta \Vhat
     =
+    \res{\Vhat}
+  \end{gathered} \label{approx-dc-flow-species} \\[6pt]
+  \left[
+    \frac{\rho V}{\Delta t}\mi + 
     \begin{pmatrix}
-      \res{\rho_1} - c_1 \resrho \\
-      \vdots \\
-      \res{\rho_{N_s}} - c_{N_s} \resrho
+      \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\
+      \vdots & \ddots & \vdots \\
+      \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
     \end{pmatrix}
-  \end{gathered}
+  \right]
+  \begin{pmatrix}
+    \Delta c_1 \\
+    \vdots \\
+    \Delta c_{ns}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \res{\rho_1} - c_1 \resrho \\
+    \vdots \\
+    \res{\rho_{N_s}} - c_{N_s} \resrho
+  \end{pmatrix}
   \label{approx-jac-dc}
-\end{equation}
+\end{gather}
 %------------------------------------------------------------------------------%
-It should be noted that the approximations made in \erefs{dfdvl}{dfdvr} result
-in no interdependence between species; so, the only off-diagonal terms for the
-Jacobian matrix in \eref{approx-jac-dc} come from the the chemical source term
-linearizations.
+where \eref{approx-dc-flow-mixture} is the global system of equations for the
+mixture equations, and \eref{approx-jac} is the system of equations at a single
+point.  Likewise, \eref{approx-dc-flow-species} is the global system of
+equations for the species continuity equations, and \eref{approx-jac-dc} is the
+system of equations at a single point. The Jacobians on the LHS of
+\erefs{approx-dc-flow-mixture}{approx-jac} contain first-order accurate
+linearizations, and it should be noted that the approximations made in
+\erefs{dfdvl}{dfdvr} result in no interdependence between species; so, the only
+off-diagonal terms for the Jacobian matrix in \eref{approx-jac-dc} come from the
+chemical source term linearizations.
 
 \section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 \label{sec:predicted-cost-mem-savings}
@@ -405,14 +422,15 @@ linearizations.
 In decoupling the species equations, the most significant savings comes from the
 source term linearization being purely node-based\cite{gnoffo-tp}.  Solving the
 mixture equations in is conducted in the same manner as the fully coupled
-system.  The global Jacobian for the mixture equations, $A_m$ consists of block
-$5 \times 5$ Jacobian matricies of the form shown in \eref{approx-jac}. In the
-decoupled species continuity equations, all entries in the global Jacobian,
-$A_d$, are $N_s \times N_s$ block matrices of the form in \eref{approx-jac-dc}.
-Because there is no interdependence of species, except through the chemical
-source term, all contributions due to linearizing the convective flux are purely
-diagonal.  Via \eref{decomp-jac}, we decompose $A_d$ into its diagonal and
-off-diagonal elements, resulting in the following linear system:
+system.  The global Jacobian for the mixture equations, $\drup$, consists of
+block $5 \times 5$ Jacobian matrices of the form shown in \eref{approx-jac}.
+For the decoupled species continuity equations, all entries in the global
+Jacobian, $\drvhat$, are $N_s \times N_s$ block matrices of the form in
+\eref{approx-jac-dc}.  Because there is no interdependence of species, except
+through the chemical source term, all contributions due to linearizing the
+convective flux are purely diagonal.  Via \eref{decomp-jac}, we decompose
+$\drvhat$ into its diagonal and off-diagonal elements, resulting in the following
+linear system:
 %------------------------------------------------------------------------------%
 \begin{equation}
   \label{dc_sys} 
@@ -436,18 +454,18 @@ off-diagonal elements, resulting in the following linear system:
 \end{equation} 
 %------------------------------------------------------------------------------%
 where $\Box$ represents a dense $N_s \times N_s$ matrix, $[\diagdown]$ represents
-a diagonal matrix, and $\delta \mathbf{\hat{V}}_j$  is the decoupled variable
-update on the node $j$ that neighbors node $i$, where $N_{nb}$ is the number of
-nodes neighboring node $i$.  Thus, the non-zero entries in the off-diagonal
-matrix can be reduced from diagonal matrices to vectors.  This results in
-significant savings in both computational cost and memory, as the only expensive
-operation left in solving the implicit system is dealing with the diagonal
-entries in the Jacobian.  An LU decomposition of an $N \times N$ matrix
-requires $\sim N^3/3$ operations, whereas the the matrix vector
-products of equivalent dimension requires $N^2$ operations and the vector inner
-products cost.  Including the LU decomposition operations, the relative cost of
-the linear solves in the decoupled scheme compared to the fully coupled scheme
-is approximately
+a diagonal matrix, and $\delta \mathbf{\hat{V}}_j$  is the mass fraction
+variable update on the node $j$ that neighbors node $i$, where $N_{nb}$ is the
+number of nodes neighboring node $i$.  Thus, the non-zero entries in the
+off-diagonal matrix can be reduced from diagonal matrices to vectors.  This
+results in significant savings in both computational cost and memory, as the
+only expensive operation left in solving the implicit system is dealing with the
+diagonal entries in the Jacobian.  An LU decomposition of an $N \times N$ matrix
+requires $\sim N^3/3$ operations, whereas the matrix vector products of
+equivalent dimension requires $N^2$ operations and the vector inner products
+cost.  Including the LU decomposition operations, the relative cost of the
+linear solves in the decoupled scheme compared to the fully coupled scheme is
+approximately
 %------------------------------------------------------------------------------%
 \begin{equation}
   \text{Relative Computational Cost} = 
@@ -461,11 +479,10 @@ is approximately
 %------------------------------------------------------------------------------%
 where $S_{GS}$ is the number of multi-color Gauss-Seidel sweeps, $N_{nodes}$ is
 the number of nodes, and $N_{nz}$ is the number of non-zero off-diagonal entries
-stored using compressed row storage\cite{George}.  Because $(S_{GS)(N_nz} >>
+stored using compressed row storage\cite{George}.  Because $(S_{GS})(N_{nz}) >>
 N_{nodes}$, the LU decomposition cost is negligible except when the number of
-species is extremely large.  $N_{nb}(N_s)$ operations.  If the LU decomposition
-costs are dropped from \eref{relative-lu-gs-cost}, the relative cost of the
-linear solve becomes
+species is extremely large.  If the LU decomposition costs are dropped from
+\eref{relative-lu-gs-cost}, the relative cost of the linear solve becomes
 %------------------------------------------------------------------------------%
 \begin{equation}
   \text{Relative Computational Cost} = 
@@ -482,7 +499,7 @@ number of species when using the decoupled system over the fully coupled system.
 It should be noted that cost predicted by operation count of an LU decomposition
 does not usually manifest equivalently in computational cost.  Significant
 compiler optimizations are possible if a storage scheme is adopted where memory
-collocation of the diagonal block jacobians is maintained.  These optimizations
+collocation of the diagonal block Jacobians is maintained.  These optimizations
 decrease the cost of the LU decomposition relative to the Gauss-Seidel sweeps
 further, and thus the LU decomposition has never been seen as a dominant cost
 for hypersonic simulations.
@@ -494,7 +511,7 @@ large number of species for the Jacobian is given by
   \label{mem_req_eq}
   \begin{split} 
     Relative\ Memory\ Cost &=
-    \frac{size(A_d)}{size(A)} \\ &= \lim_{N_s\to\infty}
+    \frac{size(\drvhat)}{size(\drup)} \\ &= \lim_{N_s\to\infty}
     \frac{(N_s^2+5^2)(N_{nodes})+(N_s+5^2)(N_{nz})}{(N_s+4)^2(N_{nodes}+N_{nz})} \\
     &= \frac{N_{nodes}}{N_{nodes} + N_{nz}}
   \end{split}

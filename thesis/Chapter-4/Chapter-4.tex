@@ -109,7 +109,8 @@ the fully coupled flow solver scheme suffered.
 It is possible to decouple the adjoint equations in a fashion similar to that
 done to the primal flow equations.  This begins by recognizing that the
 decoupled scheme can actually also be solved as a fully-coupled system of
-equations that involves the change of variables
+equations that involves the following change of variables and change of
+equations
 %------------------------------------------------------------------------------%
 \begin{equation}
   \mU = \begin{pmatrix}
@@ -131,7 +132,6 @@ equations that involves the change of variables
   \label{u-v-vars}
 \end{equation}
 %------------------------------------------------------------------------------%
-as well as the change of equations
 %------------------------------------------------------------------------------%
 \begin{equation}
   \ru{} =
@@ -177,23 +177,25 @@ systems
 %------------------------------------------------------------------------------%
 \begin{gather}
   \left(
-  \frac{\vol}{\Delta t} \mi + \pd{\tilde{\vR}_{\mv}}{\Vhat}
+  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
   \right)^{\mathsmaller T} \Delta \adjlam{\Vhat}
   =
   -\left(\pd{\rv{}}{\Vhat}^{\mathsmaller T}\adjlam{\mv}^n + \pd{f}{\Vhat} \right)
   \label{dc-species-adj-time} \\
   \left(
-  \frac{\rho \vol}{\Delta t} \mi + \pd{\tilde{\vR}_{\mv}}{\Up}
+  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
   \right)^{\mathsmaller T} \Delta \adjlam{\Up}
   =
   -\left(\pd{\rv{}}{\Up}^{\mathsmaller T}\adjlam{\mv}^n + \pd{f}{\Up} \right)
   \label{dc-mixture-adj-time}
 \end{gather}
 %------------------------------------------------------------------------------%
-If a block Jacobi scheme is used, the order in which
-\erefs{dc-species-adj-time}{dc-mixture-adj-time} are solved is inconsequential,
-since no information in the costate variable vector, $\adjlam{\mv}$ is passed
-between the system.
+where $\adjlam{\mv}$ is the vector of costate variables associated with the
+equation set $\rv{}$ in \eref{fc-to-dc-res}, and is comprised of $\adjlam{\Vhat}$
+(species continuity equations) and $\adjlam{\Up}$.  If a block Jacobi scheme is
+used, the order in which \erefs{dc-species-adj-time}{dc-mixture-adj-time} are
+solved is inconsequential, since no information in the costate variable vector,
+$\adjlam{\mv}$, is passed between these two systems.
 
 While \erefs{dc-species-adj-time}{dc-mixture-adj-time}
 recovers the same benefits in linear solver that were afforded the decoupled
@@ -236,14 +238,14 @@ coupled system linearizations and costate variables
 %------------------------------------------------------------------------------%
 \begin{gather}
   \left(
-  \frac{\vol}{\Delta t} \mi + \pd{\tilde{\vR}_{\mv}}{\Vhat}
+  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
   \right)^{\mathsmaller T} \Delta \adjlam{\Vhat}
   =
   - \left( \pd{\mU}{\Vhat} \right)^{\mathsmaller T}
   \left(\pd{\ru{}}{\mU}^{\mathsmaller T}\adjlam{\mU}^n + \pd{f}{\mU} \right)
   \label{dc-fc-species-adj-time} \\
   \left(
-  \frac{\rho \vol}{\Delta t} \mi + \pd{\tilde{\vR}_{\mv}}{\Up}
+  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
   \right)^{\mathsmaller T} \Delta \adjlam{\Up}
   =
   - \left( \pd{\mU}{\Up} \right)^{\mathsmaller T}
@@ -252,7 +254,7 @@ coupled system linearizations and costate variables
 \end{gather}
 %------------------------------------------------------------------------------%
 \erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time} effectively utilize the
-fully coupled scheme linearizations and post-process them before the linear
+fully coupled scheme linearizations and pre-processes them before the linear
 solver to make them consistent with the approximations used in the decoupled
 flow solve jacobians.  This is very efficient from an implementation standpoint,
 as the infrastructure required to compute the exact linearizations of the
@@ -299,29 +301,29 @@ constructing a list of neighboring nodes for each node.  By the chain rule the
 linearization of the residual, $\mr$, is then evaluated in two parts
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \pd{\vR\left(\mq^*\left( \mq \right) \right)}{\mq} = 
-  \pd{\vR}{\mq} + \pd{\vR}{\mq^{*}}\pd{\mq^*}{\mq}
+  \pd{\vR\left(\mU^*\left( \mU \right) \right)}{\mU} = 
+  \pd{\vR}{\mU} + \pd{\vR}{\mU^{*}}\pd{\mU^*}{\mU}
   \label{residual-high-low}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $\mq$ are the conserved variables at each node, and $\mq^*$ are the higher
+where $\mU$ are the conserved variables at each node, and $\mU^*$ are the higher
 order terms computed in the U-MUSCL reconstruction; therefore, after computing
-the exact first-order Jacobian of the Roe FDS scheme, $\pd{\vR}{\mq}$, the
+the exact first-order Jacobian of the Roe FDS scheme, $\pd{\vR}{\mU}$, the
 higher order linearizations are computed by making a circuit around each node to
 pick up the contributions from the least squares gradient computation.  For the
 example stencil in \fref{fig:lsq-gradients}, the contribution to the residual
 from looping around node 0 would be
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \pd{\vR_0}{\mq^*}\pd{\mq^*}{\mq_0} = \pd{\vR_0}{\mq^*} \left[\sum_{i=1}^5{(1-\kappa)
-  \left( -W_{x,i}dx - W_{y,i}dy - W_{z,i}dz \right) \pd{q_0}{\mq_0}}\right]
+  \pd{\vR_0}{\mU^*}\pd{\mU^*}{\mU} = \pd{\vR_0}{\mU^*} \left[\sum_{i=1}^5{(1-\kappa)
+  \left( -W_{x,i}dx - W_{y,i}dy - W_{z,i}dz \right) \pd{q_0}{\mU}}\right]
   \label{ho-linearization}
 \end{equation}
 %------------------------------------------------------------------------------%
 An important point that this illustrates is that the form of the higher order
 linearizations does not change significantly based on the primitive variable
 vector $q$, only affecting the primitive to conserved variable Jacobian,
-$\pd{q_0}{\mq_0}$, which is easily computed.  This is a powerful telescoping
+$\pd{q_0}{\mU}$, which is easily computed.  This is a powerful telescoping
 property of the reconstruction scheme from \sref{sec:2nd-order-reconstruction},
 and it significantly decreases the complexity of the code required to implement
 the second order term linearizations.  The downside of looping around each node
@@ -342,9 +344,11 @@ linearizations of second order Jacobian are stored.  This essentially trades all
 the memory in the simulation for computational speed, and may not be possible
 for large mesh sizes.  Since all of the linearizations in the second order
 Jacobian must be exact, the memory saving approximations of the decoupled scheme
-can only be applied to the LHS Jacobians in \eref{adj-u-to-v-time}.  This last
-point makes the quadratic scaling of memory required with the number of species
-a significant concern of the adjoint.  The savings provided by the decoupled
+can only be applied to the LHS Jacobians in
+\erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time}.  This last point makes
+the quadratic scaling of memory required with the number of species a
+significant concern of the adjoint.  The savings provided by the decoupled
 scheme become a very significant benefit in cases involving many species, since
-the memory freed by the sparsity on the LHS of \eref{adj-u-to-v-time} can be
-used by the RHS linearizations to increase in computational efficiency.
+the memory freed by the sparsity on the LHS of
+\erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time} can be used by the RHS
+linearizations to increase the computational efficiency of the adjoint solver.

@@ -96,7 +96,7 @@ contributions, of the form
   \begin{pmatrix} 
     \pd{F_{\rho_1}}{c_1} & & 0 \\ 
     & \ddots & \\ 
-    0 & & \pd{F_{\rho_{ns}}}{c_{ns}}
+    0 & & \pd{F_{\rho_{N_s}}}{c_{N_s}}
   \end{pmatrix}
   \label{dc-diag-Jacobian}
 \end{equation}
@@ -161,7 +161,7 @@ change of variables
   \mU = \begin{pmatrix}
     \rho_1 \\
     \vdots \\
-    \rho_{ns} \\
+    \rho_{N_s} \\
     \rho \vu \\
     \rho E
   \end{pmatrix}
@@ -169,7 +169,7 @@ change of variables
   \mv = \begin{pmatrix}
     c_1 \\
     \vdots \\
-    c_{ns} \\
+    c_{N_s} \\
     \rho \\
     \rho \vu \\
     \rho E
@@ -184,13 +184,13 @@ $\mU$ and $\mv$, in a more generic sense
   \mU = \begin{pmatrix}
     u_1 \\
     \vdots \\
-    u_{ns + 2}
+    u_{N_s + 2}
   \end{pmatrix}
   \rightarrow
   \mv = \begin{pmatrix}
     v_1 \\
     \vdots \\
-    v_{ns + 3}
+    v_{N_s + 3}
   \end{pmatrix}
   \label{generic-var-sets}
 \end{equation}
@@ -376,16 +376,16 @@ linearizations
   \begin{aligned}
     \pd{\mr}{\mv} = \pd{\mr}{\mU} \pd{\mU}{\mv} =
     \begin{pmatrix}
-      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_1}{\rho_{ns}}    & \rdiff{\rho_1}{\rho \vu}    & \rdiff{\rho_1}{\rho E}    \\ \\
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_1}{\rho_{N_s}}    & \rdiff{\rho_1}{\rho \vu}    & \rdiff{\rho_1}{\rho E}    \\ \\
       \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                    \\ \\
-      \rdiff{\rho_{ns}}{\rho_1} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho_{ns}}{\rho \vu} & \rdiff{\rho_{ns}}{\rho E} \\ \\
-      \rdiff{\rho \vu}{\rho_1}  & \dots  & \rdiff{\rho \vu}{\rho_{ns}}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho \vu}{\rho E}  \\ \\
-      \rdiff{\rho E}{\rho_1}    & \dots  & \rdiff{\rho E}{\rho_{ns}}    & \rdiff{\rho E}{\rho \vu}    & \rdiff{\rho E}{\rho E}
+      \rdiff{\rho_{N_s}}{\rho_1} & \dots  & \rdiff{\rho_{N_s}}{\rho_{N_s}} & \rdiff{\rho_{N_s}}{\rho \vu} & \rdiff{\rho_{N_s}}{\rho E} \\ \\
+      \rdiff{\rho \vu}{\rho_1}  & \dots  & \rdiff{\rho \vu}{\rho_{N_s}}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho \vu}{\rho E}  \\ \\
+      \rdiff{\rho E}{\rho_1}    & \dots  & \rdiff{\rho E}{\rho_{N_s}}    & \rdiff{\rho E}{\rho \vu}    & \rdiff{\rho E}{\rho E}
     \end{pmatrix}
     \begin{pmatrix}
       \rho   & \dots  & 0      & c_1     & 0      & 0      \\ \\
       \vdots & \ddots & \vdots & \vdots  & \vdots & \vdots \\ \\
-      0      & \dots  &\rho    & c_{ns}  & 0      & 0      \\ \\
+      0      & \dots  &\rho    & c_{N_s}  & 0      & 0      \\ \\
       0      & \dots  &0       & 0       & 1      & 0      \\ \\
       0      & \dots  &0       & 0       & 0      & 1
     \end{pmatrix}
@@ -403,16 +403,16 @@ Jacobian
       \rho   & \dots  & 0      &  0      & 0      \\ \\
       \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
       0      & \dots  &\rho    &  0      & 0      \\ \\
-      c_1    & \dots  & c_{ns} &  0      & 0      \\ \\
+      c_1    & \dots  & c_{N_s} &  0      & 0      \\ \\
       0      & \dots  & 0      &  1      & 0      \\ \\
       0      & \dots  & 0      &  0      & 1
     \end{pmatrix}
     \begin{pmatrix}
-      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{ns}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1} \\ \\
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{N_s}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1} \\ \\
       \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                   \\ \\
-      \rdiff{\rho_1}{\rho_{ns}} & \dots  & \rdiff{\rho_{ns}}{\rho_{ns}} & \rdiff{\rho \vu}{\rho_{ns}} & \rdiff{\rho E}{\rho_{ns}} \\ \\
-      \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{ns}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu} \\ \\
-      \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{ns}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
+      \rdiff{\rho_1}{\rho_{N_s}} & \dots  & \rdiff{\rho_{N_s}}{\rho_{N_s}} & \rdiff{\rho \vu}{\rho_{N_s}} & \rdiff{\rho E}{\rho_{N_s}} \\ \\
+      \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{N_s}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu} \\ \\
+      \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{N_s}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
     \end{pmatrix}
   \end{aligned}
   \label{drdu-to-drdv-t}
@@ -429,16 +429,16 @@ can be done first, and the transformation can then be applied to the system
       \rho   & \dots  & 0      &  0      & 0      \\ \\
       \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
       0      & \dots  &\rho    &  0      & 0      \\ \\
-      c_1    & \dots  & c_{ns} &  0      & 0      \\ \\
+      c_1    & \dots  & c_{N_s} &  0      & 0      \\ \\
       0      & \dots  & 0      &  1      & 0      \\ \\
       0      & \dots  & 0      &  0      & 1
     \end{pmatrix}
     \begin{pmatrix}
-      \rlprod{\rho_1}{\rho_1}    & \dots  &+& \rlprod{\rho_{ns}}{\rho_1}    &+& \rlprod{\rho \vu}{\rho_1}    &+& \rlprod{\rho E}{\rho_1} \\ \\
+      \rlprod{\rho_1}{\rho_1}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho_1}    &+& \rlprod{\rho \vu}{\rho_1}    &+& \rlprod{\rho E}{\rho_1} \\ \\
       \vdots                     & \ddots & & \vdots                        & & \vdots                       & & \vdots                   \\ \\
-      \rlprod{\rho_1}{\rho_{ns}} & \dots  &+& \rlprod{\rho_{ns}}{\rho_{ns}} &+& \rlprod{\rho \vu}{\rho_{ns}} &+& \rlprod{\rho E}{\rho_{ns}} \\ \\
-      \rlprod{\rho_1}{\rho \vu}  & \dots  &+& \rlprod{\rho_{ns}}{\rho \vu}  &+& \rlprod{\rho \vu}{\rho \vu}  &+& \rlprod{\rho E}{\rho \vu} \\ \\
-      \rlprod{\rho_1}{\rho E}    & \dots  &+& \rlprod{\rho_{ns}}{\rho E}    &+& \rlprod{\rho \vu}{\rho E}    &+& \rlprod{\rho E}{\rho E}
+      \rlprod{\rho_1}{\rho_{N_s}} & \dots  &+& \rlprod{\rho_{N_s}}{\rho_{N_s}} &+& \rlprod{\rho \vu}{\rho_{N_s}} &+& \rlprod{\rho E}{\rho_{N_s}} \\ \\
+      \rlprod{\rho_1}{\rho \vu}  & \dots  &+& \rlprod{\rho_{N_s}}{\rho \vu}  &+& \rlprod{\rho \vu}{\rho \vu}  &+& \rlprod{\rho E}{\rho \vu} \\ \\
+      \rlprod{\rho_1}{\rho E}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho E}    &+& \rlprod{\rho \vu}{\rho E}    &+& \rlprod{\rho E}{\rho E}
     \end{pmatrix}
   \end{aligned}
   \label{adj-drdv}
@@ -511,35 +511,34 @@ it is possible to form the transformation
   \label{drudrv}
 \end{equation}
 %------------------------------------------------------------------------------%
-The adjoint costate variable vector $\adjlam{}$ is effectively defined as
-%------------------------------------------------------------------------------%
-\begin{equation}
-  \adjlam{} = -\pd{f}{\mr}
-  \label{adj-lam-dfdr}
-\end{equation}
-%------------------------------------------------------------------------------%
-Thus, there are two different costate variable vectors for the equation sets
-defined in \eref{ru-to-rv}
-%------------------------------------------------------------------------------%
-\begin{align}
-  \adjlam{\mU} = -\pd{f}{\ru{}}
-  \label{adj-lam-ru} \\[12pt]
-  \adjlam{\mv} = -\pd{f}{\rv{}}
-  \label{adj-lam-rv}
-\end{align}
-%------------------------------------------------------------------------------%
-based on \erefs{adj-lam-ru}{adj-lam-rv}, it clear that the transformation
-defined in \eref{drudrv} is the mapping between these costate variable sets
+Because all transformations performed on the equation set are also performed
+on the adjoint costate variables, \eref{drudrv} enables the mapping between the
+costate variables associated with the fully coupled and decoupled flow solver
+equations
 %------------------------------------------------------------------------------%
 \begin{equation}
   \adjlam{\mU} = \left(\pd{\rv{}}{\ru{}} \right)^{T} \adjlam{\mv}
   \label{adj-ru-to-rv}
 \end{equation}
 %------------------------------------------------------------------------------%
-\eref{adj-ru-to-rv} enables a right preconditioning of the adjoint system of
-equations, where the costate variables associated with the decoupled system of
-equations can be transformed into the costate variables associated with fully
-coupled system of equations, as post-processing step.  This also decreases the
+where costate variables associated with the fully coupled flow solver equations,
+$\adjlam{\mU}$, come from solving
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \drudu \adjlam{\mU} = -\pd{f}{\mU}
+  \label{fc-adjoint}
+\end{equation}
+%------------------------------------------------------------------------------%
+and the costate variables associated with the decoupled flow solver equations,
+$\adjlam{\mv}$, come from solving
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \drvdv \adjlam{\mv} = -\pd{f}{\mv}
+  \label{dc-adjoint}
+\end{equation}
+%------------------------------------------------------------------------------%
+\eref{adj-ru-to-rv} faciliates a right preconditioning of \eref{fc-adjoint} to
+transform the adjoint solution as post-processing step.  This also decreases the
 length of the solution vector storage required, since the fully coupled system
 has one less equation than the decoupled system.
 
