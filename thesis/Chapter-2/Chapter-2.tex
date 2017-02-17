@@ -16,7 +16,10 @@ and thermal equilibrium can be written as
 \begin{equation}
   \begin{gathered}
     \text{\bf{Species Conservation}}: \\
-     \pd{\rho_s}{t} + \pd{\rho_s u}{x} + \pd{\rho_s v}{y} + \pd{\rho_s w}{z} =
+     \pd{\rho_s}{t} + 
+     \pd{\left(\rho_s u \right)}{x} + 
+     \pd{\left(\rho_s v \right)}{y} + 
+     \pd{\left(\rho_s w \right)}{z} =
      \omega_s
   \end{gathered}
   \label{species-cons}
@@ -26,9 +29,9 @@ and thermal equilibrium can be written as
   \begin{gathered}
     \text{\bf{Mixture Momentum Conservation}}: \\
     \begin{aligned}
-    \pd{\rho u}{t} + \pd{\rho u^2}{x} + \pd{\rho u v}{y} + \pd{\rho u w}{z} &= -\pd{p}{x}\\
-    \pd{\rho v}{t} + \pd{\rho v u}{x} + \pd{\rho v^2}{y} + \pd{\rho v w}{z} &= -\pd{p}{y}\\
-    \pd{\rho w}{t} + \pd{\rho w u}{x} + \pd{\rho w v}{y} + \pd{\rho w^2}{z} &= -\pd{p}{z}
+    \pd{(\rho u)}{t} + \pd{(\rho u^2)}{x} + \pd{(\rho u v)}{y} + \pd{(\rho u w)}{z} &= -\pd{p}{x}\\
+    \pd{(\rho v)}{t} + \pd{(\rho v u)}{x} + \pd{(\rho v^2)}{y} + \pd{(\rho v w)}{z} &= -\pd{p}{y}\\
+    \pd{(\rho w)}{t} + \pd{(\rho w u)}{x} + \pd{(\rho w v)}{y} + \pd{(\rho w^2)}{z} &= -\pd{p}{z}
     \end{aligned}
   \end{gathered}
   \label{mix-mom-cons}

@@ -18,19 +18,17 @@ be recast in vector form as
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\label{inv_flux_vec}
-	\frac{\partial \mathbf{U}}{\partial t}
-	+ \nabla\cdot \mathbf{F} = \mathbf{W}
+  \pd{\mU}{t}\vol + \nabla \cdot \vF = \mw \vol
 \end{equation}
 %------------------------------------------------------------------------------%
  or, in semi-discrete form,
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\label{inv_flux_fv}
-	\frac{\partial \mathbf{U}}{\partial t}
-	 + \frac{1}{V}\sum\limits_{f}(\mathbf{F}\cdot\mathbf{N})^f = \mathbf{W}
+  \pd{\mU}{t}\vol + \lsum{f}{}{(\vF \cdot \Norm)^f} = \mw \vol
  \end{equation}
 %------------------------------------------------------------------------------%
-summing over all faces, $f$, in the domain, where V is the cell volume, 
+summing over all faces, $f$, in the domain, where $\vol$ is the cell volume, 
 $\mathbf{W}$ is the chemical source term vector, and $\mathbf{N}$ is the face
 outward normal vector.  The vectors of conserved variables and fluxes are:
 %------------------------------------------------------------------------------%
@@ -40,18 +38,14 @@ outward normal vector.  The vectors of conserved variables and fluxes are:
    		\rho_1\\
 		\vdots \\
 		\rho_{ns} \\
-		\rho u \\
-		\rho v \\
-		\rho w \\
+		\rho \vu \\
 		\rho E \\
 	\end{pmatrix},      &
  	\mathbf{F} = \begin{pmatrix}
 		\rho_1  \overline{U} \\
 		\vdots \\
 		\rho_{ns} \overline{U} \\
-		\rho u \overline{U} + p n_x\\
-		\rho v \overline{U} + p n_y\\
-		\rho w \overline{U} + p n_z\\
+		\rho \vu \overline{U} + p \norm\\
 		(\rho E + p) \overline{U} \\
 	\end{pmatrix}
 	\end{matrix}
@@ -63,46 +57,91 @@ the total energy of the mixture per unit mass as defined in
 \eref{tot-energy-def}.  The flux and species chemical
 source term at the next time level can be approximated as
 %------------------------------------------------------------------------------%
-\begin{equation}
-	\begin{matrix}
-		\mathbf{F}^{n+1} \approx \mathbf{F}^n+\frac{\partial \mathbf{F}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
-		\\
-		\mathbf{W}^{n+1} \approx \mathbf{W}^n+\frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n \\
-	\end{matrix}
+\begin{align}
+  \vF^{n+1} &\approx \vF^n + \pd{\vF}{\mU} \Delta \mU^n \\
+  \mw^{n+1} &\approx \mw^n + \pd{\mw}{\mU} \Delta \mU^n
   \label{fc-fluxes-timelevel}
-\end{equation}
+\end{align}
 %------------------------------------------------------------------------------%
-where $\delta\mathbf{U}^n = \mathbf{U}^{n+1}- \mathbf{U}^{n}$.  Using an
-implicit time integration, the implicit scheme becomes:
-%------------------------------------------------------------------------------%
-\begin{equation}
-	\frac{\mathbf{\delta U}^n}{\Delta t}+\frac{1}{V}\sum\limits_{f}(\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^L}}\delta\mathbf{U}^L
-	+\frac{\partial \mathbf{F}^f}{\partial \mathbf{U^R}}\delta\mathbf{U}^R)^n \mathbf{N}^f
-	- \frac{\partial \mathbf{W}}{\partial \mathbf{U}}\delta\mathbf{U}^n
-	= -\frac{1}{V}\sum\limits_{f}(\mathbf{F}^f\cdot\mathbf{N}^f)^n + \mathbf{W}^n
-\end {equation}
-%------------------------------------------------------------------------------%
-or, put more simply:
+where $\Delta \mU^n = \mU^{n+1} - \mU^{n}$.  Using an implicit time integration,
+the implicit scheme becomes:
 %------------------------------------------------------------------------------%
 \begin{equation}
-	A\delta\mathbf{U}^n = \mathbf{b}
+	  \frac{\vol}{\Delta t} \Delta \mU^n
+    +\lsum{f}{}{
+      \left(\pd{\vF^f}{\ul} \Delta \ul + \pd{\vF^f}{\ul} \Delta \ur \right)^n 
+      \Norm^f
+    } - \vol \pd{\mw}{\mU}
+  \Delta \mU^n
+  = - \lsum{f}{}{\left( \vF^f \cdot \Norm^f \right)^n} + \vol \mw^n
+  \label{fc-explicit}
 \end{equation}
 %------------------------------------------------------------------------------%
-where $A$ is the Jacobian matrix of the fully coupled system, and $\mathbf{b}$
-is the residual vector.  For a point implicit relaxation scheme, the Jacobian
-matrix can be split into its diagonal and off-diagonal elements, with the latter
-moved to the RHS:
+\eref{fc-explicit} results in a global Jacobian comprised of block Jacobians
+from the system
 %------------------------------------------------------------------------------%
 \begin{equation}
-\label{decomp-jac}
-	A=O+D
+  \underbrace{
+    \left[ 
+      \frac{\vol}{\Delta t} \mi + 
+      \begin{pmatrix}
+        \rdiff{\rho_1}{\rho_1}     & \dots  & \rdiff{\rho_1}{\rho_{N_s}}     & \rdiff{\rho_1}{\rho \vu}     & \rdiff{\rho_1}{\rho E}      \\
+        \vdots                     & \ddots & \vdots                         & \vdots                       & \vdots                      \\
+        \rdiff{\rho_{N_s}}{\rho_1} & \dots  & \rdiff{\rho_{N_s}}{\rho_{N_s}} & \rdiff{\rho_{N_s}}{\rho \vu} &  \rdiff{\rho_{N_s}}{\rho E} \\
+        \rdiff{\rho \vu}{c_1}      & \dots  & \rdiff{\rho \vu}{c_{N_s}}      & \rdiff{\rho \vu}{\rho \vu}   &  \rdiff{\rho \vu}{\rho E}   \\
+        \rdiff{\rho E}{c_1}        & \dots  & \rdiff{\rho E}{c_{N_s}}        & \rdiff{\rho E}{\rho \vu}     &  \rdiff{\rho E}{\rho E}
+      \end{pmatrix}
+    \right]
+  }_\text{$(N_s + 4) \times (N_s + 4)$}
+  \underbrace{
+    \begin{pmatrix}
+      \Delta \mU_{\rho_1}     \\
+      \vdots          \\
+      \Delta \mU_{\rho_{N_s}} \\
+      \Delta \mU_{\rho \vu}   \\
+      \Delta \mU_{\rho E}
+    \end{pmatrix}
+  }_\text{$(N_s + 4) \times 1$}
+  =
+  \underbrace{
+    \begin{pmatrix}
+      \res{\rho_1}     \\
+      \vdots           \\
+      \res{\rho_{N_s}} \\
+      \res{\rho \vu}   \\
+      \res{\rho E}
+    \end{pmatrix}
+  }_\text{$(N_s + 4) \times 1$}
+  \label{drdu-fc-flow}
 \end{equation}
 %------------------------------------------------------------------------------%
-Each matrix element is a square $(ns+4)\times(ns+4)$ matrix.  This system can
-be solved iteratively by using a multi-color matrix ordering to perform a series
+with global system of equations written generically as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \frac{\vol}{\Delta t} \mi + \rdiff{\mU}{\mU} \right)\Delta \mU = \ru{}
+  \label{fc-global}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\ru{}$ is global residual vector, corresponding to the RHS of
+\eref{fc-explicit}, and $\rdiff{\mU}{\mU}$ is global Jacobian matrix,
+corresponding the linearizations in the LHS of \eref{fc-explicit}. This
+non-linear system can be relaxed to steady state, where $\ru{} \approx 0$, by
+means of point implicit relaxation.  The LHS of \eref{fc-global}, $\ma_{\mU}$,
+is split into its diagonal and off-diagonal elements, with the latter moved to
+the RHS:
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \left( \frac{\vol}{\Delta t} \mi + \rdiff{\mU}{\mU} \right) = 
+  \ma_{\mU} = O+D
+  \label{decomp-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+As shown in \eref{drdu-fc-flow}, each block matrix element is a square
+$(N_s+4)\times(N_s+4)$ matrix.  This system can be solved iteratively by using a
+multi-color matrix ordering to perform a series
 of Gauss-Seidel sweeps. The computational work for the Gauss-Seidel scheme is
 dominated by matrix-vector multiplications of elements of $O$ with
-$\delta \mU$, which are $O((N_s + 4)^2)$ operations.  In the next
+$\Delta \mU$, which are $O((N_s + 4)^2)$ operations.  In the next
 section, it is shown that decoupling the system reduces these matrix-vector
 multiplications to $O(5^2 + N_s)$ operations.
 
@@ -116,9 +155,7 @@ equations and the conserved variables become
 	\mU' =
   \begin{pmatrix}
 		\rho \\
-		\rho u \\
-		\rho v \\
-		\rho w \\
+		\rho \vu \\
 		\rho E
 	\end{pmatrix} \quad
 	\Uhat =
@@ -136,9 +173,7 @@ with corresponding flux vectors
  	\vF' = 
   \begin{pmatrix}
 		\rho \overline{U} \\
-		\rho u \overline{U} + p n_x\\
-		\rho v \overline{U} + p n_y\\
-		\rho w \overline{U} + p n_z\\
+		\rho \vu \overline{U} + p \norm \\
 		(\rho E + p) \overline{U} \\
 	\end{pmatrix} \quad
  	\Fhat = 
@@ -154,16 +189,15 @@ Solving the flux vectors is performed in two sequential steps.  The mixture
 fluxes, $\vF'$, are first solved as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{\partial \mathbf{{U}'}}{\partial t} +
-  \frac{1}{V}\sum\limits_{f}(\mathbf{F}'\cdot\mathbf{N})^f = 0
+  \pd{\Up}{t} \vol + \lsum{f}{}{\left(\vF' \cdot \Norm\right)^f} = 0
+  \label{dc-flux-part-1}
 \end{equation}
 %------------------------------------------------------------------------------%
 followed by the species fluxes, $\Fhat$, as
 %------------------------------------------------------------------------------%
 \begin{equation}
-  \frac{\partial \mathbf{\hat{U}}}{\partial t} +
-  \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot\mathbf{N})^f =
-  \mathbf{\hat{W}}
+  \pd{\Uhat}{t} \vol + \lsum{f}{}{\left(\Fhat \cdot \Norm\right)^f} = \vol \mw
+  \label{dc-flux-part-2}
 \end{equation}
 %------------------------------------------------------------------------------%
 The same point-implicit relaxation that uses multi-color Gauss-Seidel sweeps is
@@ -193,7 +227,7 @@ mass fraction of species $s$.  While the derivation of the species mass
 equations is different for the Roe FDS scheme from that of Steger-Warming
 proposed by Candler et al.\cite{candler}, the final result takes a similar form: 
 %------------------------------------------------------------------------------%
-\begin{gather} 
+\begin{gather}
   \hat{F}_{\rho_s} 
   = c_s F'_\rho+(c_s^L-\tilde{c}_s)\rho^L\lambda^+
   + (c_s^R-\tilde{c}_s)\rho^R\lambda^-
@@ -207,10 +241,10 @@ linearizing the species mass fluxes with respect to the $\mathbf{\hat{V}}$
 variables yields
 %------------------------------------------------------------------------------%
 \begin{align} 
-  \Fhat^{n+1} &=
+  \Fhat^{n+1} &\approx
   \Fhat^n 
-  + \pd{\Fhat}{\Vhat^L} \delta \Vhat^L 
-  + \pd{\Fhat}{\Vhat^R} \delta \Vhat^R
+  + \pd{\Fhat}{\Vhat^L} \Delta \Vhat^L 
+  + \pd{\Fhat}{\Vhat^R} \Delta \Vhat^R
   \label{flux-dc-taylor} \\
   \pd{\Fhat}{\Vhat^L} &= 
   \roe F_\rho+(1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^- 
@@ -228,7 +262,7 @@ rule is applied to linearize $\mathbf{\hat{W}}$ with respect to the species mass
 fractions:
 %------------------------------------------------------------------------------%
 \begin{equation} 
-  \What^{n+1} = \What^n + 
+  \What^{n+1} \approx \What^n + 
   \pd{\What}{\mU} \bigg|_{\mU '} 
   \pd{\mU}{\Vhat}
   \label{source-term-linearization}
@@ -245,14 +279,18 @@ The decoupled system to be solved becomes:
 %------------------------------------------------------------------------------%
 \begin{equation} 
   \begin{split}
-    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t} &+ \frac{1}{V} 
-    \lsum{f}{}{ \left( \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L 
-    + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R \right)^{n,n+1}} 
-    - C^{n,n+1} \delta \Vhat^n \\ 
-    &= -\frac{1}{V}\lsum{f}{}{
-      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f } 
-      + \mathbf{W}^{n, n+1} - \frac{1}{V} R_\rho \Vhat
+    \frac{\vol}{\Delta t} \rho^{n+1} \Delta\Vhat + 
+    \lsum{f}{}{ \left( 
+      \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \Delta \Vhat^L 
+    + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \Delta \Vhat^R 
+    \right)^{n,n+1}} 
+    - \vol C^{n,n+1} \Delta \Vhat^n \\ 
+    = -\lsum{f}{}{
+      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f 
+    } 
+    + \vol \mw^{n, n+1} + R_\rho \Vhat^n
   \end{split}
+  \label{decoupled-no-scaling}
 \end{equation}
 %------------------------------------------------------------------------------%
 where
@@ -260,7 +298,7 @@ where
 \begin{equation}
   R_\rho =
   \lsum{f}{}{\lsum{s=1}{N_s}{(\hat{F}_{\rho_s}^{n,n+1}\cdot\mathbf{N})}} 
-  \label{decoupled-no-scaling}
+  \label{dc-constraint}
 \end{equation}
 %------------------------------------------------------------------------------%
 is included to preserve the constraint that the mass fractions
@@ -279,18 +317,16 @@ $\mw^{n,n+1}$
 %------------------------------------------------------------------------------%
 \begin{equation} 
   \begin{split}
-    \rho^{n+1} \frac{\delta \Vhat^n}{\Delta t}
-    &+\frac{1}{V}
-    \lsum{f}{}{
-     \left(
-       \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \delta \Vhat^L
-       + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \delta \Vhat^R
-      \right)^{n,n+1}}
-     - C^{n,n+1} \delta \Vhat^n \\
-    &= 
-    -\frac{1}{V}\lsum{f}{}{
-      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f
-    } + (\omega_r) (\mw^{n,n+1}) - R_\rho
+    \frac{\vol}{\Delta t} \rho^{n+1} \Delta\Vhat + 
+    \lsum{f}{}{ \left( 
+      \pd{\Fhat^f}{\Vhat^L} \cdot \Norm^f \Delta \Vhat^L 
+    + \pd{\Fhat^f}{\Vhat^R} \cdot \Norm^f \Delta \Vhat^R 
+    \right)^{n,n+1}} 
+    - \vol C^{n,n+1} \Delta \Vhat^n \\ 
+    = -\lsum{f}{}{
+      \left( \Fhat^{n,n+1} \cdot \Norm \right)^f 
+    } 
+    + (\vol)(\omega_r)(\mw^{n, n+1}) + R_\rho \Vhat^n
   \end{split}
   \label{decoupled-with-scaling}
 \end{equation}
@@ -303,20 +339,80 @@ on in the simulation, and damping the source term during this phase does not
 affect the final result, provided the ramping is completed before the end of the
 simulation.
 
+In this decoupled scheme, the mixture and species continuity equations for
+single point in the global system of the decoupled flow solve can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{gathered}
+    \text{\bf{Mixture Equations}}: \\
+    \left[ 
+    \frac{V}{\Delta t}\mi + 
+    \begin{pmatrix}
+      \rdiff{\rho}{\rho} & \rdiff{\rho}{\rho \vu} & \rdiff{\rho}{\rho E} \\
+      \rdiff{\rho \vu}{\rho} & \rdiff{\rho \vu}{\rho \vu} & \rdiff{\rho \vu}{\rho E} \\
+      \rdiff{\rho E}{\rho} & \rdiff{\rho E}{\rho \vu} & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    \right]
+  \begin{pmatrix}
+    \Delta \rho \\
+    \Delta \rho \vu \\
+    \Delta \rho E
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \resrho \\
+    \res{\rho \vu} \\
+    \res{\rho E}
+  \end{pmatrix}
+  \end{gathered}
+  \label{approx-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{gathered}
+    \text{\bf{Species Continuity Equations}}: \\
+    \left[
+      \frac{\rho V}{\Delta t}\mi + 
+      \begin{pmatrix}
+        \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\
+        \vdots & \ddots & \vdots \\
+        \rdiff{\rho_{ns}}{c_1} & \cdots & \rdiff{\rho_{ns}}{c_{ns}}
+      \end{pmatrix}
+    \right]
+    \begin{pmatrix}
+      \Delta c_1 \\
+      \vdots \\
+      \Delta c_{ns}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+      \res{\rho_1} - c_1 \resrho \\
+      \vdots \\
+      \res{\rho_{N_s}} - c_{N_s} \resrho
+    \end{pmatrix}
+  \end{gathered}
+  \label{approx-jac-dc}
+\end{equation}
+%------------------------------------------------------------------------------%
+It should be noted that the approximations made in \erefs{dfdvl}{dfdvr} result
+in no interdependence between species; so, the only off-diagonal terms for the
+Jacobian matrix in \eref{approx-jac-dc} come from the the chemical source term
+linearizations.
+
 \section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 \label{sec:predicted-cost-mem-savings}
 
 In decoupling the species equations, the most significant savings comes from the
 source term linearization being purely node-based\cite{gnoffo-tp}.  Solving the
-mean flow equations is conducted in the same manner as the fully coupled system.
-All entries in the Jacobian $A_m$ are linearizations of the mixture equation
-fluxes, which results in $5\times5$ matrices. All entries in the Jacobian $A_d$
-are linearizations of the species mass fluxes, which results in $ns \times ns$
-matrices.  Because there is no interdependence of species, except through the
-chemical source term, all contributions due to linearizing the convective flux
-are purely diagonal $N_s \times N_s$ matrices.  Via \eref{decomp-jac}, we
-decompose $A_d$ into its diagonal and off-diagonal elements, resulting in the
-following linear system:
+mixture equations in is conducted in the same manner as the fully coupled
+system.  The global Jacobian for the mixture equations, $A_m$ consists of block
+$5 \times 5$ Jacobian matricies of the form shown in \eref{approx-jac}. In the
+decoupled species continuity equations, all entries in the global Jacobian,
+$A_d$, are $N_s \times N_s$ block matrices of the form in \eref{approx-jac-dc}.
+Because there is no interdependence of species, except through the chemical
+source term, all contributions due to linearizing the convective flux are purely
+diagonal.  Via \eref{decomp-jac}, we decompose $A_d$ into its diagonal and
+off-diagonal elements, resulting in the following linear system:
 %------------------------------------------------------------------------------%
 \begin{equation}
   \label{dc_sys} 

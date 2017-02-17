@@ -131,6 +131,9 @@ Discrete Adjoint Formulation}
 \newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
 \newcommand{\pdr}[3]{\left. \frac{\partial #1}{\partial #2}\right|_{#3}}
 
+% Cell volume
+\newcommand{\vol}{\Omega}
+
 % Nondimensionalization macro
 %\newcommand{\nondim}[1]{{#1}^{'}/{#1}_{ref}}
 
@@ -152,7 +155,10 @@ Discrete Adjoint Formulation}
 \newcommand{\tpdiff}[2]{\pd{\vR_{#2}^{'}}{#1}}
 \newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
 
-\newcommand{\drvdv}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
+\newcommand{\drudu}{\rtdiff{\mU}{\mU}}
+\newcommand{\drvdv}{\rtdiff{\mv}{\mv}}
+\newcommand{\druduapprox}{\pd{\mathbf{\tilde{R}_{\mU}}}{\mU}}
+\newcommand{\drvdvapprox}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
 
 % Sum with limits on top and bottom of sigma
 \newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
@@ -222,7 +228,7 @@ Discrete Adjoint Formulation}
 \newcommand{\vu}{\mathbf u}
 \newcommand{\vU}{\mathbf U}
 \newcommand{\vR}{\mathbf R}
-\newcommand{\Up}{\mathbf{U}'}
+\newcommand{\Up}{\mathbf{U}^{'}}
 \newcommand{\Uhat}{\mathbf{\hat{U}}}
 \newcommand{\ma}{\mathbf A}
 \newcommand{\mb}{\mathbf B}
