@@ -28,7 +28,7 @@ The derivation for the discrete adjoint begins with forming the Lagrangian as
 %------------------------------------------------------------------------------%
 where $f$ is the cost function of interest, $\mr$ is the residual of the flow
 equations, $\md$ is the vector of design variables, $\mq$ is the vector of
-conserved variables, and $\adjlam{}$ is the vector of lagrange multipliers
+conserved variables, and $\adjlam{}$ is the vector of Lagrange multipliers
 (hereafter referred to as costate variables).  Differentiating with respect to
 the design variables, $\md$, yields
 %------------------------------------------------------------------------------%
@@ -177,13 +177,13 @@ systems
 %------------------------------------------------------------------------------%
 \begin{gather}
   \left(
-  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
+  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
   \right)^{\mathsmaller T} \Delta \adjlam{\Vhat}
   =
   -\left(\pd{\rv{}}{\Vhat}^{\mathsmaller T}\adjlam{\mv}^n + \pd{f}{\Vhat} \right)
   \label{dc-species-adj-time} \\
   \left(
-  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
+  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
   \right)^{\mathsmaller T} \Delta \adjlam{\Up}
   =
   -\left(\pd{\rv{}}{\Up}^{\mathsmaller T}\adjlam{\mv}^n + \pd{f}{\Up} \right)
@@ -238,14 +238,14 @@ coupled system linearizations and costate variables
 %------------------------------------------------------------------------------%
 \begin{gather}
   \left(
-  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
+  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}
   \right)^{\mathsmaller T} \Delta \adjlam{\Vhat}
   =
   - \left( \pd{\mU}{\Vhat} \right)^{\mathsmaller T}
   \left(\pd{\ru{}}{\mU}^{\mathsmaller T}\adjlam{\mU}^n + \pd{f}{\mU} \right)
   \label{dc-fc-species-adj-time} \\
   \left(
-  \frac{\rho \vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
+  \frac{\vol}{\Delta t} \mi + \pd{\mathbf{\tilde{R}_{\Up}}}{\Up}
   \right)^{\mathsmaller T} \Delta \adjlam{\Up}
   =
   - \left( \pd{\mU}{\Up} \right)^{\mathsmaller T}
@@ -256,12 +256,12 @@ coupled system linearizations and costate variables
 \erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time} effectively utilize the
 fully coupled scheme linearizations and pre-processes them before the linear
 solver to make them consistent with the approximations used in the decoupled
-flow solve jacobians.  This is very efficient from an implementation standpoint,
+flow solve Jacobians.  This is very efficient from an implementation standpoint,
 as the infrastructure required to compute the exact linearizations of the
 second-order reconstruction scheme is extremely involved.  The only change
-necessary on the RHS of decoupled adjoint solver systems is accomplised by
+necessary on the RHS of decoupled adjoint solver systems is accomplished by
 looping over the adjoint residual vector and the costate variable vector to
-apply the necessary changes.  For the LHS, the jacobians can be directly reused
+apply the necessary changes.  For the LHS, the Jacobians can be directly reused
 from the flow solver routines, and only high-level changes are necessary to
 facilitate the transpose operations.
 

@@ -8,7 +8,7 @@
 \usepackage{amssymb}
 \usepackage{stmaryrd}
 \usepackage{adjustbox}
-\usepackage{subfigure}
+\usepackage{subfig}
 \usepackage{graphicx}
 \usepackage{media9}
 \usepackage{multimedia}
@@ -46,6 +46,11 @@
 \newcommand{\mblue}[1]{%
   \ooalign{\hss\makebox[0pt]{\fcolorbox{green!10}{blue!15}{$#1$}}\hss\cr\phantom{$#1$}}%
 }
+
+% subfigure counter resets every frame
+\makeatletter
+\@addtoreset{subfigure}{framenumber}
+\makeatother
 
 %------------------------------- TIKZ STUFF -----------------------------------%
 
@@ -118,7 +123,6 @@
   fuzzy shadow=red]{\BODY}
 }
 
-
 %----------------------- CUSTOM SECTION PAGE BREAK ----------------------------%
 \let\oldsection\section
 \renewcommand\section{\clearpage\oldsection}
@@ -139,6 +143,9 @@
 \newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
 \newcommand{\pnd}[3]{\frac{\partial^{#3} #1}{\partial #2^{#3}}}
 \newcommand{\pdr}[3]{\left. \frac{\partial #1}{\partial #2}\right|_{#3}}
+
+% Cell volume
+\newcommand{\vol}{\Omega}
 
 % Nondimensionalization macro
 %\newcommand{\nondim}[1]{{#1}^{'}/{#1}_{ref}}
@@ -162,6 +169,12 @@
 \newcommand{\rtdiff}[2]{\pd{\vR_{#1}}{#2}^{\mathsmaller T}}
 
 \newcommand{\drvdv}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
+\newcommand{\drudu}{\rtdiff{\mU}{\mU}}
+%\newcommand{\drvdv}{\rtdiff{\mv}{\mv}}
+\newcommand{\druduapprox}{\pd{\mathbf{\tilde{R}_{\mU}}}{\mU}}
+\newcommand{\drvdvapprox}{\pd{\mathbf{\tilde{R}_{\mv}}}{\mv}}
+\newcommand{\drvhat}{\pd{\mathbf{\tilde{R}_{\Vhat}}}{\Vhat}}
+\newcommand{\drup}{\pd{\mathbf{\tilde{R}_{\Up}}}{\Up}}
 
 % Sum with limits on top and bottom of sigma
 \newcommand{\lsum}[3]{\sum\limits_{#1}^{#2}{#3}}
