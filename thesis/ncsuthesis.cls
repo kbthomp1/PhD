@@ -460,11 +460,17 @@
 {\ncsu@dedbioack{\acknowledgementstitle}}
 {\clearpage}
 
+%%  Nomenclature
+\newcommand{\nomenclaturetitle}{Nomenclature}
+\newenvironment{nomenclature}
+{\ncsu@dedbioack{\nomenclaturetitle}}
+{\clearpage}
+
 %% -------------------------------------------------------------------------- %%
 %% -------------------------  Table of Contents ----------------------------- %%
 %% -------------------------------------------------------------------------- %%
 \renewcommand{\contentsname}{Table of Contents}
-\settowidth{\cftchapnumwidth}{\textbf{Chapter 00}}
+\settowidth{\cftchapnumwidth}{\textbf{Chapter 000}}
 \renewcommand{\cftchappresnum}{Chapter }
 \renewcommand{\cftchapleader}{\cftdotfill{\cftsecdotsep}}
 \newcommand{\thesistableofcontents}{%
