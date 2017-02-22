@@ -107,9 +107,9 @@
   \begin{itemize}
     \item Current state of the art
       \begin{itemize}
-        \item Attempts made at both continuous\fcite{Copeland} and
+        \item Both continuous\fcite{Copeland} and
           discrete\fcite{Lockwood} adjoint formulations
-          for a compressible reacting flow solver
+          have been implemented for compressible reacting flow solvers
         \item These attempts suffer from quadratic scaling in memory and
           computational cost with number of species
         \item Recent scheme at Barcelona Supercomputing
@@ -752,9 +752,9 @@
   \frametitle{Decoupled Adjoint Scheme}
   \begin{itemize}
     \item Rewrite the adjoint system from 
-      $\rv{}\left( \mv \right) \only<2->{\rightarrow \ru{}\left( \mU \right)}$
+      $\ru{}\left( \mU \right) \only<2->{\rightarrow \rv{}\left( \mv \right)}$
       \begin{gather*}
-        \left( \pd{\rv{}}{\mv} \right)^T \adjlam{\mv} = -\pd{f}{\mv} \\
+        \left( \pd{\ru{}}{\mU} \right)^T \adjlam{\mU} = -\pd{f}{\mU} \\
         \only<2->{
           \left( \pd{\mU}{\mv} \right)^T 
           \left( \pd{\ru{}}{\mU} \right)^T 
@@ -1214,13 +1214,41 @@
 \begin{frame}
   \frametitle{First-Order, Inverse Design Optimization}
   \begin{itemize}
+    \item ``Inverse'' design optimization seeks to match a predetermined target
+      design by altering a set of design inputs
     \item Sensitivity to frozen flux limiter mandated first-order for inverse
       design optimization
     \item Cost function with semi-arbitary targets specified
+    \only<1>{
       \[
-        f = w_1\left( \massflow - 0.0024 \right)^2 
-          + w_2\left( T_{RMS} - 2000 \right)^2
+        f = w_1\cost{\massflow}^2
+          + w_2\cost{T_{RMS}}^2
       \]
+    }
+    \only<2>{
+      \[
+        f = w_1\left( \massflow - 
+        \begin{cboxf}[pink]
+          \massflow^*
+        \end{cboxf} \right)^2 
+        + w_2\left( T_{RMS} - 
+        \begin{cboxf}[blue]
+          T_{RMS}^*
+        \end{cboxf} \right)^2
+      \]
+    }
+    \only<3>{
+      \[
+        f = w_1\left( \massflow - 
+        \begin{cboxf}[pink]
+          0.0024 
+        \end{cboxf} \right)^2 
+        + w_2\left( T_{RMS} - 
+        \begin{cboxf}[blue]
+          2000
+        \end{cboxf} \right)^2
+      \]
+    }
     \item Weights chosen to normalize components for starting condition
       \[
         \frac{w_1}{w_2} = \frac{(T_{RMS} - 2000)^2}{(\massflow - 0.0024)^2}
@@ -1271,12 +1299,38 @@
 \begin{frame}
   \frametitle{Second-Order, Direct Design Optimization}
   \begin{itemize}
-    \item For direct optimization, the cost function targets for $T_{RMS}$ and
-      $\massflow$ are set to zero
-      \[
-        f = w_1\left( \massflow \right)^2 
-          + w_2\left( T_{RMS} \right)^2
-      \]
+    \item For direct optimization, the function is minimized with no
+      predetermined target, so $T_{RMS}^*$ and $\massflow^*$ are set to zero
+      \only<1>{
+        \[
+          f = w_1\left( \massflow - 
+          \begin{cboxf}[pink]
+            \massflow^*
+          \end{cboxf} \right)^2 
+          + w_2\left( T_{RMS} - 
+          \begin{cboxf}[blue]
+            T_{RMS}^*
+          \end{cboxf} \right)^2
+        \]
+      }
+      \only<2>{
+        \[
+          f = w_1\left( \massflow - 
+          \begin{cboxf}[pink]
+            \cancel{\massflow^*}
+          \end{cboxf} \right)^2 
+          + w_2\left( T_{RMS} - 
+          \begin{cboxf}[blue]
+            \cancel{T_{RMS}^*}
+          \end{cboxf} \right)^2
+        \]
+      }
+      \only<3>{
+        \[
+           f = w_1\left( \massflow \right)^2 
+             + w_2\left( T_{RMS} \right)^2
+        \]
+      }
     \item Weights again chosen to normalize components based on starting design
       condition
       \[
@@ -1306,7 +1360,7 @@
     \includegraphics[width=0.5\textwidth]{figures/direct_design/dv-hist.png}}
   \subfloat[Surface temperature RMS and mass flow rate]{
     \includegraphics[width=0.5\textwidth]{figures/direct_design/mass-tt.png}}
-  \caption{Inverse design history}
+  \caption{Direct design history}
 \end{figure}
 %------------------------------------------------------------------------------%
 }
@@ -1324,10 +1378,36 @@
     \includegraphics[width=0.5\textwidth]{figures/direct_design/cost-func.png}}
   \subfloat[Component values]{
     \includegraphics[width=0.5\textwidth]{figures/direct_design/components.png}}
-  \caption{Inverse design history}
+  \caption{Direct design history}
 \end{figure}
 %------------------------------------------------------------------------------%
 }
+\end{frame}
+
+\begin{frame}
+  \frametitle{Second-Order, Direct Design Optimization}
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \small
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Component & Initial & Final & Improvement\\
+    \hline
+    $\dot{m}$, $kg/s$ & 1.268e-3 & 1.028e-3 & 18.93\% \\
+    $T_{RMS}$, $K$    & 1088     & 1044     & 4.044\%
+  \end{tabular}
+  \caption{Direct design optimization improvement.}
+  \label{tab:design-improvement}
+\end{table}
+%------------------------------------------------------------------------------%
+\begin{itemize}
+  \item Net $+22.9\%$ design improvement
+  \item Optimizer significantly improved the mass flow rate, without largely
+    affecting surface temperature
+  \item Most gains associated with changing $\fa = 0.7 \rightarrow \fa = 1.0$
+  \item Results can be tweaked by cost function component weighting
+\end{itemize}
+
 \end{frame}
 
 \section{Accuracy and Relative Speedup}
@@ -1636,8 +1716,9 @@
         \item<2-> Improved computational cost and memory required scaling with
           number of species continuity equations in adjoint solver.
           \begin{itemize}
-            \item Order of magnitude speed increase if memory savings enable
-              linearization storage not possible with fully-coupled scheme
+            \item Order of magnitude speed increase if decoupled scheme memory
+              savings enable linearization storage that was not possible with
+              fully-coupled scheme
           \end{itemize}
         \item<3-> Design optimization off a hypersonic reentry vehicle with a
           retro-firing annular jet.
@@ -1683,21 +1764,19 @@
   \end{itemize}
 \end{frame}
 
+\section{}
+
 \begin{frame}
   \frametitle{Acknowledgements}
   \begin{itemize}
-    \item Thanks to the FUN3D team at NASA Langley Research Center, for their
-      support in integrating aspects of the compressible gas path into the
-      reacting gas path of FUN3D.
+   \item Thanks to the FUN3D team at NASA Langley Research Center, for their
+     support in integrating aspects of the compressible gas path into the
+     reacting gas path of FUN3D.
+   \item Thanks to Jeff White of the Computational Aerosciences Branch at NASA
+     Langley Research Center, for his advice regarding reacting flow simulation.
    \item Thanks to the Entry Systems Modeling Project within the NASA
      Game Changing Development Program for their funding and support of this research.  
   \end{itemize}
-\end{frame}
-
-\begin{frame}[t,allowframebreaks]
-  \frametitle{References}
-  %\printbiblist{main}
-  \printbibliography
 \end{frame}
 
 \end{document}

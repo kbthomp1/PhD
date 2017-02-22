@@ -6,6 +6,7 @@
 \usepackage{mathtools}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[makeroom]{cancel}
 \usepackage{stmaryrd}
 \usepackage{adjustbox}
 \usepackage{subfig}
@@ -23,6 +24,7 @@
 %\usepackage[style=authoryear]{biblatex}
 \usepackage[style=authortitle,firstinits=true,backend=biber]{biblatex}
 \addbibresource{main.bib}
+%\addbibresource{../KyleThompson-thesis.bib}
 \DeclareNameAlias{sortname}{last-first}
 \renewcommand{\footnotesize}{\tiny}
 \newrobustcmd*{\fcite}{\AtNextCite{\renewbibmacro{title}{}\renewbibmacro{in:}{}}\footfullcite}
@@ -107,7 +109,7 @@
 
 \NewEnviron{cboxt}[1][black]{%
   \tcbset{size=tight}
-  \tcbhighmath[boxrule=5pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
+  \tcbhighmath[boxrule=1pt,arc=1pt,colback= #1!10!white,colframe=#1, drop
   fuzzy shadow=red]{\BODY}
 }
 
