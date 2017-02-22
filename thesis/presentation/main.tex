@@ -145,7 +145,7 @@
       \begin{itemize}
         \item Solving adjoint system particularly costly if linear solver is
           slow
-        \item Can be necessary to store jacobian twice $\to$ large memory
+        \item Can be necessary to store Jacobian twice $\to$ large memory
           overhead
       \end{itemize}
   \end{itemize}
@@ -185,6 +185,24 @@
     \end{itemize}
   \item Candler, et al.\fcite{candler} originally derived this for
     Steger-Warming scheme, this work extends to Roe FDS scheme
+  \end{itemize}
+\end{frame}
+\begin{frame}
+  \vspace{-0.2cm}
+  \frametitle{Introduction - Choice of Code and Implementation}
+  \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.5\textwidth]{figures/fun3d_logo.png}
+    \label{fig:fun3d}
+  \end{figure}
+  \begin{itemize}
+    \item FUN3D chosen as code to facilitate all research presented, because
+      \begin{itemize}
+        \item Excellent infrastructure for adjoint-based design analysis and optimization
+        \item Robust hypersonic flow solver
+        \item NASA Langley Research Center supporting me through the Pathways
+          program
+      \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -341,7 +359,7 @@
       \item Followed by the species fluxes
       \[
         \frac{\partial \mathbf{\hat{U}}}{\partial t} +
-        \frac{1}{V}\sum\limits_{f}(\mathbf{\hat{F}}\cdot \Norm)^f =
+        \frac{1}{\vol}\sum\limits_{f}(\mathbf{\hat{F}}\cdot \Norm)^f =
         \mathbf{\hat{W}}
       \]
     \end{itemize}
@@ -483,8 +501,8 @@
   \item Most significant savings comes from the source term linearization being purely node-based
     \begin{itemize}
       \item Convective contributions to block Jacobians are diagonal
-      \item Source term jacobian is dense block Jacobian
-      \item In the global system (w/chemistry), all off-diagonal block jacobians
+      \item Source term Jacobian is dense block Jacobian
+      \item In the global system (w/chemistry), all off-diagonal block Jacobians
         are diagonal
     \end{itemize}
   \end{itemize}
@@ -505,7 +523,7 @@
     \end{pmatrix} 
   \]
   \begin{itemize}
-    \item Matrix-vector products $\to$ inner products: $O(ns^2) \to O(ns)$
+    \item Matrix-vector products $\to$ inner products: $O(N_s^2) \to O(N_s)$
   \end{itemize}
 \end{frame}
 \begin{frame}
@@ -519,8 +537,8 @@
   \end{align*}
   \[
   \begin{split} Relative\ Memory\ Cost &=
-    \frac{size(\ma_d)}{size(\ma)} \\ &= \lim_{ns\to\infty}
-    \frac{(ns^2+5^2)(N_{nodes})+(ns+5^2)(N_{nbrs})}{(ns+4)^2(N_{nodes}+N_{nbrs})} \\
+    \frac{size(\ma_d)}{size(\ma)} \\ &= \lim_{N_s\to\infty}
+    \frac{(N_s^2+5^2)(N_{nodes})+(N_s+5^2)(N_{nbrs})}{(N_s+4)^2(N_{nodes}+N_{nbrs})} \\
     &= \frac{N_{nodes}}{N_{nodes} + N_{nbrs}}
   \end{split}
   \]
@@ -537,8 +555,8 @@
       begins with forming the Lagrangian and differentiating with respect to the
       design variables
       \begin{gather*}
-        L(\md,\mq,\mx,\mathbf{\Lambda})=f(\md,\mq,\mx)
-        +\mathbf{\Lambda}^T\mr(\md,\mq,\mx) \\
+        L(\md,\mq,\adjlam{})=f(\md,\mq)
+        +\adjlam{}^T\mr(\md,\mq) \\
         \uncover<2->{
        	\pd{L}{\md} =
         \pd{f}{\md} +
@@ -726,8 +744,8 @@
         \left(\pd{\ru{}}{\mU}\right)
         \underbrace{ \left(\pd{\mU}{\mv}\right) }_{\text{Right Preconditioner}}
       \end{equation*}
-    \item<3-> This transformation avoids having to explicitly form the jacobian
-      $\pd{\rv{}}{\mv}$, which are more complicated than $\pd{\ru{}}{\mU}$
+    \item<3-> This transformation avoids having to explicitly form the Jacobian
+      $\pd{\rv{}}{\mv}$, which is more complicated than $\pd{\ru{}}{\mU}$
   \end{itemize}
 \end{frame}
 \begin{frame}
@@ -771,7 +789,7 @@
 \begin{frame}
   \frametitle{Decoupled Adjoint Solver}
   \begin{itemize}
-    \item Time march adjoint solution with approximate jacobians
+    \item Time march adjoint solution with approximate Jacobians
       \begin{equation*}
         \left( \frac{V}{\Delta t} \mi + \drvdvapprox^T \right) \adjlam{\mv}
         =
@@ -1328,11 +1346,11 @@
 %------------------------------------------------------------------------------%
     \item FUN3D is ``complexified'' by ruby scripting, and sensitivities
       computed by perturbing design variables individually
-    \item The ``complexified'' solver is restarted with the real-value flow
-      solver solution to avoid recomputing flux limiter
+    \item The complex-value solver is restarted with the real-value flow solver
+      solution to avoid recomputing flux limiter
       \begin{itemize}
         \item Ensures that frozen flux limiter values used by adjoint
-          solver and ``complexified'' flow solver are identical
+          solver and complex-value flow solver are identical
       \end{itemize}
   \end{itemize}
 \end{frame}
@@ -1469,7 +1487,7 @@
     \item 5 $km/s$ Cylinder flow confirms that speedup in linear solver and
       overall solver increases linearly with number of species
     \item Relative memory required by the flow solver approaches $\sim 1/4$,
-      which is correct when off-diagonal jacobian elements are single precision
+      which is correct when off-diagonal Jacobian elements are single precision
   \end{itemize}
 \end{frame}
 
@@ -1516,24 +1534,170 @@
   \frametitle{Relative Speedup of Decoupled Flow Solver}
   \begin{itemize}
     \item Reasons for decrease in decoupled flow solver speedup with finite-rate
-      chemistry
+      chemistry relative to frozen flow:
     \begin{itemize}
-      \item Exact linearizations signicantly improvement iterative convergence,
-        but slightly more expensive to compute jacobian
-        \begin{itemize}
-          \item Exact linearizations do not help convergence significantly during
-            start-up transients, where flow is highly non-linear
-        \end{itemize}
+      \item Exact linearizations are less effective with the highly non-linear
+        chemical source term.
       \item Computing the Jacobian is a dominant cost in the decoupled flow
-        solver
-        \begin{itemize}
-          \item The Jacobian is recomputed more frequently when solution is not
-            converging, which decreases the speedup of the decoupled scheme
-        \end{itemize}
+        solver, and is recomputed more frequently when solution is not
+        converging
     \end{itemize}
   \item Future work will focus on improving iterative convergence with
     finite-rate chemistry and optimizing the Jacobian computation 
+    \begin{itemize}
+      \item Better limiting for hydrogen-air combustion reactions
+      \item Force low-level vectorization and function inlining for Jacobian
+        routines
+    \end{itemize}
   \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relative Speedup of Decoupled Adjoint Solver}
+  \begin{figure}[h]
+    \centering
+    \subfloat[Linearizations always recomputed]{
+      \includegraphics[width=0.45\textwidth]{figures/adj-efficiency/adj-recompute.png}}
+    \subfloat[Linearizations stored]{
+      \includegraphics[width=0.45\textwidth]{figures/adj-efficiency/adj-stored.png}}
+  \end{figure}
+  \begin{itemize}
+    \item Computing linearizations of second-order reconstruction is the
+      dominant cost in the adjoint solve
+      \begin{itemize}
+        \item This can be mitigated by storing all linearizations, if there is
+          enough memory
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relative Speedup of Decoupled Adjoint Solver}
+  \vspace{-0.1cm}
+  \begin{figure}[h]
+    \centering
+    \subfloat[Absolute memory required]{
+      \includegraphics[width=0.4\textwidth]{figures/adj-efficiency/mem-req-srp.png}}
+    \subfloat[Relative memory required]{
+      \includegraphics[width=0.4\textwidth]{figures/adj-efficiency/mem-rel-savings.png}}
+    \caption{Memory required on annular jet meshes}
+  \end{figure}
+  \vspace{-0.2cm}
+  \begin{itemize}
+    \item Second-order Jacobian is much larger than first-order Jacobian used by
+      flow solver
+    \item Memory savings less than flow solver, but non-trivial ($\sim 20\%$)
+    \item There are ways of trading CPUs for memory
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relative Speedup of Decoupled Adjoint Solver}
+\begin{itemize}
+  \item Speedup in decoupled adjoint solver very beneficial if there is enough
+    memory to store all linearizations
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \tiny
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Scheme & Linearizations & Time to Convergence (s) & Speedup \\
+    \hline
+    Fully Coupled & Recomputed  & 309.4 & 1.0 (baseline)\\
+    Decoupled     & Recomputed  & 244.2 & 1.27 \\
+    Fully Coupled & Stored      & 61.22 & 5.05 \\
+    Decoupled     & Stored      & 18.69 & $\mathbf{16.6}$ \\
+  \end{tabular}
+  \caption{Relative speedup of decoupled to fully coupled adjoint solver.}
+  \label{tab:srp-rel-speedup}
+\end{table}
+%------------------------------------------------------------------------------%
+  \item Decoupled adjoint solver $\sim$ 3x faster than fully coupled adjoint
+    solver if both store linearizations
+  \item $16.6$x speedup is a credible scenario, due to decoupled scheme relative
+    memory savings
+\end{itemize}
+\end{frame}
+
+\section{Conclusion}
+\stepcounter{subsection}
+
+\begin{frame}
+  \frametitle{Conclusion - Contributions}
+  \begin{itemize}
+    \item Contributions to the state of the art:
+      \begin{enumerate}
+        \item<1-> Improved stability for solving inviscid flows in chemical
+          non-equilibrium using a decoupled, point-implicit approach.
+          \begin{itemize}
+            \item Chemical source term scaling factor maintains decoupled flow
+              solver stability for flows with large reaction rates
+          \end{itemize}
+        \item<2-> Improved computational cost and memory required scaling with
+          number of species continuity equations in adjoint solver.
+          \begin{itemize}
+            \item Order of magnitude speed increase if memory savings enable
+              linearization storage not possible with fully-coupled scheme
+          \end{itemize}
+        \item<3-> Design optimization off a hypersonic reentry vehicle with a
+          retro-firing annular jet.
+          \begin{itemize}
+            \item Direct and inverse design optimization on retro-propulsion
+              case with challenging physics
+          \end{itemize}
+      \end{enumerate}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusion - New Performance Opportunities}
+  \begin{itemize}
+    \item Eliminating the linear solve as the dominant cost enables new avenues
+      for performance improvements
+      \begin{enumerate}
+        \item Fixed $5 \times 5$ problem size is beneficial for compile-time
+          optimizations
+        \item More ``low hanging fruit'' in optimizing thermo-chemistry and
+          Jacobian computations than the linear solver
+        \item Adjoint memory co-location can be improved to recover speedup when
+          second-order linearizations cannot be stored
+      \end{enumerate}
+    \item Decoupled flow and adjoint solvers enable the generation of a flow
+      solution and sensitivities for a cost function in less time than a fully
+      coupled flow solution, for demonstration problem
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Conclusion - Future Work}
+  \begin{itemize}
+    \item Adjoint-based sensitivity work presented here is the start of a
+      long career
+    \begin{itemize}
+      \item Extend decoupled flow solver and adjoint solver to viscous flows in
+        thermal non-equilibrium
+      \item Enable a mixed storage/recompute strategy for adjoint linearizations
+      \item Expand the design variables possible for optimization
+      \item Improve overall performance of FUN3D reacting gas path
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Acknowledgements}
+  \begin{itemize}
+    \item Thanks to the FUN3D team at NASA Langley Research Center, for their
+      support in integrating aspects of the compressible gas path into the
+      reacting gas path of FUN3D.
+   \item Thanks to the Entry Systems Modeling Project within the NASA
+     Game Changing Development Program for their funding and support of this research.  
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[t,allowframebreaks]
+  \frametitle{References}
+  %\printbiblist{main}
+  \printbibliography
 \end{frame}
 
 \end{document}
