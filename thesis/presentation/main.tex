@@ -447,7 +447,7 @@
     =
     \res{\Vhat} \\
   \left[
-    \frac{\rho V}{\Delta t}\mi + 
+    \frac{\rho \vol}{\Delta t}\mi + 
     \begin{pmatrix}
       \rdiff{\rho_1}{c_1} & \cdots & \rdiff{\rho_{1}}{c_{ns}} \\
       \vdots & \ddots & \vdots \\
@@ -482,22 +482,38 @@
         are diagonal
     \end{itemize}
   \end{itemize}
-  \[
+  \begin{sequation}[0.8]
     \begin{pmatrix} 
       \Box & & & & \\ 
       & \ddots & & & \\ 
       & & \Box \\ 
       & & & \ddots & \\ 
       & & & & \Box
-    \end{pmatrix} \begin{pmatrix} \delta \mathbf{\hat{V}}_1 \\ \vdots \\ \delta
-      \mathbf{\hat{V}}_i \\ \vdots \\ \delta \mathbf{\hat{V}}_{nodes}
-    \end{pmatrix} = \begin{pmatrix} \hat{b}_1 \\ \vdots \\ \hat{b}_i \\ \vdots \\
-      \hat{b}_{nodes} \end{pmatrix} - \begin{pmatrix}
-      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ \vdots \\
-      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ \vdots \\
+    \end{pmatrix}
+    \begin{pmatrix} 
+      \delta \mathbf{\hat{V}}_1 \\ 
+      \vdots \\ 
+      \delta \mathbf{\hat{V}}_i \\ 
+      \vdots \\
+      \delta \mathbf{\hat{V}}_{nodes}
+    \end{pmatrix}^{n+1}
+    = 
+    \begin{pmatrix} 
+      \hat{b}_1 \\ 
+      \vdots \\ 
+      \hat{b}_i \\ 
+      \vdots \\
+      \hat{b}_{nodes} 
+    \end{pmatrix}
+    - 
+    \begin{pmatrix}
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_1 \\ 
+      \vdots \\
+      (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_i \\ 
+      \vdots \\
       (\sum_{j=1}^{N_{nb}}{[\diagdown] \delta\mathbf{\hat{V}}_{j}})_{nodes}
-    \end{pmatrix} 
-  \]
+    \end{pmatrix}^{n,n+1}
+  \end{sequation}
   \begin{itemize}
     \item Matrix-vector products $\to$ inner products: $O(N_s^2) \to O(N_s)$
   \end{itemize}
@@ -606,7 +622,7 @@
     \item Can be solved with Krylov method (i.e. GMRES), but time marching
       similar to flow solver shown to be more robust
       \begin{equation*}
-        \left( \frac{V}{\Delta t} \mi + \druduapprox \right)
+        \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right)
         \Delta \adjlam{}
         = - \left( \rtdiff{\mU}{\mU} \adjlam{\mU}^{n} + \pd{f}{\mU} \right)
       \end{equation*}
@@ -1612,11 +1628,17 @@
      reacting gas path of FUN3D.
    \item Thanks to Jeff White of the Computational Aerosciences Branch at NASA
      Langley Research Center, for his advice regarding reacting flow simulation.
+   \item Thanks to Boris Diskin of the National Institute of Aerospace, for his
+     advice on adjoint solvers.
    \item Thanks to the Entry Systems Modeling Project within the NASA
      Game Changing Development Program for their funding and support of this research.  
   \end{itemize}
 \end{frame}
-
+\begin{frame}
+  \huge
+  \centering
+  {\bf Questions?}
+\end{frame}
 %\subsection{backup}
 
 \begin{frame}
