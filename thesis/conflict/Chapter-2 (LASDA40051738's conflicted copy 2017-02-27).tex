@@ -1,0 +1,168 @@
+\chapter{Governing Equations}
+\label{chapter-two}
+
+In this section, the conservative equations governing fluid flow for inviscid,
+chemically reacting flow are presented.  This research is extendable to
+multi-temperature models to account for higher excitation modes than the
+translational mode; however, the focus of this research uses a 1-temperature
+model, so only a single, total energy equation is used.  The thermodynamic
+relations and chemical kinetics models used are also presented in detail here.
+
+\section{Reacting Flow Conservation Equations}
+
+Conservation equations for a fluid mixture that is in chemical non-equilibrium
+and thermal equilibrium can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{gathered}
+    \text{\bf{Species Conservation}}: \\
+     \pd{\rho_s}{t} + 
+     \pd{\left(\rho_s u \right)}{x} + 
+     \pd{\left(\rho_s v \right)}{y} + 
+     \pd{\left(\rho_s w \right)}{z} =
+     \omega_s
+  \end{gathered}
+  \label{species-cons}
+\end{equation}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{gathered}
+    \text{\bf{Mixture Momentum Conservation}}: \\
+    \begin{aligned}
+    \pd{(\rho u)}{t} + \pd{(\rho u^2)}{x} + \pd{(\rho u v)}{y} + \pd{(\rho u w)}{z} &= -\pd{p}{x}\\
+    \pd{(\rho v)}{t} + \pd{(\rho v u)}{x} + \pd{(\rho v^2)}{y} + \pd{(\rho v w)}{z} &= -\pd{p}{y}\\
+    \pd{(\rho w)}{t} + \pd{(\rho w u)}{x} + \pd{(\rho w v)}{y} + \pd{(\rho w^2)}{z} &= -\pd{p}{z}
+    \end{aligned}
+  \end{gathered}
+  \label{mix-mom-cons}
+\end{equation}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{gathered}
+    \text{\bf{Total Energy Conservation}}: \\
+     \pd{\rho E}{t} 
+    + \pd{\left( \rho E + p \right) u}{x} 
+    + \pd{\left( \rho E + p \right) v}{y}
+    + \pd{\left( \rho E + p \right) w}{z} = 0
+  \end{gathered}
+  \label{tot-energy-cons}
+\end{equation}
+%------------------------------------------------------------------------------%
+
+\section{Thermodynamic Relationships}
+
+The pressure, $p$, is defined as the sum of the partial pressures of the species
+%------------------------------------------------------------------------------%
+\begin{equation}
+  p = \sum_{s=1}^{N_s} p_s
+  \label{pressure-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+and the partial pressure of species $s$, $p_s$, is defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  p_s = \frac{\rho_s R_u T}{M_s}
+  \label{partial-pressure-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $R_u$ is the universal gas constant and $M_s$ is the molecular weight of
+species $s$.  The total energy per unit mass $E$, is defined as
+%------------------------------------------------------------------------------%
+\begin{equation} 
+  E = \lsum{s=1}{N_s}{c_s e_s} + \frac{u^2+v^2+w^2}{2} 
+  \label{tot-energy-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $c_s$ is the mass fraction of species $s$, defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  c_s = \frac{\rho_s}{\rho}
+  \label{mass-frac-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+and $e_s$ is the specific internal energy of species $s$, defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  e_s = \int_{T_{ref}}^{T} \cvs \ dT + e_{s,o}
+  \label{int-energy-def}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $T_{ref}$ is a reference temperature and $e_{s,o}$ is the specific
+energy of formation for species $s$.  In practice, the specific heat at constant
+volume for species $s$, $\cvs$, is not used directly. Instead, the specific heat
+at constant pressure for species $s$, $\cps$, is determined via thermodynamic
+curve fits and related to $\cvs$ via
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \cvs = \cps - \frac{R_u}{M_s}
+  \label{specific-heat-conversion}
+\end{equation}
+%------------------------------------------------------------------------------%
+The thermodynamic properties curve fit tables developed by McBride, Gordon, and
+Reno\cite{McBride} are used to compute $\cps$, and quadratic blending function
+of the form
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \cps = a T^2 + b T + c
+  \label{generic-quad-blending}
+\end{equation}
+%------------------------------------------------------------------------------%
+was used to ensure that $\cps$ and enthalpy were continuous across temperature
+ranges.  The details of coefficients $a$, $b$, and $c$, in
+\eref{generic-quad-blending} and their derivation are given in
+\aref{sec:quad-cp-blending}.  This blending is done to improve convergence and
+stability of the numerical solvers, by preventing a large, discontinuous
+sensitivity between temperature and the overall thermodynamic state.
+
+\section{Chemical Kinetics Model}
+
+The production and destruction of species is governed by the source terms,
+$w_s$, defined as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  w_s = M_s \sum_{r=1}^{N_r}\left( \sprod - \sreact \right)
+        \left( R_{f,r} - R_{b,r} \right)
+  \label{source-term}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $N_r$ is the number of reactions, $\sreact$ and $\sprod$ are the
+stoichiometric coefficients for the reactants and products, respectively, and
+$R_{f,r}$ and $R_{b,r}$ are the forward and backward rates for reaction
+$r$, respectively.  The forward and backward reaction rates are defined as
+%------------------------------------------------------------------------------%
+\begin{align}
+  R_{f,r} &= 1000\left[ k_{f,r}\prod_{s=1}^{N_s}\left( 0.001\rho_s/M_s
+  \right)\sreact \right] \label{forward-rate} \\
+  R_{b,r} &= 1000\left[ k_{b,r}\prod_{s=1}^{N_s}\left( 0.001\rho_s/M_s
+  \right)\sprod \right]
+  \label{backward-rate}
+\end{align}
+%------------------------------------------------------------------------------%
+where $k_{f,r}$ and $k_{b,r}$ are the forward and backward rate coefficients,
+respectively.  It should be noted that all terms on the right-hand side (RHS)
+for \erefs{forward-rate}{backward-rate} are in CGS units.  The factors 1000 and
+0.001 are required to convert from CGS to MKS, so that $R_{f,r}$ and $R_{b,r}$
+are in MKS units.  The rate coefficients are expressed in the manner defined by
+Park\cite{park}, but for a one-temperature model; thus, the forward and back
+rate coefficients are defined as
+%------------------------------------------------------------------------------%
+\begin{align}
+  k_{f,r} &= C_{f,r}T^{n_{f,r}}exp\left( -E_{f,r}/kT \right)
+  \label{forward-rate-coef} \\
+  k_{b,r} &= \frac{k_{f,r}}{K_{c,r}}
+  \label{backward-rate-coef}
+\end{align}
+%------------------------------------------------------------------------------%
+where $K_{c,r}$ is the equilibrium constant for reaction $r$, and $k$ is the
+Boltzmann constant.  The preexponential constants $C_{f,r}$ and $n_{f,r}$, as
+well as the activation energy, $E_{f,r}$, are documented by
+Gnoffo\cite{gnoffo-tp}.  The equilibrium coefficient is computed according to
+the curve fit defined by Park\cite{park1985convergence}
+%------------------------------------------------------------------------------%
+\begin{gather}
+  K_{c,r} = exp(\br{1} + \br{2}\ln{Z} + \br{3}Z + \br{4}Z^2 + \br{5}Z^3) \\
+  Z = 10000/T
+\end{gather}
+%------------------------------------------------------------------------------%
+where the curve fit constants, $\br{i}$, are also documented by
+Gnoffo\cite{gnoffo-tp}

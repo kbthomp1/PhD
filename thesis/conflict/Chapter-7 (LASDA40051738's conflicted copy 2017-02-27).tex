@@ -1,0 +1,165 @@
+\chapter{Verification of Adjoint Sensitivity Gradients}
+\label{chapter-seven}
+
+In this chapter the sensitivity gradients computed by the adjoint-formulation
+are verified against derivatives obtained with a complex step, which is also
+described.  Additionally, this chapter details the methods by which the gradient
+information is computed in the forward-mode and in the reverse-mode.
+
+\section{Forward-mode Sensitivities Using Complex-Variables}
+
+The sensitivities can be computed in the forward-mode by using
+finite-difference.  While this approach is unfavorable to use in practice,
+because a minimum number of flow solves equivalent to the number of design
+variables are required, it is a straight-forward way to verify that
+sensitivities computed by the adjoint solver are correct.  To avoid cancellation
+errors associated with real-variable finite difference, an approach that uses
+complex variables was originally suggested by Squire and Trapp\cite{squire1998}
+and evaluated by Newman et al\cite{newman1998}.  This complex-variable approach
+can be used to determine the derivative of a real valued function, $f$, by
+considering the Taylor series expansion of $f$ using a complex step $ih$
+%------------------------------------------------------------------------------%
+\begin{equation}
+  f(x + ih) = \sum_{k=0}\left( \frac{(ih)^k}{!k}\pnd{f}{x}{k} \right)
+            = f(x) + ih\pd{f}{x} - \frac{h^2}{2}\pnd{f}{x}{2}
+            - \frac{h^3}{6}\pnd{f}{x}{3} + \cdots
+  \label{taylor-exp}
+\end{equation}
+%------------------------------------------------------------------------------%
+taking the imaginary parts of both sides of \eref{taylor-exp} and solving for
+the first derivative yields
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{f}{x} &= \frac{Im\left[ f(x + ih) \right]}{h} -
+    \frac{h^2}{6}\pnd{f}{x}{3} \\
+              &= \frac{Im\left[ f(x + ih) \right]}{h} - O(h^2)
+  \end{aligned}
+  \label{complex-fd}
+\end{equation}
+%------------------------------------------------------------------------------%
+Thus, this complex-variable approach provides a means of computing the cost
+function derivatives without subtractive cancellation error, giving truly second
+order accuracy.  The power of using this approach is that very little additional
+code is required to compute the derivative of any function with respect to a
+single design variable.  All that is needed is all functions be made to use
+complex arithmetic and a complex-valued perturbation be applied.
+
+In practice, this complex-variable approach is implemented by transforming the
+source code such that all real variables used in a function evaluation are
+re-declared to be complex variables.  A specified step size is then added to the
+complex part of the design variable that the cost function is to be linearized
+with respect to in the function evaluation.  Provided the ``complexified''
+solver converges in the same manner as the real-variable solver, the complex
+part of the function of interest is the sensitivity derivative.
+
+As mentioned before, the complex-variable and real-variable solvers must
+converge to the same solution for the comparison between the adjoint-computed
+sensitivity derivatives and those computed by the complex-variable approach to
+be valid.  Section \ref{sec:frozen-limiter} described the need for a frozen
+limiter to satisfy the Lagrangian in \eref{lagrangian}, from which the discrete
+adjoint equations are derived.  A significant obstacle with using a frozen
+limiter is that the real-variable and complex-variable solvers do not freeze the
+limiter identically.  Although the solvers are nearly identical, their
+floating-point operations will be different since complex arithmetic is involved
+in only the complex-variable solver.  The flux limiter formulation is sensitive
+to these differences and will result in a different converged state, regardless
+of the limiter being frozen at the same iteration between the solvers.  
+
+To overcome the sensitivity of solution to the flux limiter state, the
+complex-variable solver must not be allowed to change the value of the flux
+limiter.  Enforcing consistency between the real-value and complex-value flow
+solver is done by converging the real-value flow solver to machine precision,
+and then starting the complex-variable solver with the flow field of the
+converged real-variable solution.  The complex step is then added to the design
+variable; however, the flux limiter is frozen.  Because the limiter value is
+constant, the real solution from the complex-variable and real-variable
+solutions will match identically, and the complex part of the solution will be
+converged without ever needing to update the flux limiter.  This will ensure
+that the sensitivity derivatives from the complex and adjoint solvers match to
+high precision for hypersonic cases with a frozen flux limiter.
+
+\section{Verification of 2nd-order Adjoint Linearizations}
+
+To verify the hand-coded linearizations implemented in the adjoint solver, the
+derivatives of the drag, surface temperature, and mass flow rate cost functions
+components for the annular nozzle geometry were computed using both the adjoint
+method and the complex-variable approach.  To facilitate checking the
+linearizations of all of these components efficiently, a composite cost function
+was formed with three components
+%------------------------------------------------------------------------------%
+\begin{equation} 
+  f = w_1\left( \massflow - \massflow^{*}\right)^{2} 
+  + w_2\left( T_{RMS} - T_{RMS}^*\right)^2
+  + w_3\left( C_{D} - C_{D}^*\right)^2
+  \label{check-cost-func}
+\end{equation}
+%------------------------------------------------------------------------------%
+By combining all components into a single composite function, only one
+real-valued flow and one adjoint solution are needed to obtain the sensitivity
+derivatives for all design variables, computed by \eref{obj-linearization2}. One
+complex-valued flow solution is needed for each design variable.
+\tref{tab:pg-deriv-check} shows the relative difference between the sensitivity
+derivatives computed by \eref{obj-linearization1} and \eref{complex-fd}, for a
+perfect gas annular jet simulation.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering 
+  \begin{tabular}{c|c|c|c} 
+    Design Variable & Adjoint & Complex & Relative Difference \\ 
+    \hline 
+    $P_{p,o}$ & 0.12067860106210E-04 & 0.12067860106758E-04 & 4.54e-11 \\
+    $T_{p,o}$ & 0.36654635117980E-03 & 0.36654635118188E-03 & 5.67e-12 
+  \end{tabular}
+  \caption{Sensitivity derivative comparison - perfect gas.}
+  \label{tab:pg-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%
+The adjoint and complex solvers match within machine zero, which is $\sim
+10^{-15}$ for this case.  \tref{tab:frozen-deriv-check} shows the same
+comparison as that in \tref{tab:pg-deriv-check}, but with a $H_2$-$N_2$ mixture
+ejected in a 5-species freestream air mixture with frozen flow
+%------------------------------------------------------------------------------%
+\begin{table}[h] 
+  \centering 
+  \begin{tabular}{c|c|c|c} 
+    Design Variable & Adjoint & Complex & Relative Difference\\
+    \hline 
+    $P_{p,o}$ & -0.18451007644622E-06 & -0.184510076442032E-06 & 2.27e-11 \\ 
+    $T_{p,o}$ &  0.62086963151678E-03 &  0.620869631517086E-03 & 4.93e-13 \\ 
+    $\fa$     & -0.34045335117520E-01 & -0.340453351177196E-01 & 5.86e-12 
+  \end{tabular}
+  \caption{Sensitivity derivative comparison - $H_2$-$N_2$ frozen.}
+  \label{tab:frozen-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%
+There is very strong agreement between all the design variable sensitivities
+computed by the adjoint and complex solvers, with all matching discretely to
+within 11 digits.  \tref{tab:react-deriv-check} shows the same comparison as
+those in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
+%------------------------------------------------------------------------------%
+\begin{table}[h]
+  \centering
+  \begin{tabular}{c|c|c|c}
+    Design Variable & Adjoint & Complex & Relative Difference\\
+    \hline
+    $P_{p,o}$ & -0.11081315601976E-06 & -0.110529774659536E-06 & 2.56e-03 \\
+    $T_{p,o}$ &  0.19089941237390E-03 &  0.190892847933810E-03 & 3.44e-05 \\
+    $\fa$     & -0.28035409045530E-01 & -0.280251731728184E-01 & 3.65e-04
+  \end{tabular}
+  \caption{Sensitivity derivative comparison - $H_2$-$N_2$ reacting.}
+  \label{tab:react-deriv-check}
+\end{table}
+%------------------------------------------------------------------------------%
+It is clear that these do not match as well as those in
+\trefs{tab:pg-deriv-check}{tab:frozen-deriv-check}.  The difference is explained
+by the relative convergence of the flow solver residuals shown in
+\fref{fig:chem-res-comp}.  Because convergence of the flow solver residuals
+involving chemistry typically stalls at eight orders of magnitude higher than
+without chemistry, it should be likewise be expected that the sensitivity
+derivatives also degrade in comparison.  The large condition number increase
+from the chemical source term linearizations being added to the Jacobian is
+believed to be the cause of the stalled convergence. Despite this poor relative
+agreement, \sref{sec:2nd-order-direct-design} demonstrates that the accuracy of
+the derivatives in \tref{tab:react-deriv-check} is more than sufficient to
+complete design optimizations.

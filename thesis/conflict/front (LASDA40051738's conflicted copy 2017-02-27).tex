@@ -1,0 +1,92 @@
+%% ------------------------------ Abstract ---------------------------------- %%
+\begin{abstract}
+
+  An algorithm is described to efficiently compute aerothermodynamic design
+sensitivities using a decoupled variable set.  In a conventional approach to
+computing design sensitivities for reacting flows, the species continuity
+equations are fully coupled to the conservation laws for momentum and energy. In
+this algorithm, the species continuity equations are solved separately from the
+mixture continuity, momentum, and total energy equations. This decoupling
+simplifies the implicit system, so that the flow solver can be made
+significantly more efficient, with very little penalty on overall scheme
+robustness.  Most importantly, the computational cost of the point implicit
+relaxation is shown to scale linearly with the number of species for the
+decoupled system, whereas the fully coupled approach scales quadratically. Also,
+the decoupled method significantly reduces the cost in wall time and memory in
+comparison to the fully coupled approach. 
+
+This decoupled approach for computing design sensitivities with the adjoint
+system is demonstrated for inviscid flow in chemical non-equilibrium around a
+re-entry vehicle with a retro-firing annular nozzle. The sensitivities of the
+surface temperature and mass flow rate through the nozzle plenum are computed
+with respect to plenum conditions and verified against sensitivities computed
+using a complex-variable finite-difference approach.  The decoupled scheme
+significantly reduces the computational time and memory required to complete the
+optimization, making this an attractive method for high-fidelity design of
+hypersonic vehicles.
+
+\end{abstract}
+
+
+%% ---------------------------- Copyright page ------------------------------ %%
+%% Comment the next line if you don't want the copyright page included.
+\makecopyrightpage
+
+%% -------------------------------- Title page ------------------------------ %%
+\maketitlepage
+
+%% -------------------------------- Dedication ------------------------------ %%
+\begin{dedication}
+ \centering To my parents and friends.
+\end{dedication}
+
+%% -------------------------------- Biography ------------------------------- %%
+\begin{biography}
+Kyle Bonner Thompson was born on December 11th, 1990, in Willow Springs, North
+Carolina.  In 2009, Kyle was awarded the Park Scholarship at North Carolina State
+University, and began school there.  He recieved his Bachelor of Science degree
+in Aerospace Engineering in 2012 and his Master of Science degree in 2014, both
+from North Carolina State University.  After recieving his Master of Science
+degree, he began work in the Aerothermodynamics branch of NASA Langley Research
+Center, via the Pathways program.  He completed this disseration on
+adjoint-based optimization while working at NASA Langley Research Center.
+\end{biography}
+
+%% ----------------------------- Acknowledgements --------------------------- %%
+\begin{acknowledgements}
+First, I would like to thank Dr. Peter Gnoffo, who has been an unending source
+of support and mentoring during my time at NASA Langley Research Center.  I
+would also like to thank my parents for all of their encouragement over the
+years, and their commitment to seeing that I be given the best opportunity to
+make the most of myself.
+
+At NC State University, I would like to thank my advisor, Dr. Hassan, for
+instilling in me a diligence to improve myself and for mentoring me through many
+challenges.  I would like to thank my committee members Drs. Hong Luo and Jack
+Edwards for teaching me skills I use daily, and Dr. John Griggs for his
+mentorship through many tough times in my higher education journey.  I would
+like to thank the Park Scholarships Program and staff for the amazing
+opportunities provided to me through them.  I would like to thank everyone in
+the department of Mechanical and Aerospace Engineering at NC State, for all the
+help and knowledge they have shared with me during my years at NC State.  I
+would also like to thank Dean Louis Martin-Vega, for the NCSU College of
+Engineering Dean's Doctoral Fellowship, which propelled me to continue past my
+M.S. and complete this research.
+
+I would like to thank the Entry Systems Modeling Project within NASA's Game
+Changing Development Program for their funding and support of this research.  
+
+Finally, I would like to recognize the FUN3D team at NASA Langley Research
+Center for their support and availability to discuss many challenging problems
+I have encountered during the course of my time at NASA.  Particularly, I would
+like to thank Drs. Jeff White, Mike Park, Boris Diskin, and Eric Nielsen for
+many helpful discussions relating to adjoint solvers and reacting flow
+simulations.
+
+\end{acknowledgements}
+
+\thesistableofcontents
+
+\thesislistoftables
+
+\thesislistoffigures

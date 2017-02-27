@@ -1423,7 +1423,7 @@
     $T_{p,o}$ &  0.19089941243495E-03 &  0.19089941237390E-03 & 3E-10 \\
     $\fa$     & -0.28035409093945E-01 & -0.28035409045530E-01 & 1E-9
   \end{tabular}
-  \caption{Adjoint solution difference with finite-rate chemistry.}
+  \caption{Annular jet plenum sensitivity relative difference.}
 \end{table}
 %------------------------------------------------------------------------------%
   \end{itemize}
@@ -1454,10 +1454,6 @@
   \begin{itemize}
     \item For annular jet demonstration problem, speedup is much better for
       frozen flow, where convergence is clean
-      \begin{itemize}
-        \item More Jacobian evalutations are required due to stiffness of chemical
-          source terms, which bottlenecks decoupled flow solver performance
-      \end{itemize}
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \tiny
@@ -1473,6 +1469,7 @@
   \label{tab:srp-rel-speedup-frozen}
 \end{table}
 %------------------------------------------------------------------------------%
+    \item Less impressive for chemically reacting flow
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \tiny
@@ -1488,6 +1485,28 @@
   \label{tab:srp-rel-speedup-chem}
 \end{table}
 %------------------------------------------------------------------------------%
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Relative Speedup of Decoupled Flow Solver}
+  \begin{itemize}
+    \item Reasons for decrease in decoupled flow solver speedup with finite-rate
+      chemistry relative to frozen flow:
+    \begin{itemize}
+      \item Exact linearizations are less effective with the highly non-linear
+        chemical source term.
+      \item Computing the Jacobian is a dominant cost in the decoupled flow
+        solver, and is recomputed more frequently when solution is not
+        converging
+    \end{itemize}
+  \item Future work will focus on improving iterative convergence with
+    finite-rate chemistry and optimizing the Jacobian computation 
+    \begin{itemize}
+      \item Better limiting for hydrogen-air combustion reactions
+      \item Force low-level vectorization and function inlining for Jacobian
+        routines
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
@@ -1590,19 +1609,42 @@
 \end{frame}
 
 \begin{frame}
+  \frametitle{Conclusion - New Performance Opportunities}
+  \begin{itemize}
+    \item Eliminating the linear solve as the dominant cost enables new avenues
+      for performance improvements
+      \begin{enumerate}
+        \item Fixed $5 \times 5$ problem size is beneficial for compile-time
+          optimizations
+        \item More ``low hanging fruit'' in optimizing thermo-chemistry and
+          Jacobian computations than the linear solver
+        \item Adjoint memory co-location can be improved to recover speedup when
+          second-order linearizations cannot be stored
+      \end{enumerate}
+    \item Decoupled flow and adjoint solvers enable the generation of a flow
+      solution and sensitivities for a cost function in less time than a fully
+      coupled flow solution, for demonstration problem
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
   \frametitle{Conclusion - Future Work}
   \begin{itemize}
-    \item Extend decoupled flow solver and adjoint solver to viscous flows in
-      thermal non-equilibrium
-    \item Enable a mixed storage/recompute strategy for adjoint linearizations
-    \item Expand the design variables possible for optimization
-    \item Improve overall performance of FUN3D reacting gas path
+    \item Adjoint-based sensitivity work presented here is the start of a
+      long career
+    \begin{itemize}
+      \item Extend decoupled flow solver and adjoint solver to viscous flows in
+        thermal non-equilibrium
+      \item Enable a mixed storage/recompute strategy for adjoint linearizations
+      \item Expand the design variables possible for optimization
+      \item Improve overall performance of FUN3D reacting gas path
+    \end{itemize}
   \end{itemize}
 \end{frame}
 
 \section{}
 
-%\subsection{acknowledgements}
+\subsection{acknowledgements}
 
 \begin{frame}
   \frametitle{Acknowledgements}
@@ -1617,7 +1659,7 @@
   \end{itemize}
 \end{frame}
 
-%\subsection{backup}
+\subsection{backup}
 
 \begin{frame}
   \frametitle{Decoupled Point Implicit Flow Solver}
@@ -1736,6 +1778,7 @@
     \end{column}
   \end{columns}
 \end{frame}
+\subsection{Flux Limiter Sensitivity}
 \begin{frame}
   \frametitle{Flux Limiter Sensitivity}
   \begin{itemize}
@@ -1865,46 +1908,4 @@
       same optimal result
   \end{itemize}
 \end{frame}
-
-\begin{frame}
-  \frametitle{Relative Speedup of Decoupled Flow Solver}
-  \begin{itemize}
-    \item Reasons for decrease in decoupled flow solver speedup with finite-rate
-      chemistry relative to frozen flow:
-    \begin{itemize}
-      \item Exact linearizations are less effective with the highly non-linear
-        chemical source term.
-      \item Computing the Jacobian is a dominant cost in the decoupled flow
-        solver, and is recomputed more frequently when solution is not
-        converging
-    \end{itemize}
-  \item Future work will focus on improving iterative convergence with
-    finite-rate chemistry and optimizing the Jacobian computation 
-    \begin{itemize}
-      \item Better limiting for hydrogen-air combustion reactions
-      \item Force low-level vectorization and function inlining for Jacobian
-        routines
-    \end{itemize}
-  \end{itemize}
-\end{frame}
-
-\begin{frame}
-  \frametitle{Conclusion - New Performance Opportunities}
-  \begin{itemize}
-    \item Eliminating the linear solve as the dominant cost enables new avenues
-      for performance improvements
-      \begin{enumerate}
-        \item Fixed $5 \times 5$ problem size is beneficial for compile-time
-          optimizations
-        \item More ``low hanging fruit'' in optimizing thermo-chemistry and
-          Jacobian computations than the linear solver
-        \item Adjoint memory co-location can be improved to recover speedup when
-          second-order linearizations cannot be stored
-      \end{enumerate}
-    \item Decoupled flow and adjoint solvers enable the generation of a flow
-      solution and sensitivities for a cost function in less time than a fully
-      coupled flow solution, for demonstration problem
-  \end{itemize}
-\end{frame}
-
 \end{document}
