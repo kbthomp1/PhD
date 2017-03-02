@@ -15,14 +15,15 @@ derivatives of the cost function with respect to the design variables.
 
 The most straightforward approach to computing design sensitivities is a
 finite-difference approach.  The finite-difference approach effectively turns a
-CFD code into ``black box'', where each design variables is perturbed and used
-as an input to a CFD code.  This requires very little effort to implement, and
-can be attractive if the number of cost functions is large in comparison to the
-number of design variables, since the sensitivity of all cost functions to a
-single design variable can be computed from a single finite-difference
-evaluation.  The finite-difference approach, however, requires at least one
-analysis from the CFD code per design variable, making it ill-suited for design
-optimization problems with a large number of design inputs.
+CFD code into a ``black box'', where each design variable is perturbed and used
+as an input to a CFD code.  This process requires very little effort to
+implement, and can be attractive if the number of cost functions is large in
+comparison to the number of design variables, because the sensitivity of all
+cost functions to a single design variable can be computed from a single
+finite-difference evaluation.  The finite-difference approach, however, requires
+at least one analysis from the CFD code per design variable, making it
+ill-suited for design optimization problems with a large number of design
+inputs.
 
 In recent years, an adjoint-based approach to computing sensitivities has been
 implemented in many compressible CFD codes\cite{mavriplis-2006,
@@ -53,7 +54,7 @@ linearized.  Copeland et al.\cite{Copeland} have adopted a continuous
 formulation of the adjoint equations for flows in chemical and thermal
 non-equilibrium, and have implemented this formulation in the CFD code
 SU2\cite{palacios2013stanford} from Stanford University.  The reasoning cited
-for choosing a continuous formulation of the adjoint equations, was that, among
+for choosing a continuous formulation of the adjoint equations was that, among
 other things, the adjoint system was not well suited to being solved by the same
 methods used for solving the flow solver equations and the resulting adjoint
 solution could lead to non-physical oscillations that fail to capture the
@@ -89,19 +90,19 @@ will ultimately surpass the current limits of hardware and time constraints on
 achieving a flow solution\cite{fischer}.
 
 To mitigate this scaling issue, Candler et al.\cite{candler} proposed a scheme
-to for a modified form of the Steger-Warming flux vector splitting
+for a modified form of the Steger-Warming flux vector splitting
 scheme\cite{MacCormack,Steger}. In that work, it was shown that quadratic
 scaling between the cost of solving the implicit system and additional species
 mass equations can be reduced from quadratic to linear scaling by decoupling the
 species mass equations from the mixture mass, momentum, and energy equations and
-solving the two systems sequentially.  This work extends the aforementioned work
-from the modified form of the Steger-Warming flux vector splitting method to the
-Roe flux difference splitting (FDS) scheme, and, more importantly, extends it
-for the first time to the solution of the adjoint formulation.  Candler et
-al.\cite{candler2013analysis} later analyzed stability issues associated with
-the decoupled formulation of the flow solver in \cite{candler}.  A new chemical
-source term scaling procedure is introduced in the present work that mitigates
-these stability concerns.
+solving the two systems sequentially.  Candler et al.\cite{candler2013analysis}
+later analyzed stability issues associated with the decoupled formulation of the
+flow solver in \cite{candler}.  The research presented here extends the
+aforementioned work\cite{candler} from the modified form of the Steger-Warming
+flux vector splitting method to the Roe flux difference splitting (FDS) scheme,
+and, more importantly, extends it for the first time to the solution of the
+adjoint formulation.  A new chemical source term scaling procedure is introduced
+in the present work that mitigates the stability concerns.
 
 \section{Contributions}
 

@@ -17,45 +17,73 @@ The governing equations presented in \erefs{species-cons}{tot-energy-cons} can
 be recast in vector form as
 %------------------------------------------------------------------------------%
 \begin{equation}
-	\label{inv_flux_vec}
-  \pd{\mU}{t}\vol + \nabla \cdot \vF = \mw \vol
+  \label{diff-form}
+  \pd{\mU}{t} + \nabla \cdot \vF = \mw
 \end{equation}
 %------------------------------------------------------------------------------%
- or, in semi-discrete form,
-%------------------------------------------------------------------------------%
-\begin{equation}
-	\label{inv_flux_fv}
-  \pd{\mU}{t}\vol + \lsum{f}{}{(\vF \cdot \Norm)^f} = \mw \vol
- \end{equation}
-%------------------------------------------------------------------------------%
-summing over all faces, $f$, in the domain, where $\vol$ is the cell volume, 
-$\mathbf{W}$ is the chemical source term vector, and $\mathbf{N}$ is the face
-outward normal vector.  The vectors of conserved variables and fluxes are:
+The conserved variables vector, $\mU$, flux vector, $\vF$, and chemical source
+term vector, $\mw$, are given as
 %------------------------------------------------------------------------------%
 \begin{equation}
 	\begin{matrix}
-	\mathbf{U}=\begin{pmatrix}
+	\mU=\begin{pmatrix}
    		\rho_1\\
 		\vdots \\
-		\rho_{ns} \\
-		\rho \vu \\
-		\rho E \\
-	\end{pmatrix},      &
- 	\mathbf{F} = \begin{pmatrix}
-		\rho_1  \overline{U} \\
+		\rho_{N_s} \\
+		\rho u \\
+		\rho v \\
+		\rho w \\
+		\rho E
+	\end{pmatrix}, \quad
+ 	\vF = \begin{pmatrix}
+		\rho_1  \vu \\
 		\vdots \\
-		\rho_{ns} \overline{U} \\
-		\rho \vu \overline{U} + p \norm\\
-		(\rho E + p) \overline{U} \\
+		\rho_{N_s} \vu \\
+		\rho u\vu + p \\
+		\rho v\vu + p \\
+		\rho w\vu + p \\
+		(\rho E + p) \vu
+	\end{pmatrix}, \quad
+ 	\mw = \begin{pmatrix}
+		\omega_1 \\
+		\vdots   \\
+		\omega_{N_s} \\
+    0 \\
+    0 \\
+    0 \\
+    0
 	\end{pmatrix}
 	\end{matrix}
   \label{fc-variables}
  \end{equation}
 %------------------------------------------------------------------------------%
-where $\overline{U}$ is the outward pointing normal velocity, $E$ is
-the total energy of the mixture per unit mass as defined in
-\eref{tot-energy-def}.  The flux and species chemical
-source term at the next time level can be approximated as
+where $E$ is the total energy of the mixture per unit mass as defined in
+\eref{tot-energy-def}.  To solve \eref{diff-form} with a finite-volume
+discretization, the conservation equations must be integrated over the volume of
+each cell and the divergence theorem must be applied.  The divergence theorem
+states that
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \iiint_{\vol}\left( \nabla \cdot \vF \right) d \vol = 
+  \iint_{\Gamma}\left( \vF \cdot \norm \right) d \Gamma
+  \label{div-theorem}
+\end{equation}
+%------------------------------------------------------------------------------%
+where $\vol$ is the cell volume, $\Gamma$ is the cell boundary and $\norm$ is
+the outward pointing normal vector.  Integrating \eref{diff-form}, applying
+\eref{div-theorem}, and summing over all cell faces yields the semi-discrete
+form
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{t} \vol
+  + \lsum{f}{}{(\vF \cdot \Norm)^f} = \mw \vol
+	\label{semi-discrete}
+ \end{equation}
+%------------------------------------------------------------------------------%
+where $\Norm$ is the outward pointing, area-weighted normal vector.
+
+The flux and species chemical source term at the next time level can be
+approximated as
 %------------------------------------------------------------------------------%
 \begin{align}
   \vF^{n+1} &\approx \vF^n + \pd{\vF}{\mU} \Delta \mU^n \\
@@ -63,8 +91,8 @@ source term at the next time level can be approximated as
   \label{fc-fluxes-timelevel}
 \end{align}
 %------------------------------------------------------------------------------%
-where $\Delta \mU^n = \mU^{n+1} - \mU^{n}$.  Using an implicit time integration,
-the implicit scheme becomes:
+where $\Delta \mU^n = \mU^{n+1} - \mU^{n}$.  Using backward Euler for the time
+integration, the implicit scheme becomes:
 %------------------------------------------------------------------------------%
 \begin{equation}
 	  \frac{\vol}{\Delta t} \Delta \mU^n
@@ -77,8 +105,9 @@ the implicit scheme becomes:
   \label{fc-explicit}
 \end{equation}
 %------------------------------------------------------------------------------%
-\eref{fc-explicit} results in a global Jacobian comprised of block Jacobians
-from the system
+\eref{fc-explicit} results in a global Jacobian comprised of block Jacobians.
+One set of rows corresponding to a single point in the global Jacobian has the
+form
 %------------------------------------------------------------------------------%
 \begin{equation}
   \underbrace{
@@ -115,7 +144,9 @@ from the system
   \label{drdu-fc-flow}
 \end{equation}
 %------------------------------------------------------------------------------%
-with global system of equations written generically as
+where \eref{drdu-fc-flow} is written without contributions from off-diagonal
+block Jacobian contributions for compactness in this illustration.  The global
+system of equations can be written generically as
 %------------------------------------------------------------------------------%
 \begin{equation}
   \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right)\Delta \mU = \ru{}
@@ -124,16 +155,23 @@ with global system of equations written generically as
 %------------------------------------------------------------------------------%
 where $\ru{}$ is global residual vector, corresponding to the RHS of
 \eref{fc-explicit}, and $\druduapprox$ is the approximate, first-order global
-Jacobian matrix, corresponding the linearizations in the LHS of
+Jacobian matrix, corresponding the linearizations in the left-hand side (LHS) of
 \eref{fc-explicit}. This non-linear system can be relaxed to steady state, where
-$\ru{} \approx 0$, by means of point implicit relaxation.  The LHS of
-\eref{fc-global}, $\ma_{\mU}$, is split into its diagonal and off-diagonal
-elements, with the latter moved to the RHS:
+$\ru{} \approx 0$, by performing a series of Gauss-Seidel sweeps with
+multi-color matrix ordering.  The LHS of \eref{fc-global}, $\ma_{\mU}$, is split
+into its diagonal and off-diagonal elements
 %------------------------------------------------------------------------------%
 \begin{equation}
   \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right) = 
   \ma_{\mU} = O+D
   \label{decomp-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+with the off-diagonal elements, $O$, moved to the RHS to update the solution via
+%------------------------------------------------------------------------------%
+\begin{equation}
+  (D) (\Delta\mU^{n+1}) = \ru{} - (O) (\Delta \mU^{n,n+1})
+  \label{delta}
 \end{equation}
 %------------------------------------------------------------------------------%
 As shown in \eref{drdu-fc-flow}, each block matrix element is a square
@@ -151,10 +189,12 @@ the mixture equations can be separated from the species mass
 equations and the conserved variables become
 %------------------------------------------------------------------------------%
 \begin{equation}
-	\mU' =
+	\Up =
   \begin{pmatrix}
 		\rho \\
-		\rho \vu \\
+		\rho u \\
+		\rho v \\
+		\rho w \\
 		\rho E
 	\end{pmatrix} \quad
 	\Uhat =
@@ -171,28 +211,30 @@ with corresponding flux vectors
 \begin{equation}
  	\vF' = 
   \begin{pmatrix}
-		\rho \overline{U} \\
-		\rho \vu \overline{U} + p \norm \\
-		(\rho E + p) \overline{U} \\
+		\rho \vu \\
+		\rho u\vu + p \\
+		\rho v\vu + p \\
+		\rho w\vu + p \\
+		(\rho E + p) \vu
 	\end{pmatrix} \quad
  	\Fhat = 
   \begin{pmatrix}
-		\rho_1  \overline{U} \\
+		\rho_1 \vu \\
 		\vdots \\
-		\rho_{ns} \overline{U} \\
+		\rho_{ns} \vu
 	\end{pmatrix}
   \label{dc-fluxes}
 \end{equation}
 %------------------------------------------------------------------------------%
-Solving the flux vectors is performed in two sequential steps.  The mixture
-fluxes, $\vF'$, are first solved as
+The decoupled solution procedure is performed in two sequential steps.  The
+mixture conserved variables, $\Up$, are first updated by solving
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{\Up}{t} \vol + \lsum{f}{}{\left(\vF' \cdot \Norm\right)^f} = 0
   \label{dc-flux-part-1}
 \end{equation}
 %------------------------------------------------------------------------------%
-followed by the species fluxes, $\Fhat$, as
+followed by updating the species density variables, $\Uhat$, via solving
 %------------------------------------------------------------------------------%
 \begin{equation}
   \pd{\Uhat}{t} \vol + \lsum{f}{}{\left(\Fhat \cdot \Norm\right)^f} = \vol \mw
@@ -200,9 +242,9 @@ followed by the species fluxes, $\Fhat$, as
 \end{equation}
 %------------------------------------------------------------------------------%
 The same point-implicit relaxation that uses multi-color Gauss-Seidel sweeps is
-used to update the conserved variables in $\mU '$, and all associated
+used to update the conserved variables in $\Up$, and all associated
 auxiliary variables, such as temperature, pressure, speed of sound, etc. are
-updated to be consistent with the new state of $\mU '$.  This update is done
+updated to be consistent with the new state of $\Up$.  This update is done
 holding the mass fraction state constant, and will always result in the
 relaxation of a five-equation system.  Decoupling the variable sets in
 \eref{dc-variables} does trade an implicit relationship between the mixture and
@@ -309,7 +351,7 @@ coupled scheme when large reaction rates were present, particularly for
 exothermic reaction.  This same instability was observed in numerical
 experiments for \eref{decoupled-no-scaling}.  To mitigate this issue, Candler et
 al. proposed an alternative decoupling of variable sets that was more stable,
-particularly if endothermic reaction dominated the flow.  Instead of
+but still unsatisfactory if exothermic reactions dominated the flow.  Instead of
 implementing this alternative decoupled scheme, \eref{decoupled-no-scaling} is
 modified with a scalar scaling factor, $\omega_r$, on the chemical source term
 $\mw^{n,n+1}$
@@ -333,10 +375,11 @@ $\mw^{n,n+1}$
 Ramping this scaling factor from zero to one over the course of timestepping the
 solution to steady-state preserves robustness of the decoupled scheme, and
 numerical experiments show that it has minimal impact on the convergence rate.
-Typically, the large reaction rates are only present during the transients early
-on in the simulation, and damping the source term during this phase does not
-affect the final result, provided the ramping is completed before the end of the
-simulation.
+The ramping scheme is done linearly over a specified range of iterations in the
+flow solver that can be tuned by user input.  Typically, the large reaction
+rates are only present during the transients early on in the simulation, and
+damping the source term during this phase does not affect the final result,
+provided the ramping is completed before the end of the simulation.
 
 In this decoupled scheme, the systems of equations for the mixture and species
 continuity equations can be written as
@@ -407,14 +450,15 @@ continuity equations can be written as
 %------------------------------------------------------------------------------%
 where \eref{approx-dc-flow-mixture} is the global system of equations for the
 mixture equations, and \eref{approx-jac} is the system of equations at a single
-point.  Likewise, \eref{approx-dc-flow-species} is the global system of
-equations for the species continuity equations, and \eref{approx-jac-dc} is the
-system of equations at a single point. The Jacobians on the LHS of
-\erefs{approx-dc-flow-mixture}{approx-jac} contain first-order accurate
-linearizations, and it should be noted that the approximations made in
-\erefs{dfdvl}{dfdvr} result in no interdependence between species; so, the only
-off-diagonal terms for the Jacobian matrix in \eref{approx-jac-dc} come from the
-chemical source term linearizations.
+point with off-diagonal contributions not shown here for brevity.  Likewise,
+\eref{approx-dc-flow-species} is the global system of equations for the species
+continuity equations, and \eref{approx-jac-dc} is the system of equations at a
+single point, again with the off-diagonal terms omitted for brevity. The
+Jacobians on the LHS of \erefs{approx-dc-flow-mixture}{approx-jac} contain
+first-order accurate linearizations, and it should be noted that the
+approximations made in \erefs{dfdvl}{dfdvr} result in no interdependence between
+species; so, the only off-diagonal terms for the Jacobian matrix in
+\eref{approx-jac-dc} come from the chemical source term linearizations.
 
 \section{Predicted Cost and Memory Savings of the Decoupled Implicit Problem}
 \label{sec:predicted-cost-mem-savings}
@@ -565,9 +609,13 @@ of $\phi$ can exist at each node for edge-based limiter, and the results are not
 ``freezable'' at each node in FUN3D. Stencil-based limiters are evaluated at
 each node, based on the gradients that are computed there.  For these limiters,
 the value of $\phi$ is unique to each node and can be stored with the flow
-solution as an additional variable.  The frozen state of the limiter is only
-re-evaluated if the reconstruction forces a non-physical state at the dual
-volume interface.
+solution as an additional variable.  The stencil-based limiters can be
+``frozen'' at a user-specified iteration in the flow solver, and the frozen
+state of the limiter is only re-evaluated if the reconstruction forces a
+non-physical state at the dual volume interface.  Freezing the flux limiter at
+3/4 the iterations required to converge the flow solution is recommend in
+FUN3D\cite{biedron2016fun3d}, which usually results converging the flow solver
+equation residuals to machine zero.
 
 For this study, smooth Van Albada\cite{van1997comparative}, Van
 Leer\cite{vatsa2009calibration}, and Minmod\cite{roe1986characteristic} flux

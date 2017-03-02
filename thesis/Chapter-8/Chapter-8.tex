@@ -4,36 +4,36 @@
 At this point, the reacting gas adjoint in FUN3D has been utilized to obtain
 sensitivity information needed to drive design optimization, and the
 sensitivities of the fully coupled scheme have been validated against
-finite-difference derivatives with a complex step for accuracy.  A key point of
-this study is to demonstrate the increase computational efficiency and relative
-memory saving of using a decoupled variable set for the flow and adjoint
-solvers, instead of a fully coupled variable set.  This chapter details the
-benefits of applying the decoupled flow solver over the fully coupled solver for
-a variety of test cases, including the annular jet demonstration problem.
+finite-difference derivatives with a complex step method for accuracy.  A key
+point of this study is to demonstrate the increased computational efficiency and
+relative memory saving of using a decoupled variable set for the flow and
+adjoint solvers, instead of a fully coupled variable set.  This chapter details
+the benefits of applying the decoupled flow solver over the fully coupled solver
+for a variety of test cases, including the annular jet demonstration problem.
 
 \section{5 km/s Flow over Cylinder}
 \label{sec:5-kps-cylinder}
 
-Demonstrating the improved efficiency in cost and memory required to utilize the
-decoupled scheme, and that both the fully coupled and decoupled approaches
-converge to the same result, a grid convergence study was conducted on a simple
-cylinder geometry (radius 0.5 m).  Due to the presence of strong shocks in blunt
-body flows, it was advantageous to generate structured-type grids to preserve
-grid alignment with the bow shock. A 50$\times$50, 100$\times$100, and
-200$\times$200 family of grids were adapted using the adaptation capability in
-FUN3D\cite{adaptation} to produce shock-aligned grids. These grids serve as a
-surrogate for conducting a grid convergence study, in that differences observed
-between the decoupled and fully coupled schemes decrease as the average mesh
-spacing decreases.  These grids are unstructured, consisting totally of
-hexahedra elements with a single cell in the spanwise direction, and the
-50$\times$50 grid is shown in Figure \ref{grid}.  The cell elements of these
-grids were also subdivided into tetrahedral elements, and it was verified that
-there are no issues with a true unstructured grid topology.  The free stream
-conditions used were $V_{\infty} = 5000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$,
-and $T_\infty = 200\ K$.  Several chemical kinetics models were used, including
-a 5-species model with 5 reactions, an 11-species model with 22 reactions, and
-an 18-species model with 29 reactions.  All cases were run in thermal
-equilibrium, with a one-temperature model.
+To demonstrate the improved efficiency in computation cost and memory required
+to utilize the decoupled scheme, and that both the fully coupled and decoupled
+approaches converge to the same result, a grid convergence study was conducted
+on a simple cylinder geometry (radius 0.5 m).  Due to the presence of strong
+shocks in blunt body flows, it was advantageous to generate structured-type
+grids to preserve grid alignment with the bow shock. A 50$\times$50,
+100$\times$100, and 200$\times$200 family of grids were adapted using the
+adaptation capability in FUN3D\cite{adaptation} to produce shock-aligned grids.
+These grids serve as a surrogate for conducting a grid convergence study, in
+that differences observed between the decoupled and fully coupled schemes
+decrease as the average mesh spacing decreases.  These grids are unstructured,
+consisting totally of hexahedra elements with a single cell in the spanwise
+direction, and the 50$\times$50 grid is shown in Figure \ref{grid}.  The cell
+elements of these grids were also subdivided into tetrahedral elements, and it
+was verified that there are no issues with a true unstructured grid topology.
+The free stream conditions used were $V_{\infty} = 5000\ m/s$,
+$\rho_{\infty}=0.001\ kg/m^3$, and $T_\infty = 200\ K$.  Several chemical
+kinetics models were used, including a 5-species model with 5 reactions, an
+11-species model with 22 reactions, and an 18-species model with 29 reactions.
+All cases were run in thermal equilibrium, with a one-temperature model.
 
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
@@ -46,7 +46,7 @@ equilibrium, with a one-temperature model.
 
 \subsection{Cylinder - Verification of Implementation}
 
-In order to be valid, the decoupled scheme must yield converged solutions that
+To be valid, the decoupled scheme must yield converged solutions that
 are nearly identical to those of the fully coupled system. To quantitatively
 assess this, we compare the predicted surface pressure, surface temperature, and
 the species composition on the stagnation line for both schemes.  Figure
@@ -71,11 +71,11 @@ solution with grid refinement.
 
 \subsection{Cylinder - Memory Cost}
 
-In order to determine the required memory of the decoupled scheme compared
-to the fully coupled scheme, a convergence study was conducted using
-Valgrind\cite{valgrind} to determine the memory actually allocated by FUN3D for
-an increasing number of species.  
-Figure \ref{mem_req} shows that the relative memory cost converges asymptotically to
+To validate the theoretical memory savings predicted by \eref{mem_req_eq}, a
+study was conducted using Valgrind\cite{valgrind} to determine the memory
+actually allocated by FUN3D for a series of simulations where the number of
+species is systematically increased from one simulation to the next.  Figure
+\ref{mem_req} shows that the relative memory cost converges asymptotically to
 $\sim$1/4, which is nearly twice the predicted value of 1/7.  For the
 implementation of FUN3D, this is correct because the off-diagonal entries are
 reduced from double to single precision.  Each structured grid node has six
@@ -115,7 +115,7 @@ approaches a factor of 1/4.
 
 As stated before, the cost of solving the decoupled implicit system should scale
 approximately linearly with the number of species, whereas the fully coupled
-problem should scale quadratically; thus, the speedup of the implicit solve
+problem should scale quadratically; thus, the speedup of the linear solve
 should be approximately linear when comparing the decoupled and fully coupled
 approaches.  Figure \ref{rel_speedup} shows this to be true for the cylinder test
 case, but that the total speedup of the problem is less than that of just
@@ -128,7 +128,7 @@ the linear solve.
   \label{rel_speedup} 
 \end{figure}
 %------------------------------------------------------------------------------%
-The fact that the overall gains are not as large as those for the implicit
+The fact that the overall gains are not as large as those for the linear
 solve is due to Amdahl's law: the overall speedup is always limited by the
 slowest component.  There are many other factors that scale with the number of
 species, especially calculating the species source term and its linearization.
@@ -145,12 +145,12 @@ thermo-chemical state have superseded the linear solver as the dominant cost of
 the simulation.  The overall speedup of the decoupled scheme over the fully
 coupled scheme is constrained by these, and also highlights the sensitivity to
 the Jacobian evaluation frequency.  When the non-linear update is rapidly
-converging the residuals, the Jacobian is usually updated only one every 10
-iterations.  Likewise, when the non-linear update is not resulting a sustained
-residual decrease the Jacobian is updated every iteration.  This has a large
-effect on relative computational efficiency, and poorly converging solutions can
-be expected to show less relative speedup between the fully coupled and
-decoupled schemes.
+converging the residuals, the Jacobian is usually updated only once every 10
+iterations.  Likewise, when the non-linear update is not resulting in a
+sustained residual decrease the Jacobian is updated every iteration.  This has a
+large effect on relative computational efficiency, and poorly converging
+solutions can be expected to show less relative speedup between the fully
+coupled and decoupled schemes.
 
 \section{15 km/s Flow over Spherically-Capped Cone}
 \label{sec:15-kps-sphere-cone}
@@ -163,12 +163,12 @@ hexahedra grid was constructed, and freestream conditions were set as
 $V_{\infty} = 15000\ m/s$, $\rho_{\infty}=0.001\ kg/m^3$, $T_\infty = 200\ K$.
 Due to the large reaction rates during the transients at startup, when the
 stagnation temperatures are very high, it was necessary to employ the scaling
-factor, $\omega_r$ in order to ramp the magnitude of chemical source term.
-Ramping was only required in the first 500 iterations, and no scaling was
+factor, $\omega_r$ in order to ramp the magnitude of the chemical source term.
+Ramping was only required during the first 500 iterations, and no scaling was
 performed on the source term when the solution was well with the radius of
 convergence.
 
-\subsection{Sphere-Cone - Verification of Implementation} 
+\subsection{Spherically-Capped Cone - Verification of Implementation} 
 
 As with the cylinder test case, the surface pressure and temperature were used
 as metrics to determine that both the decoupled and fully coupled approaches
@@ -202,15 +202,15 @@ temperature.
 \end{figure}
 %------------------------------------------------------------------------------%
 
-\subsection{Sphere-Cone - Convergence Quality}
+\subsection{Spherically-Capped Cone - Convergence Quality}
 
 The limits on the stability of the decoupled scheme derives from introducing
 explicitness in creating and destroying species.  By scaling the magnitude of
 the chemical source term during the transient phase of the solve, this
 instability can be mitigated, and the convergence of decoupled scheme approaches
-that of the fully coupled scheme. Scaling of chemical source term was done
-identically between the decoupled and fully coupled scheme by ramping the
-factor $\omega$ from 0.001 to 1.0 over the first 500 timesteps. Figure
+that of the fully coupled scheme. Scaling of the chemical source term was done
+identically between the decoupled and fully coupled scheme by ramping the factor
+$\omega_r$ from 0.001 to 1.0 over the first 500 timesteps. Figure
 \ref{cone_convergence} shows that the convergence of both schemes progresses
 nearly identically, with the decoupled scheme converging in significantly less
 computational time and, interestingly, fewer timesteps.
@@ -238,7 +238,7 @@ improve the efficiency of high-velocity simulations, and that the stiffness of
 the source term can be overcome in the presence of large chemical reaction
 rates.
 
-\subsection{Sphere Cone - Convergence Improvement with Exact First-Order Linearizations}
+\subsection{Spherically-Capped Cone - Convergence Improvement with Exact First-Order Linearizations}
 \label{sec:sphere-cone-exact-approx-convergence}
 
 An important benefit of implementing an adjoint solver in FUN3D derives from the
@@ -260,7 +260,7 @@ approximated the linearizations of the Roe FDS scheme\cite{gnoffo-tp} as
 where $\rdiff{c}{\mU}$ is the linearization of the convective portion of the Roe
 FDS scheme, and $\rdiff{\tilde{c}}{\mU}$ is the approximation to the dissipation
 term in the Roe RDS scheme, formed by evaluating $\rdiff{c}{\mU}$ with Roe
-averaged quantities.  This approximation has been is used by others
+averaged quantities.  This approximation is used by others
 \cite{rinaldi2014exact} to mitigate the development time of implementing an
 exact linearization of the dissipation term in the Roe FDS scheme, as well the
 large computational cost in computing those linearizations at each Jacobian

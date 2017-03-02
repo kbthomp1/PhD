@@ -3,18 +3,18 @@
 
 Design optimization is a wide field that encompasses methods generally falling
 into two categories: local gradient-based optimization, and heuristic global
-optimization.  Local gradient-based optimization techniques focus on the
-determining an optimality condition by evaluating a function and its gradients.
-Provided certain conditions are met, it can be proven that the optimization
-procedure will find a local minimum or maximum on a bounded domain.  Examples of
-local gradient-based optimization methods include
+optimization.  Local gradient-based optimization techniques focus on determining
+an optimality condition by evaluating a function and its gradients.  Provided
+certain conditions are met, it can be proven that the optimization procedure
+will find a local minimum or maximum on a bounded domain.  Examples of local
+gradient-based optimization methods include
 steepest-descent\cite{fletcher1963rapidly}, sequential quadratic programming
 (SQP)\cite{SNOPT-alg}, as well as an interesting method that converts a
-constrained optimization problem into an unconstrained on by employing the
+constrained optimization problem into an unconstrained one by employing the
 Kreisselmeier-Steinhauser function\cite{wrenn1989indirect}.  A heuristic global
 optimization seeks to find the global extrema of a function.  Although these
-methods are powerful, because of their heuristic nature they are not guaranteed
-to find the absolute optimum condition and are not the focus this research.
+methods are powerful, they often require a prohibitive number of function
+evaluation and are not the focus this research.
 
 In the field of optimization, the function of interest is referred to as the
 ``cost function'' or ``objective function''.  Optimization methods seek to
@@ -56,9 +56,9 @@ The area-weighted RMS of surface temperature was chosen over a simple
 area-weighted average of surface temperature, because the temperatures on the
 vehicle forebody are likely non-uniform, and there are regions of very high
 temperature near the stagnation region of a vehicle forebody in hypersonic
-flows.  Squaring of temperature in the RMS will give greater weight to the
-these high-temperature regions in the design, as these are the in the most
-danger of burn-through.
+flows.  Squaring of temperature in the RMS will give greater weight to these
+high-temperature regions in the design, as these are in the most danger of
+burn-through.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -87,10 +87,10 @@ through the area outlined in \fref{fig:plenum-face} is computed as
   \label{mass-flow-eqn}
 \end{equation}
 %------------------------------------------------------------------------------%
-and is used a metric for the amount of propellent that is required to be carried
-by the vehicle for blowing.  Again, for the purposes of this demonstration
-problem, a lower mass flow rate at the plenum is equated to less total vehicle
-mass.
+and is used as a metric for the amount of propellent that is required to be
+carried by the vehicle for blowing.  Again, for the purposes of this
+demonstration problem, a lower mass flow rate at the plenum is equated to less
+total vehicle mass.
 
 \section{Composite Cost Function Definition and Components}
 \label{cost-func-components}
@@ -160,7 +160,7 @@ no direct dependence on the plenum design variables; thus,
   \label{obj-linearization2}
 \end{equation}
 %------------------------------------------------------------------------------%
-Once the adjoint co-state variables $\mathbf{\Lambda}$ have been computed by
+Once the adjoint costate variables $\mathbf{\Lambda}$ have been computed by
 solving the adjoint equations (\eref{adjoint-main}) the sensitivity derivatives
 of the cost function with respect to the plenum design variables are obtained by
 evaluating relatively inexpensive matrix-vector products.
@@ -234,22 +234,21 @@ $\dot{m}$, which is desired as both targets should be met at optimality.
 %------------------------------------------------------------------------------%
 Using the SNOPT optimizer, \fref{fig:cost-func-1st-H2} shows that the target
 design was met within 13 function evaluations.  SNOPT explores the entire design
-space, as is show in the second function evaluation, where a spike in the cost
-function occurred.
-\fref{fig:dv-hist-1st-H2} indicates that the optimizer tried the upper
-bound for the plenum pressure design variable, and found that sensitivity
-derivatives indicated that the lower pressure was required. This is common, and
-is an effective way to insure that there is a local minimum in the prescribed
-bound.  The optimization terminated when the cost function value was less than
-the tolerance of $10^{-8}$, and \fref{fig:components-1st-H2} shows that both
-components of the cost function were within one order of magnitude of each other
-during the optimization.  This last point is important, since non-normalized
-components can skew the optimization results, where competing components can
-cause oscillations in the function evaluations and stall the optimization
-procedure.  \fref{fig:fm-hist-1st-H2} shows the history of the surface
-temperature RMS and annular nozzle mass flow rate, with the design targets.  The
-optimization clearly made significant progress early, with smaller gains as the
-solution approached the target.
+space, as is shown in the second function evaluation, where a spike in the cost
+function occurred.  \fref{fig:dv-hist-1st-H2} indicates that the optimizer tried
+the upper bound for the plenum pressure design variable, and found that
+sensitivity derivatives indicated that the lower pressure was required. This is
+common, and is an effective way to insure that there is a local minimum in the
+prescribed bound.  The optimization terminated when the cost function value was
+less than the tolerance of $10^{-8}$, and \fref{fig:components-1st-H2} shows
+that both components of the cost function were within one order of magnitude of
+each other during the optimization.  This last point is important, since
+non-normalized components can skew the optimization results, where competing
+components can cause oscillations in the function evaluations and stall the
+optimization procedure.  \fref{fig:fm-hist-1st-H2} shows the history of the
+surface temperature RMS and annular nozzle mass flow rate, with the design
+targets.  The optimization clearly made significant progress early, with smaller
+gains as the solution approached the target.
 
 \section{Second-Order Direct Design Optimization}
 \label{sec:2nd-order-direct-design}
@@ -353,10 +352,10 @@ direct design problem the target mass flow rate and surface temperature RMS are
 not know a priori, and the weights chosen have a direct impact on the optimum
 condition.  A ``skewed'' weighting may be advisable from an engineering
 perspective when attempting a direct design approach.  For example, if the
-surface thermal protection (TPS) is rated to withstand much higher surface
-heating than what is nominally predicted, a higher weight might be given to the
-mass flow rate in order to decreased the required vehicle mass.  The heuristic
-nature of this approach can be avoided by setting a component target, or
-converting a composite cost function component to an explicit constraint.  The
-latter option is more robust, but comes at the cost of an additional adjoint
+surface thermal protection system (TPS) is rated to withstand much higher
+surface heating than what is nominally predicted, a higher weight might be given
+to the mass flow rate in order to decreased the required vehicle mass.  The
+heuristic nature of this approach can be avoided by setting a component target,
+or converting a composite cost function component to an explicit constraint.
+The latter option is more robust, but comes at the cost of an additional adjoint
 solution.

@@ -5,7 +5,7 @@ At this point, the reacting gas adjoint in FUN3D has been utilized to obtain
 sensitivity information needed to drive design optimization, and the
 sensitivities of the fully coupled scheme have been validated against complex
 Frechet derivatives for accuracy.  A key point of this study is to demonstrate
-the increase computational efficiency and relative memory saving of using a
+the increased computational efficiency and relative memory saving of using a
 decoupled variable set for the flow and adjoint solvers, instead of a fully
 coupled variable set.  This chapter details the benefits of applying the
 decoupled adjoint solver over the fully coupled solver for the annular jet
@@ -67,19 +67,19 @@ coupled adjoint solutions matched to give the same sensitivity.
   \label{tab:srp-adj-diff}
 \end{table}
 %------------------------------------------------------------------------------%
-\tref{tab:srp-adj-diff} also gives excellent agreement between the decoupled and
-fully coupled adjoint schemes.  Examining the differences of sensitivities in
-\trefs{tab:cylinder-adj-diff}{tab:srp-adj-diff}, it is clear
-that the absolute difference is almost always on the order of $10^{-15}$ each
-case.  Since double precision was used in all floating point operations for
-these cases, this is consistent with the level of precision used.
+\tref{tab:srp-adj-diff} also demonstrates excellent agreement between the
+decoupled and fully coupled adjoint schemes.  Examining the differences of
+sensitivities in \trefs{tab:cylinder-adj-diff}{tab:srp-adj-diff}, it is clear
+that the absolute difference is almost always on the order of $10^{-15}$ for
+each case.  Because double precision was used in all floating point operations for
+these cases, these results are consistent with the level of precision used.
 
 As a note on robustness, none of the stability issues found in the decoupled
 flow solver have been observed for the decoupled adjoint scheme.  The
 non-linear nature of the chemical source term was the primary stability concern
-in the decoupled flow solver, since the explicitness introduced by the decoupled
+in the decoupled flow solver, because the explicitness introduced by the decoupled
 mass fraction update exacerbates CFL restrictions.  These problems disappear in
-the adjoint equations, since it is a linear system being solved instead of a
+the adjoint equations, because it is a linear system being solved instead of a
 highly non-linear one.  The full stability and convergence properties of the
 fully coupled adjoint solver were recovered by the decoupled adjoint solver, and
 it is therefore concluded that there is no advantage of solving the adjoint
@@ -112,9 +112,9 @@ scheme
 %------------------------------------------------------------------------------%
 \fref{fig:sim-time-comp} shows the comparison of the fully coupled adjoint and 
 decoupled adjoint time to solution with the two mechanisms for computing the
-exact linearizations.  \tref{tab:srp-rel-speedup} shows that the speedup of
-decoupled scheme is only truly realized when the exact linearizations are store,
-rather than recomputed at each timestep. 
+exact linearizations.  \tref{tab:srp-rel-speedup} shows that the reduction in
+simulation time of the decoupled scheme is only truly realized when the exact
+linearizations are stored, rather than recomputed at each timestep. 
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -130,14 +130,14 @@ rather than recomputed at each timestep.
   \label{tab:srp-rel-speedup}
 \end{table}
 %------------------------------------------------------------------------------%
-This is because computing the exact linearizations in the adjoint is the
-dominant cost.  The comparison between storing the linearizations and
+This reduction is because computing the exact linearizations in the adjoint is
+the dominant cost.  The comparison between storing the linearizations and
 recomputing them is somewhat unfair, as the ability to store the full Jacobian
 of the second order reconstruction may not be possible, due to memory
 constraints.  That said, a significant advantage of the decoupled scheme over
 the fully coupled scheme is the memory savings offered by the LHS Jacobian
 sparsity. It was show in \sref{sec:predicted-cost-mem-savings} that the
-predicted memory savings for a infinite number of species is $1/7$ for a
+predicted memory savings for an infinite number of species is $1/7$ for a
 hexahedra grid where the average number of neighbors is 6.  Unfortunately, the
 storage requirements for the exact linearizations will not change between the
 decoupled and fully coupled schemes; however, as the average number of neighbors
@@ -164,17 +164,17 @@ refinement study in \sref{sec:mesh-refinement-study}.
   \label{fig:srp-mem-req}
 \end{figure}
 %------------------------------------------------------------------------------%
-\fref{fig:srp-mem-req} is somewhat encouraging a face value, since it was
-possible to store the exact linearizations for the 3.1 million node mesh,
-simulating a 9-species hydrogen air mixture.  \fref{fig:abs-mem-req} show, as
-expected, that the memory requirements for both the fully coupled and decoupled
-schemes scale directly with the number of mesh points.  The relative savings for
-this case are nowhere near the predicted $1/7$ value, because the exact
-linearizations require significantly more memory than anything else store in the
-adjoint solver.  That said, the $\sim 20\%$ decrease in memory required by the
-decoupled adjoint solver is significant, since the ability to store the exact
-linearizations is a binary problem: either there is enough memory or there is
-not.  The increased savings are as important as the speedup, if not more, since
+As shown in \fref{fig:srp-mem-req} it is possible to store the exact
+linearizations for the 3.1 million node mesh, simulating a 9-species hydrogen
+air mixture.  \fref{fig:abs-mem-req} show, as expected, that the memory
+requirements for both the fully coupled and decoupled schemes scale directly
+with the number of mesh points.  The relative savings for this case are nowhere
+near the predicted $1/7$ value, because the exact linearizations require
+significantly more memory than anything else in the adjoint solver.  That said,
+the $\sim 20\%$ decrease in memory required by the decoupled adjoint solver is
+significant, because the ability to store the exact linearizations is a binary
+problem: either there is enough memory or there is not.  The increased savings
+are as important as the reduction in simulation time, if not more so, because
 the decoupled scheme can facilitate larger problems to be solved with greater
 than an order of magnitude increase in computational efficiency, if the exact
 linearizations can be stored.

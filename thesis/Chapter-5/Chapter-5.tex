@@ -30,20 +30,20 @@ nozzle, as shown in \fref{fig:annular-jet-side}.
   \label{fig:annular-jet-side}
 \end{figure}
 %------------------------------------------------------------------------------%
-This geometry was originally investigated by Gnoffo et
-al\cite{gnoffo2016tapping} to obtain increased drag from ``pulsing'' the annular
-jet to obtain a beneficial effect from the unsteady shock interaction with the
-plume of the jet.  It was also determined from the aforementioned work that a
-steady solution to the Euler equations exists for this annular jet
-configuration.  This problem is attractive for optimization, because the annular
-jet plenum conditions significantly affect aerodynamic and aerothermodynamic
-quantities of interest on the vehicle surface.  These effects are very
-non-linear, due to the shock and jet plume interaction, and it is therefore very
-difficult to intuitively understand the relationship between the plenum
-conditions and vehicle surface quantities.  Because the adjoint solver is
-rigorously derived from the discretized governing equations, the relationship
-between the plenum and surface can be directly determined, making this an
-excellent showcase problem for adjoint-based sensitivity information.
+This geometry has been investigated by Gnoffo et al.\cite{gnoffo2016tapping} to
+increase drag from ``pulsing'' the annular jet to obtain a beneficial effect
+from the unsteady shock interaction with the plume of the jet.  In the
+aforementioned work, it has been determined that a steady solution to the Euler
+equations exists for this annular jet configuration.  This problem is attractive
+for optimization, because the annular jet plenum conditions significantly affect
+aerodynamic and aerothermodynamic quantities of interest on the vehicle surface.
+These effects are very non-linear, due to the shock and jet plume interaction,
+and it is therefore very difficult to intuitively understand the relationship
+between the plenum conditions and vehicle surface quantities.  Because the
+adjoint solver is rigorously derived from the discretized governing equations,
+the relationship between the plenum and surface can be directly determined,
+making this an excellent showcase problem for adjoint-based sensitivity
+information.
 
 %------------------------------------------------------------------------------%
 \begin{table}[h]
@@ -63,12 +63,13 @@ excellent showcase problem for adjoint-based sensitivity information.
   \label{tab:annular-geom}
 \end{table}
 %------------------------------------------------------------------------------%
-The geometry was generated with the parameters shown in \tref{tab:annular-geom},
-with the mesh originally created as structured grid and then converted to an
+The geometry is described by the parameters shown in \tref{tab:annular-geom},
+with the mesh originally created as a structured grid and then converted to an
 unstructured grid comprised of hexahedra and prismatic elements.  The flow
-conditions for a Mach 20 condition are shown in \tref{tab:flow-conditions}, with
-all simulations conducted using a 9-species Hydrogen-air mixture comprised of
-$H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$, $OH$, and $H_2 O$.
+conditions corresponding to a Mach 20 freestream flow are shown in
+\tref{tab:flow-conditions}, with all simulations conducted using a 9-species
+Hydrogen-air mixture comprised of $H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$,
+$OH$, and $H_2 O$.
 %------------------------------------------------------------------------------%
 \begin{table}[!h]
   \centering
@@ -143,10 +144,11 @@ results in steady flow for all design perturbations.  A $70^o$ cone angle was
 initially chosen, instead of $50^o$, because of a rich history of investigation
 associated with the Mars Pathfinder probe\cite{gnoffo1996influence}.  It was
 heuristically determined that blowing a light gas with a high cone angle leads
-to a sonic corner body.  Numerical experiments indicate that the annular jet is
-susceptible to very low frequency and low amplitude pulsing of the entrained
-separation bubble on sonic corner bodies, where the separation bubble near the
-nozzle exit is relatively large.
+to a sonic corner body, a state where the sonic line extends the shoulder of the
+vehicle.  Numerical experiments indicate that the annular jet is susceptible to
+very low frequency and low amplitude pulsing of the entrained separation bubble
+on sonic corner bodies, where the separation bubble near the nozzle exit is
+relatively large.
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
   \centering
@@ -182,10 +184,10 @@ ever found for the $50^o$ cone angle.
 \section{Mesh Refinement Study}
 \label{sec:mesh-refinement-study}
 
-To determine the flow solution mesh sensitivity, a grid convergence study was
-attempted by uniformly refining the original mesh, using the cut-cell method
-developed by Park\cite{park2008anisotropic} that uniformly subdivides each
-element in the mesh.
+To determine the sensitivity of the flow solution to mesh density, a grid
+convergence study was attempted by uniformly refining the original mesh, using
+the cut-cell method developed by Park\cite{park2008anisotropic} that uniformly
+subdivides each element in the mesh.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
@@ -202,7 +204,7 @@ element in the mesh.
 %------------------------------------------------------------------------------%
 The solution on each grid level was computed using the freestream conditions in
 \tref{tab:flow-conditions} and the plenum conditions in
-\tref{tab:plenum-conditions}, and \fref{fig:mesh-refined} shows the progression
+\tref{tab:plenum-conditions}. \fref{fig:mesh-refined} shows the progression
 of refined meshes generated by this method,
 %------------------------------------------------------------------------------%
 \begin{figure}[h]
@@ -222,8 +224,8 @@ temperature and plenum mass flow rate for a nominal case.
   \label{fig:grid-convergence}
 \end{figure}
 %------------------------------------------------------------------------------%
-On the fine mesh ($431,000$ Nodes), a frozen limiter was required to maintain
-stead flow.  The flow solution for the very fine mesh ($3,100,000$ Nodes) was
+On the fine mesh ($431,000$ nodes), a frozen limiter was required to maintain
+steady flow.  The flow solution for the very fine mesh ($3,100,000$ nodes) was
 very unsteady, and freezing the flux limiter did not recover a steady flow
 solution.  The values for surface temperature and mass flow rate on the very
 fine mesh are time averaged quantities presented for qualitative purposes only.
@@ -274,29 +276,27 @@ the conditioning of the problem being solved.
   \label{fig:chem-res-comp}
 \end{figure}
 %------------------------------------------------------------------------------%
-\fref{fig:chem-res-comp} shows a typical convergence history for the annular jet
-case with a flux limiter engaged on the coarse mesh.  If no chemical reactions
-are allows to take place, i.e. ``frozen'' flow, the residual of all equations
-can be decreased to to less than $10^{-16}$.  If finite rate chemistry is
-included, convergence ends at $\sim 10^{-8}$.  The difference is believed to be
-associated with the high degree of stiffness in the chemical source terms.  The
-large reaction rates significantly increase the condition number of the
-Jacobian, and further updates to the solution do not improve convergence.  This
-is not a problem for the adjoint solution, as both levels of convergence are
-sufficient to obtain an adjoint solution; however, the convergence of the flow
-equations with chemistry is marred by the high degree of sensitivity to the flux
-limiter used.  It can be seen in \fref{fig:chem-res-comp} that convergence
-to
-steady state is less smooth when chemistry is involved, and this is directly
+\fref{fig:chem-res-comp} shows a typical convergence history, obtained on a
+coarse mesh, for the annular jet case with a flux limiter engaged.  If no
+chemical reactions are allowed to take place, i.e. ``frozen'' flow, the residual
+of all equations can be decreased to less than $10^{-16}$.  If finite rate
+chemistry is included, convergence ends at $\sim 10^{-8}$.  The difference is
+believed to be associated with the high degree of stiffness in the chemical
+source terms.  The large reaction rates significantly increase the condition
+number of the Jacobian, and further updates to the solution do not improve
+convergence.  This is not a problem for the adjoint solution, as both levels of
+convergence are sufficient to obtain a solution; however, the convergence of the
+flow equations with chemistry is marred by the high degree of sensitivity to the
+flux limiter used.  It can be seen in \fref{fig:chem-res-comp} that convergence
+to steady state is less smooth when chemistry is involved, and this is directly
 tied to the flux limiter field.  In FUN3D, the frozen flux limiter is
 re-evaluated when a reconstruction is unrealisable.  This reevaluation causes
 high-frequency errors, which manifest as ``spikes'' in the residual history.
-Fortunately, the reevaluation is only needed at a small number of nodes
-(usually $< 10$ nodes), so integrated aerothermodynamic quantities are
-unaffected by these reevaluations when convergence to steady-state is reached.
-It should be noted that while the results presented here are only on the
-coarsest (baseline) mesh level, the refined meshes also exhibit similar
-behavior.
+Fortunately, the reevaluation is only needed at a small number of nodes (usually
+$< 10$ nodes), so integrated aerothermodynamic quantities are unaffected by
+these reevaluations when convergence to steady-state is reached.  It should be
+noted that while the results presented here are only on the coarsest (baseline)
+mesh level, the refined meshes also exhibit similar behavior.
 
 Because the solution is not grid converged, there is a significant difference
 between the first-order and second-order solutions; therefore, the choice flux
@@ -314,7 +314,7 @@ the solution.
 surface of the vehicle converges to significantly different results before
 the flux limiter is frozen at iteration 4000.  The Minmod flux limiter exhibits
 very large oscillations after freezing, due to the large number of non-smooth
-reevaluations of the flux limiter were reconstructions became unrealisable.
+reevaluations of the flux limiter where reconstructions became unrealisable.
 These oscillations in the solution make the Minmod flux limiter unusable for
 design optimization of this case. The Van Albada flux limiter converges to a
 much more steady solution after being frozen; however, care must be taken to
@@ -345,13 +345,14 @@ steady result with the least dependence on the iteration that the flux limiter
 is frozen.
 
 None of the aforementioned flux limiter choices are ideal.  Because of the
-sensitivity exhibited to freezing the limiter, integrated aerothermodynamic
-quantities results can vary between solution with the same inputs, but different
-starting states.  Tuning the Van Albada flux limiter mitigates this issue, but
-does not solve it entirely, with some cases resulting in a surface temperature
-RMS variance of $+/- 5 K$ with identical solver inputs but different flow
-starting conditions. This is a recognized problem, but one that is outside of
-the scope of this study.  A number of novel discretizations at at NASA Langley
-Research Center\cite{gnoffo2014global,mazaheri2014very,mazaheri2016high} show
-promise in mitigating or eliminating the need for a flux limiter, while
-achieving higher-order spatial accuracy, and future work may incorporate them.
+sensitivity of the solution, attributable to freezing the limiter, the integrated
+aerothermodynamic quantities demonstrated can vary between solutions with the
+same inputs, but different starting states.  Tuning the Van Albada flux limiter
+mitigates this issue, but does not solve it entirely, with some cases resulting
+in a surface temperature RMS variance of $+/- 5 K$ with identical solver inputs
+but different flow starting conditions. This is a recognized problem, but one
+that is outside of the scope of this study.  A number of novel discretizations
+at NASA Langley Research
+Center\cite{gnoffo2014global,mazaheri2014very,mazaheri2016high} show promise in
+mitigating or eliminating the need for a flux limiter, while achieving
+higher-order spatial accuracy, and future work may incorporate them.

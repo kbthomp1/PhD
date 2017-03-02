@@ -1,10 +1,10 @@
 \chapter{Verification of Adjoint Sensitivity Gradients}
 \label{chapter-seven}
 
-In this section the sensitivity gradients computed by the adjoint-formulation
-are verified against finite-difference derivatives with a complex step.  This
-details the methods by which the gradient information is computed in the
-forward-mode and in the reverse-mode.
+In this chapter the sensitivity gradients computed by the adjoint-formulation
+are verified against derivatives obtained with a complex step, which is also
+described.  Additionally, this chapter details the methods by which the gradient
+information is computed in the forward-mode and in the reverse-mode.
 
 \section{Forward-mode Sensitivities Using Complex-Variables}
 
@@ -40,18 +40,18 @@ the first derivative yields
 %------------------------------------------------------------------------------%
 Thus, this complex-variable approach provides a means of computing the cost
 function derivatives without subtractive cancellation error, giving truly second
-order accuracy.  The power of using this approach is that the derivative of any
-function with respect to a single can be computed without any additional work,
-other than the function be made to use complex arithmetic and a complex-valued
-perturbation be applied.
+order accuracy.  The power of using this approach is that very little additional
+code is required to compute the derivative of any function with respect to a
+single design variable.  All that is needed is all functions be made to use
+complex arithmetic and a complex-valued perturbation be applied.
 
 In practice, this complex-variable approach is implemented by transforming the
-source code such that all real variables used in a function evaluation are made
-to be complex variables.  A specified step size is then added to the complex
-part of the design variable that the cost function is to be linearized with
-respect to in the function evaluation.  Provided the ``complexified'' solver
-converges in the same manner as the real-variable solver, the complex part of
-the function of interest is the sensitivity derivative.
+source code such that all real variables used in a function evaluation are
+re-declared to be complex variables.  A specified step size is then added to the
+complex part of the design variable that the cost function is to be linearized
+with respect to in the function evaluation.  Provided the ``complexified''
+solver converges in the same manner as the real-variable solver, the complex
+part of the function of interest is the sensitivity derivative.
 
 As mentioned before, the complex-variable and real-variable solvers must
 converge to the same solution for the comparison between the adjoint-computed
@@ -64,14 +64,16 @@ limiter identically.  Although the solvers are nearly identical, their
 floating-point operations will be different since complex arithmetic is involved
 in only the complex-variable solver.  The flux limiter formulation is sensitive
 to these differences and will result in a different converged state, regardless
-of the limiter being frozen at the same iteration between the solvers.  To
-overcome this, the complex-variable solver must not be allowed to change the
-value of the flux limiter.  Enforcing consistency between the real-value and
-complex-value flow solver is done by converging the real-value flow solver to
-machine precision, and then starting the complex-variable solver with the flow
-field of the converged real-variable solution.  The complex step is then added
-to the design variable; however, the flux limiter is frozen.  Because limiter
-value is constant, the real solution from the complex-variable and real-variable
+of the limiter being frozen at the same iteration between the solvers.  
+
+To overcome the sensitivity of solution to the flux limiter state, the
+complex-variable solver must not be allowed to change the value of the flux
+limiter.  Enforcing consistency between the real-value and complex-value flow
+solver is done by converging the real-value flow solver to machine precision,
+and then starting the complex-variable solver with the flow field of the
+converged real-variable solution.  The complex step is then added to the design
+variable; however, the flux limiter is frozen.  Because the limiter value is
+constant, the real solution from the complex-variable and real-variable
 solutions will match identically, and the complex part of the solution will be
 converged without ever needing to update the flux limiter.  This will ensure
 that the sensitivity derivatives from the complex and adjoint solvers match to
@@ -94,7 +96,7 @@ was formed with three components
 \end{equation}
 %------------------------------------------------------------------------------%
 By combining all components into a single composite function, only one
-real-valued flow and adjoint solution is needed to obtain the sensitivity
+real-valued flow and one adjoint solution are needed to obtain the sensitivity
 derivatives for all design variables, computed by \eref{obj-linearization2}. One
 complex-valued flow solution is needed for each design variable.
 \tref{tab:pg-deriv-check} shows the relative difference between the sensitivity

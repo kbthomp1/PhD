@@ -3,8 +3,8 @@
 
 An implicit, decoupled scheme has been implemented in the reacting gas path of
 the FUN3D flow solver, and an adjoint solver employing a fully coupled and
-decoupled scheme has also been implemented.  The decoupled adjoint scheme
-demonstrated here is a significant improvement to the state of the art in the
+decoupled scheme has also been implemented.  The decoupled adjoint scheme,
+demonstrated here, is a significant improvement to the state-of-the-art in the
 field of sensitivity analysis for reacting flows.  The decreased memory and
 computational costs afforded by solving a decoupled dependent variable set in
 the adjoint solver enabled a speedup greater than an order of magnitude for some
@@ -16,12 +16,12 @@ stability issues when the chemical source term was very large, due to large
 reaction rates.  This stability issue was mitigated by multiplying the chemical
 source term uniformly by scaling term, which could be ramped from zero to one
 over the course of the simulation.  Provided that the ramping was completed, the
-true steady-state solution, done without ramping, was recovered.  The
+true steady-state solution, achieved without ramping, was recovered.  The
 consistency of the solutions computed by the fully coupled and decoupled methods
-was found to match discretely to eight digits for surface temperature and pressure,
-and four digits for mass fractions on the stagnation line of a spanwise
-cylinder case in a 5 $km/s$ flow.  It was also determined that this difference
-in mass fraction was reduced with mesh spacing.
+was found to match discretely to eight digits for surface temperature and
+pressure, and four digits for mass fractions on the stagnation line of a
+spanwise cylinder case in a 5 $km/s$ flow.  It was also determined that this
+difference in mass fraction was reduced with mesh spacing.
 
 Sample inverse and direct design optimizations were completed on a hypersonic
 re-entry vehicle geometry that employed a retro-firing annular jet.  Using the
@@ -38,33 +38,34 @@ code of FUN3D, complex-variable Frechet derivatives were computed and compared
 to those computed by the adjoint solver.  Both of these were found to match to a
 high degree of accuracy when both the flow solver and adjoint solver were
 sufficiently converged.  Cases involving strong chemical reactions were
-typically found to produce the greater differences between the flow and adjoint
+typically found to produce the greatest differences between the flow and adjoint
 solvers; however, the accuracy of the sensitivity derivatives was still
 sufficient to complete direct and inverse design optimizations.
 
 An analog to the decoupled iterative mechanism in the flow solver was derived
-for the adjoint solver, and its consistency and efficiency compared to the fully
-coupled scheme was examined.  The adjoint solution was found to discretely match
-the fully coupled solution, and numerical tests showed that the decoupled
-adjoint scheme was over three times more efficient than the fully coupled
-adjoint scheme for the annular jet demonstration problem, if the exact
-linearizations were stored rather than recomputed at each time step.  The
-decoupled adjoint scheme also afforded $20\%$ less memory required than the
-fully coupled adjoint scheme, and the decoupled scheme was over 16 times faster
-than the fully coupled scheme when the decoupled scheme utilized storing the
-exact linearizations and the fully coupled scheme did not.  Future work will
-include methods to speedup the adjoint exact linearization computation, as well
-as schemes that employ mixed storage and recomputing of these linearizations,
-in order to further improve the efficiency of the decoupled adjoint scheme.
+for the adjoint solver, and its consistency and efficiency was compared to the
+fully coupled scheme.  The adjoint solution, obtained using the decoupled
+scheme, was found to discretely match the fully coupled solution, and numerical
+tests showed that the decoupled adjoint scheme reached a solution three times
+faster than the fully coupled adjoint scheme for the annular jet demonstration
+problem, if the exact linearizations were stored rather than recomputed at each
+time step.  The decoupled adjoint scheme also afforded $20\%$ less memory
+required than the fully coupled adjoint scheme, and the decoupled scheme was
+over 16 times faster than the fully coupled scheme when the decoupled scheme
+utilized storing the exact linearizations and the fully coupled scheme did not.
+Future work will include methods to speedup the computation of the
+linearizations, as well as schemes that employ mixed storage and recomputing of
+these linearizations, in order to further improve the efficiency of the
+decoupled adjoint scheme.
 
 The ability to perform high-fidelity sensitivity analysis and design
-optimization on reacting flows is significantly helped by the increased
+optimization on reacting flows is significantly aided by the increased
 computational efficiency that the decoupled flow and adjoint schemes provide.
-The improvement to iterative convergence provided by exact linearizations in the
-Jacobians, also compounds the beneficial aspects of the decoupled schemes.  It
-is hoped that these improvements will encourage interest in the field of
-adjoint-based sensitivity analysis, by enabling solutions to problems that were
-intractable due to the high computational and memory cost requirements.
-Future work will extend these schemes to viscous flows, incorporate
-multi-temperature models, and apply adjoint-based sensitivities to mesh
-adaptation and mesh movement strategies.
+The improvement to iterative convergence provided by using exact linearizations
+in the Jacobians, also compounds the beneficial aspects of the decoupled
+schemes.  It is hoped that these improvements will encourage interest in the
+field of adjoint-based sensitivity analysis for hypersonic flows, by enabling
+solutions to problems that were previously intractable due to the high
+computational and memory cost requirements.  Future work will extend these
+schemes to viscous flows, incorporate multi-temperature models, and apply
+adjoint-based sensitivities to mesh adaptation and mesh movement strategies.

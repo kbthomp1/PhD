@@ -19,10 +19,11 @@ This decoupled approach for computing design sensitivities with the adjoint
 system is demonstrated for inviscid flow in chemical non-equilibrium around a
 re-entry vehicle with a retro-firing annular nozzle. The sensitivities of the
 surface temperature and mass flow rate through the nozzle plenum are computed
-with respect plenum conditions and verified against complex-variable
-finite-difference.  The decoupled scheme significantly improved the
-computational time and memory required to complete the optimization, making this
-an attractive method for high-fidelity design of hypersonic vehicles.
+with respect to plenum conditions and verified against sensitivities computed
+using a complex-variable finite-difference approach.  The decoupled scheme
+significantly reduces the computational time and memory required to complete the
+optimization, making this an attractive method for high-fidelity design of
+hypersonic vehicles.
 
 \end{abstract}
 
@@ -41,30 +42,47 @@ an attractive method for high-fidelity design of hypersonic vehicles.
 
 %% -------------------------------- Biography ------------------------------- %%
 \begin{biography}
-The author was born on December 11th, 1990, in Willow Springs, North Carolina.
-He recieved a B.S. in Aerospace Engineering from North Carolina State University
-in 2012, and subsequently recieved his M.S. in Aerospace Engineering from North
-Carolina State University in 2014.  After recieving his M.S., he began work in
-the Aerothermodynamics branch of NASA Langley Research Center, via the Pathways
-program.  He completed this disseration on adjoint-based optimization while
-working at NASA Langley Research Center.
+Kyle Bonner Thompson was born on December 11th, 1990, in Willow Springs, North
+Carolina.  In 2009, Kyle was awarded the Park Scholarship at North Carolina State
+University, and began school there.  He recieved his Bachelor of Science degree
+in Aerospace Engineering in 2012 and his Master of Science degree in 2014, both
+from North Carolina State University.  After recieving his Master of Science
+degree, he began work in the Aerothermodynamics branch of NASA Langley Research
+Center, via the Pathways program.  He completed this disseration on
+adjoint-based optimization while working at NASA Langley Research Center.
 \end{biography}
 
 %% ----------------------------- Acknowledgements --------------------------- %%
 \begin{acknowledgements}
 First, I would like to thank Dr. Peter Gnoffo, who has been an unending source
-of support during my time NASA Langley Research Center.  I would like thank my
-parents for all of their encouragement over the years, and their commitment to
-seeing I be given the best opportunity to make the most of myself.  I would like
-to thank my advisor, Dr. Hassan, for instilling in me a diligence to improve
-myself and for mentoring me through many challenges.  I would like to thank Dr.
-Jeff White in the Computational Aerosciences Branch at NASA Langley Research
-Center for his advice on reacting flow simulation. I would like to thank the
-Entry Systems Modeling Project within NASA's Game Changing Development Program
-for their funding and support of this research.  Finally, I would like to
-recognize the FUN3D team at NASA Langley Research Center, for their support and
-availability to discuss many challenging problems I have encountered during the
-course of my time at NASA.
+of support and mentoring during my time at NASA Langley Research Center.  I
+would also like to thank my parents for all of their encouragement over the
+years, and their commitment to seeing that I be given the best opportunity to
+make the most of myself.
+
+At NC State University, I would like to thank my advisor, Dr. Hassan, for
+instilling in me a diligence to improve myself and for mentoring me through many
+challenges.  I would like to thank my committee members Drs. Hong Luo and Jack
+Edwards for teaching me skills I use daily, and Dr. John Griggs for his
+mentorship through many tough times in my higher education journey.  I would
+like to thank the Park Scholarships Program and staff for the amazing
+opportunities provided to me through them.  I would like to thank everyone in
+the department of Mechanical and Aerospace Engineering at NC State, for all the
+help and knowledge they have shared with me during my years at NC State.  I
+would also like to thank Dean Louis Martin-Vega, for the NCSU College of
+Engineering Dean's Doctoral Fellowship, which propelled me to continue past my
+M.S. and complete this research.
+
+I would like to thank the Entry Systems Modeling Project within NASA's Game
+Changing Development Program for their funding and support of this research.  
+
+Finally, I would like to recognize the FUN3D team at NASA Langley Research
+Center for their support and availability to discuss many challenging problems
+I have encountered during the course of my time at NASA.  Particularly, I would
+like to thank Drs. Jeff White, Mike Park, Boris Diskin, and Eric Nielsen for
+many helpful discussions relating to adjoint solvers and reacting flow
+simulations.
+
 \end{acknowledgements}
 
 \thesistableofcontents

@@ -99,7 +99,7 @@ curve fits and related to $\cvs$ via
 \end{equation}
 %------------------------------------------------------------------------------%
 The thermodynamic properties curve fit tables developed by McBride, Gordon, and
-Reno\cite{McBride} were used to compute $\cps$, and quadratic blending function
+Reno\cite{McBride} are used to compute $\cps$, and quadratic blending function
 of the form
 %------------------------------------------------------------------------------%
 \begin{equation}
@@ -110,7 +110,9 @@ of the form
 was used to ensure that $\cps$ and enthalpy were continuous across temperature
 ranges.  The details of coefficients $a$, $b$, and $c$, in
 \eref{generic-quad-blending} and their derivation are given in
-\aref{sec:quad-cp-blending}
+\aref{sec:quad-cp-blending}.  This blending is done to improve convergence and
+stability of the numerical solvers, by preventing a large, discontinuous
+sensitivity between temperature and the overall thermodynamic state.
 
 \section{Chemical Kinetics Model}
 
@@ -137,10 +139,10 @@ $r$, respectively.  The forward and backward reaction rates are defined as
 \end{align}
 %------------------------------------------------------------------------------%
 where $k_{f,r}$ and $k_{b,r}$ are the forward and backward rate coefficients,
-respectively.  It should be noted that all terms on the RHS for
-\erefs{forward-rate}{backward-rate} are in cgs units.  The factors 1000 and
-0.001 are required to convert from cgs to mks, so that $R_{f,r}$ and $R_{b,r}$
-are in mks units.  The rate coefficients are expressed in the manner defined by
+respectively.  It should be noted that all terms on the right-hand side (RHS)
+for \erefs{forward-rate}{backward-rate} are in CGS units.  The factors 1000 and
+0.001 are required to convert from CGS to MKS, so that $R_{f,r}$ and $R_{b,r}$
+are in MKS units.  The rate coefficients are expressed in the manner defined by
 Park\cite{park}, but for a one-temperature model; thus, the forward and back
 rate coefficients are defined as
 %------------------------------------------------------------------------------%

@@ -7,7 +7,7 @@ are to:
 \begin{enumerate}
   \item Compute sensitivities of aerodynamic and aerothermodynamic quantities to
     design variables
-  \item Utilize a decoupled approach in the solution of the adjoint
+  \item Utilize a decoupled approach in the solution of the adjoint equations
 \end{enumerate}
 The cost of the solving the adjoint system of equations increases quadratically
 with each additional species conservation equation, in the same manner as the
@@ -337,16 +337,16 @@ cost in the adjoint solver.
 
 As shown in \sref{sec:higher-order-linearizations}, the second order
 reconstruction results in an extended stencil.  This significantly decreases the
-sparsity of the Jacobian, since the linearizations at node must now include the
-nearest neighbors.  The cost of computing these linearizations can quickly
-dominate other costs of the adjoint, but can be significantly mitigated if the
-linearizations of second order Jacobian are stored.  This essentially trades all
-the memory in the simulation for computational speed, and may not be possible
-for large mesh sizes.  Since all of the linearizations in the second order
-Jacobian must be exact, the memory saving approximations of the decoupled scheme
-can only be applied to the LHS Jacobians in
-\erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time}.  This last point makes
-the quadratic scaling of memory required with the number of species a
+sparsity of the Jacobian, since the linearizations at a node must now include
+the neighbors of its nearest neighbors.  The cost of computing these
+linearizations can quickly dominate other costs of the adjoint, but can be
+significantly mitigated if the linearizations of second order Jacobian are
+stored.  This essentially trades all the memory in the simulation for
+computational speed, and may not be possible for large mesh sizes.  Since all of
+the linearizations in the second order Jacobian must be exact, the memory saving
+approximations of the decoupled scheme can only be applied to the LHS Jacobians
+in \erefs{dc-fc-species-adj-time}{dc-fc-mixture-adj-time}.  This last point
+makes the quadratic scaling of memory required with the number of species a
 significant concern of the adjoint.  The savings provided by the decoupled
 scheme become a very significant benefit in cases involving many species, since
 the memory freed by the sparsity on the LHS of
