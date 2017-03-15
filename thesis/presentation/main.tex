@@ -307,7 +307,7 @@
   \frametitle{Fully-Coupled Point Implicit Flow Solver}
   \begin{itemize}
     \item Constructing the Jacobian in a fully-coupled fashion results in large,
-      dense block matricies
+      dense block matrices
     \item Cost of multi-color Gauss-Seidel sweeps dominated by matrix-vector
       products 
       \[
@@ -353,7 +353,7 @@
       \begin{align*}
   	    \Fhat_{\rho_s}
           &= 
-        c_s 
+        \tilde{c}_s 
         \only<1>{
           \begin{cboxf}[white]
             \vF'_{\rho}
@@ -382,7 +382,7 @@
         + (1-\roe)\rho^L\lambda^+ - \roe \rho^R\lambda^- \\
         \pd{\Fhat_{\rho_s}}{c_s^R} 
         	&=
-        (1-w)
+        (1-\roe)
         \only<1>{
           \begin{cboxf}[white]
             \vF'_{\rho}
@@ -515,7 +515,7 @@
     \end{pmatrix}^{n,n+1}
   \end{sequation}
   \begin{itemize}
-    \item Matrix-vector products $\to$ inner products: $O(N_s^2) \to O(N_s)$
+    \item Diagonal matrix-vector product operations: $O(N_s^2) \to O(N_s)$
   \end{itemize}
 \end{frame}
 \begin{frame}
@@ -622,7 +622,7 @@
     \item Can be solved with Krylov method (i.e. GMRES), but time marching
       similar to flow solver shown to be more robust
       \begin{equation*}
-        \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right)
+        \left( \frac{\vol}{\Delta t} \mi + \druduapprox \right)^{\mathsmaller T}
         \Delta \adjlam{}
         = - \left( \rtdiff{\mU}{\mU} \adjlam{\mU}^{n} + \pd{f}{\mU} \right)
       \end{equation*}
@@ -923,7 +923,7 @@
 \begin{frame}
   \frametitle{Decoupled Adjoint Solver}
   \begin{itemize}
-    \item Separate into two systems and solve as block jacobi scheme
+    \item Separate into two systems and solve as block Jacobi scheme
   \end{itemize}
 %------------------------------------------------------------------------------%
 \begin{gather*}
@@ -963,7 +963,7 @@
     \vspace{-0.75cm}
     \begin{figure}
       \centering
-        \includegraphics[width=\textwidth]{figures/side-coarse.png}
+        \includegraphics[width=\textwidth]{figures/side-coarse-flowdir.png}
       \caption{Annular jet geometry.}
     \end{figure}
     %------------------------------------------------------------------------------%
@@ -1399,8 +1399,9 @@
   %------------------------------------------------------------------------------%
   \begin{figure}
     \centering
-    \includegraphics[width=0.4\textwidth]{figures/limiters/chem-res-comp.png}
+    \adjincludegraphics[height=4.5cm,trim={0 0 0.5cm 4cm},clip]{figures/limiters/chem-res-comp.png}
   \end{figure}
+  \vspace{-0.2cm}
   %------------------------------------------------------------------------------%
     \item Convergence of reacting flow stalls $\sim 8$ orders of magnitude
       before the convergence of frozen flow.
@@ -1581,23 +1582,29 @@
   \frametitle{Conclusion - Contributions}
   \begin{itemize}
     \item Contributions to the state of the art:
+      \vspace{0.2cm}
       \begin{enumerate}
-        \item<1-> Improved stability for solving inviscid flows in chemical
+        \item<1-> Stable flow solver for inviscid flows in chemical
           non-equilibrium using a decoupled, point-implicit approach.
           \begin{itemize}
-            \item Chemical source term scaling factor maintains decoupled flow
-              solver stability for flows with large reaction rates
+            \small
+            \item Extended original derivation from Steger-Warming flux vector
+              splitting method to Roe flux difference splitting method.
           \end{itemize}
+          \vspace{0.2cm}
         \item<2-> Improved computational cost and memory required scaling with
           number of species continuity equations in adjoint solver.
           \begin{itemize}
+            \small
             \item Order of magnitude speed increase if decoupled scheme memory
               savings enable linearization storage that was not possible with
               fully-coupled scheme
           \end{itemize}
-        \item<3-> Design optimization off a hypersonic reentry vehicle with a
+          \vspace{0.2cm}
+        \item<3-> Design optimization of a hypersonic reentry vehicle with a
           retro-firing annular jet.
           \begin{itemize}
+            \small
             \item Direct and inverse design optimization on retro-propulsion
               case with challenging physics
           \end{itemize}
