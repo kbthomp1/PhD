@@ -1,0 +1,301 @@
+\chapter{Change of Variable Sets}
+\label{change-of-var-section}
+
+The decoupled scheme developed by Candler et. al\cite{candler} is based upon the
+change of variables
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    \rho_1 \\
+    \vdots \\
+    \rho_{N_s} \\
+    \rho \vu \\
+    \rho E
+  \end{pmatrix}
+  \rightarrow
+  \mv = \begin{pmatrix}
+    c_1 \\
+    \vdots \\
+    c_{N_s} \\
+    \rho \\
+    \rho \vu \\
+    \rho E
+  \end{pmatrix}
+  \label{var-sets}
+\end{equation}
+%------------------------------------------------------------------------------%
+To avoid confusion between variable sets, we re-write the variable vectors,
+$\mU$ and $\mv$, in a more generic sense
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    u_1 \\
+    \vdots \\
+    u_{N_s + 2}
+  \end{pmatrix}
+  \rightarrow
+  \mv = \begin{pmatrix}
+    v_1 \\
+    \vdots \\
+    v_{N_s + 3}
+  \end{pmatrix}
+  \label{generic-var-sets}
+\end{equation}
+%------------------------------------------------------------------------------%
+For simplicity, consider a system with two species, $\rho_1$ and $\rho_2$.
+Using the relationship $\rho_s = c_s \rho$, then the original variable vector,
+$\mU$ can be rewritten in terms of the new variables, $\mv$ as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \mU = \begin{pmatrix}
+    u_1 \\
+    u_2 \\
+    u_3 \\
+    u_4
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    v_1 v_3 \\
+    v_2 v_3 \\
+    v_4 \\
+    v_5
+  \end{pmatrix}
+  \label{u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+This allows the derivation of the Jacobian 
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{\mv} = 
+  \begin{pmatrix}
+    \pd{u_1}{v_1} & \pd{u_1}{v_2} & \pd{u_1}{v_3} & \pd{u_1}{v_4} & \pd{u_1}{v_5} \\ \\
+    \pd{u_2}{v_1} & \pd{u_2}{v_2} & \pd{u_2}{v_3} & \pd{u_2}{v_4} & \pd{u_2}{v_5} \\ \\
+    \pd{u_3}{v_1} & \pd{u_3}{v_2} & \pd{u_3}{v_3} & \pd{u_3}{v_4} & \pd{u_3}{v_5} \\ \\
+    \pd{u_4}{v_1} & \pd{u_4}{v_2} & \pd{u_4}{v_3} & \pd{u_4}{v_4} & \pd{u_4}{v_5}
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    v_3 & 0   & v_1 & 0 & 0 \\ \\
+    0   & v_3 & v_2 & 0 & 0 \\ \\
+    0   & 0   & 0   & 1 & 0 \\ \\
+    0   & 0   & 0   & 0 & 1
+  \end{pmatrix}
+  \label{dudv-jac}
+\end{equation}
+%------------------------------------------------------------------------------%
+At this point, it is important to note that the Jacobian in \eref{dudv-jac} has
+two psuedo-inverse matricies, that correspond to the right and left inverse.
+The right inverse, $\pdr{\mv}{\mU}{R}$, can be constructed based on the previously
+defined steps
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pdr{\mv}{\mU}{R} = 
+  \begin{pmatrix}
+    \pd{v_1}{u_1} & \pd{v_1}{u_2} & \pd{v_1}{u_3} & \pd{v_1}{u_4} \\ \\
+    \pd{v_2}{u_1} & \pd{v_2}{u_2} & \pd{v_2}{u_3} & \pd{v_2}{u_4} \\ \\
+    \pd{v_3}{u_1} & \pd{v_3}{u_2} & \pd{v_3}{u_3} & \pd{v_3}{u_4} \\ \\
+    \pd{v_4}{u_1} & \pd{v_4}{u_2} & \pd{v_4}{u_3} & \pd{v_4}{u_4} \\ \\
+    \pd{v_5}{u_1} & \pd{v_5}{u_2} & \pd{v_5}{u_3} & \pd{v_5}{u_4} 
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+    \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+    1                 & 1                 & 0 & 0 \\ \\
+    0                 & 0                 & 1 & 0 \\ \\
+    0                 & 0                 & 0 & 1
+  \end{pmatrix}
+  \label{dvdu-jac-right}
+\end{equation}
+%------------------------------------------------------------------------------%
+It is easily verified that the matrix product of
+\erefs{dudv-jac}{dvdu-jac-right} produces identity
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mU}{\mv} \pdr{\mv}{\mU}{R} = 
+  \begin{pmatrix}
+    v_3 & 0   & v_1 & 0 & 0 \\ \\
+    0   & v_3 & v_2 & 0 & 0 \\ \\
+    0   & 0   & 0   & 1 & 0 \\ \\
+    0   & 0   & 0   & 0 & 1
+  \end{pmatrix}
+  \begin{pmatrix}
+    \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+    \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+    1                 & 1                 & 0 & 0 \\ \\
+    0                 & 0                 & 1 & 0 \\ \\
+    0                 & 0                 & 0 & 1
+  \end{pmatrix}
+  =
+  \begin{pmatrix}
+    1 & 0 & 0 & 0 \\ \\
+    0 & 1 & 0 & 0 \\ \\
+    0 & 0 & 1 & 0 \\ \\
+    0 & 0 & 0 & 1
+  \end{pmatrix}
+  \label{dvdu-jac-right-I}
+\end{equation}
+%------------------------------------------------------------------------------%
+however, \eref{dvdu-jac-right-I} is not associative
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pdr{\mv}{\mU}{R} \pd{\mU}{\mv} &= 
+    \begin{pmatrix}
+      \frac{1-v_1}{v_3} & \frac{-v_1}{v_3}  & 0 & 0 \\ \\
+      \frac{-v_2}{v_3}  & \frac{1-v_2}{v_3} & 0 & 0 \\ \\
+      1                 & 1                 & 0 & 0 \\ \\
+      0                 & 0                 & 1 & 0 \\ \\
+      0                 & 0                 & 0 & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      v_3 & 0   & v_1 & 0 & 0 \\ \\
+      0   & v_3 & v_2 & 0 & 0 \\ \\
+      0   & 0   & 0   & 1 & 0 \\ \\
+      0   & 0   & 0   & 0 & 1
+    \end{pmatrix} \\
+    &= 
+    \begin{pmatrix}
+      1-v_1 & -v_1  & \frac{-(v_1)^2 - v_1 v_2 + v_1}{v_3} & 0 & 0 \\ \\
+      -v_2  & 1-v_2 & \frac{-(v_2)^2 - v_1 v_2 + v_2}{v_3} & 0 & 0 \\ \\
+      0     & 0     & 0                                    & 1 & 0 \\ \\
+      0     & 0     & 0                                    & 0 & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{dvdu-jac-right-I-bad}
+\end{equation}
+%------------------------------------------------------------------------------%
+to correctly compute identity, the property of matrix transpose multiplication
+is used
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \left( \pd{\mU}{\mv} \pdr{\mv}{\mU}{R} \right)^T &= 
+    {\pdr{\mv}{\mU}{R}}^T {\pd{\mU}{\mv}}^T \\ &=
+    \begin{pmatrix}
+      \frac{1-v_1}{v_3} & \frac{-v_2}{v_3}  & 1 & 0 & 0 \\ \\
+      \frac{-v_1}{v_3}  & \frac{1-v_2}{v_3} & 1 & 0 & 0 \\ \\
+      0                 & 1                 & 0 & 1 & 0 \\ \\
+      0                 & 0                 & 0 & 0 & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      v_3 & 0   & 0   & 0 \\ \\
+      0   & v_3 & 0   & 0 \\ \\
+      v_1 & v_2 & 0   & 0 \\ \\
+      0   & 0   & 1   & 0 \\ \\
+      0   & 0   & 0   & 1 
+    \end{pmatrix} \\
+    &= 
+    \begin{pmatrix}
+      1 & 0 & 0 & 0 \\ \\
+      0 & 1 & 0 & 0 \\ \\
+      0 & 0 & 1 & 0 \\ \\
+      0 & 0 & 0 & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{dvdu-jac-tranpose}
+\end{equation}
+%------------------------------------------------------------------------------%
+This is critical in understanding the relationships needed to switch transform
+variables sets.  For linearizations of the residual, $\mr$, the correct
+transformation from the variable set $\mU$ to the variable set $\mv$ is
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mr}{\mv} = \pd{\mr}{\mU} \pd{\mU}{\mv}
+  \label{r-u-to-v}
+\end{equation}
+%------------------------------------------------------------------------------%
+which is intuitively understood; however, the transformation from the variable
+set $\mv$ to the variable set $\mU$ must follow \eref{dvdu-jac-tranpose}
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\mr}{\mU} = \left( \pd{\mr}{\mv}^{T} \pd{\mv}{\mU}^{T} \right)^{T}
+  \label{r-v-to-u}
+\end{equation}
+%------------------------------------------------------------------------------%
+The transposition in \eref{r-u-to-v} is critical, as the linearizations will be
+incorrect if the multiplication is done without it.  Fortunately,
+\eref{r-u-to-v} is rarely seen in practice, as most linearizations are done for
+the fully-coupled system that requires \eref{r-v-to-u} to transform the
+linearizations
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mv} = \pd{\mr}{\mU} \pd{\mU}{\mv} =
+    \begin{pmatrix}
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_1}{\rho_{N_s}}    & \rdiff{\rho_1}{\rho \vu}    & \rdiff{\rho_1}{\rho E}    \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                    \\ \\
+      \rdiff{\rho_{N_s}}{\rho_1} & \dots  & \rdiff{\rho_{N_s}}{\rho_{N_s}} & \rdiff{\rho_{N_s}}{\rho \vu} & \rdiff{\rho_{N_s}}{\rho E} \\ \\
+      \rdiff{\rho \vu}{\rho_1}  & \dots  & \rdiff{\rho \vu}{\rho_{N_s}}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho \vu}{\rho E}  \\ \\
+      \rdiff{\rho E}{\rho_1}    & \dots  & \rdiff{\rho E}{\rho_{N_s}}    & \rdiff{\rho E}{\rho \vu}    & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+    \begin{pmatrix}
+      \rho   & \dots  & 0      & c_1     & 0      & 0      \\ \\
+      \vdots & \ddots & \vdots & \vdots  & \vdots & \vdots \\ \\
+      0      & \dots  &\rho    & c_{N_s}  & 0      & 0      \\ \\
+      0      & \dots  &0       & 0       & 1      & 0      \\ \\
+      0      & \dots  &0       & 0       & 0      & 1
+    \end{pmatrix}
+  \end{aligned}
+  \label{drdu-to-drdv}
+\end{equation}
+%------------------------------------------------------------------------------%
+likewise, in the adjoint the transformation is applied to the tranpose of the 
+Jacobian
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mU}^{T} = \pd{\mU}{\mv}^{T} \pd{\mr}{\mU}^{T} =
+    \begin{pmatrix}
+      \rho   & \dots  & 0      &  0      & 0      \\ \\
+      \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
+      0      & \dots  &\rho    &  0      & 0      \\ \\
+      c_1    & \dots  & c_{N_s} &  0      & 0      \\ \\
+      0      & \dots  & 0      &  1      & 0      \\ \\
+      0      & \dots  & 0      &  0      & 1
+    \end{pmatrix}
+    \begin{pmatrix}
+      \rdiff{\rho_1}{\rho_1}    & \dots  & \rdiff{\rho_{N_s}}{\rho_1}    & \rdiff{\rho \vu}{\rho_1}    & \rdiff{\rho E}{\rho_1} \\ \\
+      \vdots                    & \ddots & \vdots                       & \vdots                      & \vdots                   \\ \\
+      \rdiff{\rho_1}{\rho_{N_s}} & \dots  & \rdiff{\rho_{N_s}}{\rho_{N_s}} & \rdiff{\rho \vu}{\rho_{N_s}} & \rdiff{\rho E}{\rho_{N_s}} \\ \\
+      \rdiff{\rho_1}{\rho \vu}  & \dots  & \rdiff{\rho_{N_s}}{\rho \vu}  & \rdiff{\rho \vu}{\rho \vu}  & \rdiff{\rho E}{\rho \vu} \\ \\
+      \rdiff{\rho_1}{\rho E}    & \dots  & \rdiff{\rho_{N_s}}{\rho E}    & \rdiff{\rho \vu}{\rho E}    & \rdiff{\rho E}{\rho E}
+    \end{pmatrix}
+  \end{aligned}
+  \label{drdu-to-drdv-t}
+\end{equation}
+%------------------------------------------------------------------------------%
+Since the tranformation is left-multiplied, the matrix vector products of the 
+exact Jacobian with costate variables, $\adjlam{}$, in the adjoint linear system
+can be done first, and the transformation can then be applied to the system
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{aligned}
+    \pd{\mr}{\mU}^{T} \adjlam{} =
+    \left(
+    \begin{smallmatrix}
+      \rho   & \dots  & 0      &  0      & 0      \\ \\
+      \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
+      0      & \dots  &\rho    &  0      & 0      \\ \\
+      c_1    & \dots  & c_{N_s} &  0      & 0      \\ \\
+      0      & \dots  & 0      &  1      & 0      \\ \\
+      0      & \dots  & 0      &  0      & 1
+    \end{smallmatrix}
+    \right)
+    \left(
+    \begin{smallmatrix}
+      \rlprod{\rho_1}{\rho_1}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho_1}    &+& \rlprod{\rho \vu}{\rho_1}    &+& \rlprod{\rho E}{\rho_1} \\ \\
+      \vdots                     & \ddots & & \vdots                        & & \vdots                       & & \vdots                   \\ \\
+      \rlprod{\rho_1}{\rho_{N_s}} & \dots  &+& \rlprod{\rho_{N_s}}{\rho_{N_s}} &+& \rlprod{\rho \vu}{\rho_{N_s}} &+& \rlprod{\rho E}{\rho_{N_s}} \\ \\
+      \rlprod{\rho_1}{\rho \vu}  & \dots  &+& \rlprod{\rho_{N_s}}{\rho \vu}  &+& \rlprod{\rho \vu}{\rho \vu}  &+& \rlprod{\rho E}{\rho \vu} \\ \\
+      \rlprod{\rho_1}{\rho E}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho E}    &+& \rlprod{\rho \vu}{\rho E}    &+& \rlprod{\rho E}{\rho E}
+    \end{smallmatrix}
+    \right)
+  \end{aligned}
+  \label{adj-drdv}
+\end{equation}
+%------------------------------------------------------------------------------%
+This indicates the important point that the transformation of the adjoint
+residual is not dependent on the number of equations solved, but only the number
+of dependent variables the equations are linearized with respect to, namely
+$\mU$.

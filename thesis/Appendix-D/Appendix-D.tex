@@ -1,0 +1,93 @@
+\chapter{Change of Equation Sets}
+\label{sec:change-of-equations}
+
+In addition to a change of variables, the decoupled scheme also changes the
+equations being solved, effectively solving is one more equation than the
+fully-coupled scheme.  The residual vector for the decoupled scheme, $\rv{}$,
+and the residual vector for the fully coupled scheme, $\ru{}$, can be written as
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \ru{} =
+  \begin{pmatrix}
+    \res{\rho_1} \\
+    \vdots \\
+    \res{\rho_{N_s}} \\
+    \res{\rho \vu} \\
+    \res{\rho E}
+  \end{pmatrix}
+  \rightarrow
+  \rv{} =
+  \begin{pmatrix}
+    \res{\rho_1} - c_1 \resrho \\
+    \vdots \\
+    \res{\rho_{N_s}} - c_{N_s} \resrho \\
+    \resrho \\
+    \res{\rho \vu} \\
+    \res{\rho E}
+  \end{pmatrix}
+  \label{fc-dc-res}
+\end{equation}
+%------------------------------------------------------------------------------%
+\eref{fc-dc-res} shows that $\rv{}$ is completely comprised of components from
+$\ru{}$; therefore, a relationship between these equation sets can be derived in
+a similar fashion to Appendix \ref{change-of-var-section}.  Rewriting $\rv{}$ in
+terms of $\ru{}$
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \rv{} =
+  \begin{pmatrix}
+    \ru{s} - c_s \left( \lsum{i=1}{N_s}{\ru{i}} \right) \\
+    \lsum{i=1}{N_s}{\ru{i}} \\
+    \ru{N_s + 1} \\
+    \ru{N_s + 2}
+  \end{pmatrix}
+  \label{ru-to-rv}
+\end{equation}
+%------------------------------------------------------------------------------%
+it is possible to form the transformation
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \pd{\rv{}}{\ru{}} =
+  \begin{pmatrix}
+    1 - c_1  & -c_1     & \dots  & -c_1      & 0      & 0      \\
+    -c_2     & 1-c_2    & \dots  & -c_2      & 0      & 0      \\
+    \vdots   & \vdots   & \ddots & \vdots    & \vdots & \vdots \\
+    -c_{N_s} & -c_{N_s} & \dots  & 1-c_{N_s} & 0      & 0      \\
+    1        & 1        & \dots  & 1         & 0      & 0      \\
+    0        & 0        & \dots  & 0         & 1      & 0      \\
+    0        & 0        & \dots  & 0         & 0      & 1      \\
+  \end{pmatrix}
+  \label{drudrv}
+\end{equation}
+%------------------------------------------------------------------------------%
+Because all transformations performed on the equation set are also performed
+on the adjoint costate variables, \eref{drudrv} enables the mapping between the
+costate variables associated with the fully coupled and decoupled flow solver
+equations
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \adjlam{\mU} = \left(\pd{\rv{}}{\ru{}} \right)^{T} \adjlam{\mv}
+  \label{adj-ru-to-rv}
+\end{equation}
+%------------------------------------------------------------------------------%
+where costate variables associated with the fully coupled flow solver equations,
+$\adjlam{\mU}$, come from solving
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \drudu \adjlam{\mU} = -\pd{f}{\mU}
+  \label{fc-adjoint}
+\end{equation}
+%------------------------------------------------------------------------------%
+and the costate variables associated with the decoupled flow solver equations,
+$\adjlam{\mv}$, come from solving
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \drvdv \adjlam{\mv} = -\pd{f}{\mv}
+  \label{dc-adjoint}
+\end{equation}
+%------------------------------------------------------------------------------%
+\eref{adj-ru-to-rv} faciliates a right preconditioning of \eref{fc-adjoint} to
+transform the adjoint solution as post-processing step.  This also decreases the
+length of the solution vector storage required, since the fully coupled system
+has one less equation than the decoupled system.
+

@@ -1,0 +1,49 @@
+\chapter{Quadratic Interpolation Between Thermodynamic Curve Fits}
+\label{sec:quad-cp-blending}
+
+We seek to blend the two thermodynamic curve fits in such a way that we maintain
+$c_0$ continuity in both specific heat ($C_p$) and enthalpy ($h$).  To
+accomplish this, a quadratic function must be used, of the form
+%------------------------------------------------------------------------------%
+\begin{equation}
+  a T^2 + b T + c = C_p
+  \label{generic_form}
+\end{equation}
+%------------------------------------------------------------------------------%
+The coefficients $a$, $b$, and $c$ are determined by solving the system that
+results from the boundary value problem
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{cases}
+    a {T_1}^{2} + b T_1 +c = C_{p_1} \\
+    a {T_2}^{2} + b T_2 +c = C_{p_2} \\
+    a \frac{\left( {T_2}^{3} - {T_1}^{3}\right) }{3} + b\frac{ \left( {T_2}^{2} - {T_1}^{2}\right) }{2} + c \left( T_2 - T_1\right) = h_2-h_1
+  \end{cases}
+\end{equation}
+%------------------------------------------------------------------------------%
+Where the $x_1$ and $x_2$ subscripts describe the left and right states,
+respectively.  Solving the linear system, the coefficients are
+%------------------------------------------------------------------------------%
+\begin{equation}
+  \begin{cases}
+    a=\frac{3\left( C_{p_2}+ C_{p_1}\right) }{(T_2-T_1)^{2}} - \frac{6 \left(h_2 - h_1\right)}{(T_2-T_1)^{3}}\\ \\
+    b=-\frac{2\left[(C_{p_2} + 2C_{p_1})T_2 + (2C_{p_2} + C_{p_1})T_1\right]}{(T_2-T_1)^{2}} + \frac{6(T_2+T_1)(h_2 - h_1)}{(T_2 - T_1)^3}\\ \\
+    c=\frac{C_{p_1} T_2 (T_2 + 2T_1) + C_{p_2} T_1 (T_1 + 2 T_2)}{(T_2-T_1)^2} - \frac{6 T_1 T_2 (h_2 - h_1)}{(T_2 - T_1)^3}
+  \end{cases}
+\end{equation}
+%------------------------------------------------------------------------------%
+This can be simplified to
+%------------------------------------------------------------------------------%
+\begin{gather}
+  \begin{cases}
+    a=3B - A \\ \\
+    b=\frac{-2(C_{p_1} T_2 + C_{p_2}T_2)}{(T_2 - T_1)^2} +(T_2+T_1) (A - 2B) \\ \\
+    c=\frac{C_{p_1} {T_2}^2 + C_{p_2} {T_1}^2}{(T_2-T_1)^2} + T_1 T_2 (2B - A)
+  \end{cases} \\
+  A = \frac{6(h_2 - h_1)}{(T_2 - T_1)^3} \\
+  B = \frac{C_{p_2} + C_{p_1}}{(T_2 - T_1)^2}
+\end{gather}
+%------------------------------------------------------------------------------%
+Note that this does not ensure that entropy will be continuous across curve
+fits.
+
