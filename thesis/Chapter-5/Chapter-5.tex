@@ -45,9 +45,17 @@ the relationship between the plenum and surface can be directly determined,
 making this an excellent showcase problem for adjoint-based sensitivity
 information.
 
+The geometry is described by the parameters shown in \tref{tab:annular-geom},
+with the mesh originally created as a structured grid and then converted to an
+unstructured grid comprised of hexahedra and prismatic elements.  The flow
+conditions corresponding to a Mach 20 freestream flow are shown in
+\tref{tab:flow-conditions}, with all simulations conducted using a 9-species
+Hydrogen-air mixture comprised of $H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$,
+$OH$, and $H_2 O$.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Annular nozzle geometry inputs.}
   \begin{tabular}{c|c|c}
     Parameter & Description & Value \\
     \hline
@@ -59,20 +67,14 @@ information.
     $l_{conv}$         &   distance from plenum to throat, $m$       & 0.05 \\
     $\theta_c$         &   cone half angle, deg                      & 50.0
   \end{tabular}
-  \caption{Annular nozzle geometry inputs.}
   \label{tab:annular-geom}
 \end{table}
 %------------------------------------------------------------------------------%
-The geometry is described by the parameters shown in \tref{tab:annular-geom},
-with the mesh originally created as a structured grid and then converted to an
-unstructured grid comprised of hexahedra and prismatic elements.  The flow
-conditions corresponding to a Mach 20 freestream flow are shown in
-\tref{tab:flow-conditions}, with all simulations conducted using a 9-species
-Hydrogen-air mixture comprised of $H_2$, $N_2$, $O_2$, $H$, $N$, $O$, $NO$,
-$OH$, and $H_2 O$.
+\vspace{0.2cm}
 %------------------------------------------------------------------------------%
 \begin{table}[!h]
   \centering
+  \caption{Flow conditions.}
   \begin{tabular}{c|c|c}
     Flow Condition & Description & Value \\
     \hline
@@ -81,7 +83,6 @@ $OH$, and $H_2 O$.
     $T_{\infty}$    & freestream temperature, $K$       & 200.0 \\
     $M_{\infty}$    & freestream Mach number (derived)  & 20.0
   \end{tabular}
-  \caption{Flow conditions.}
   \label{tab:flow-conditions}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -191,6 +192,7 @@ subdivides each element in the mesh.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Plenum conditions.}
   \begin{tabular}{c|c}
     Plenum Condition & Value \\
     \hline
@@ -198,7 +200,6 @@ subdivides each element in the mesh.
     Plenum Temperature, $T_{p,o}$, K &  500 \\
     Plenum Fuel-Air Ratio $\fa$      &  0.7
   \end{tabular}
-  \caption{Plenum conditions.}
   \label{tab:plenum-conditions}
 \end{table}
 %------------------------------------------------------------------------------%

@@ -311,13 +311,13 @@ flow in chemical non-equilibrium.
 %------------------------------------------------------------------------------%
 \begin{table}
   \centering
+  \caption{Difference with frozen chemistry.}
   \begin{tabular}{c|c|c|c}
     Quantity & Decoupled & Fully Coupled & Relative Difference \\
     \hline
     $\massflow$ & 0.8450858226893225E-03 & 0.8450858226893034E-03 & 2.26E-14 \\
     $T_{RMS}$   & 0.1508600871984388E+04 & 0.1508600871984388E+04 & 0
   \end{tabular}
-  \caption{Difference with frozen chemistry.}
   \label{tab:srp-frozen-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -330,13 +330,13 @@ comparison, and only the last digit of both quantities in
 %------------------------------------------------------------------------------%
 \begin{table}
   \centering
+  \caption{Difference with finite-rate chemistry.}
   \begin{tabular}{c|c|c|c}
     Quantity & Decoupled & Fully Coupled & Relative Difference \\
     \hline
     $\massflow$ & 0.8448720721551258E-03 & 0.8448720721551088E-03 & 2.01E-14 \\
     $T_{RMS}$   & 0.1545729169703027E+04 & 0.1545720949811712E+04 & 5.32E-06
   \end{tabular}
-  \caption{Difference with finite-rate chemistry.}
   \label{tab:srp-chem-flow-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -418,6 +418,7 @@ than $10^{-16}$, and the relative speedup is shown in
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Relative speedup for frozen chemistry.}
   \begin{tabular}{c|c|c}
     Scheme & Time (s) & Speedup \\
     \hline
@@ -425,7 +426,6 @@ than $10^{-16}$, and the relative speedup is shown in
     Fully Coupled (Exact)       & 265.6 & 1.31 \\
     Decoupled                   & 138.7 & 2.51
   \end{tabular}
-  \caption{Relative speedup for frozen chemistry.}
   \label{tab:srp-rel-speedup-frozen}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -441,6 +441,7 @@ relative speedup in \tref{tab:srp-rel-speedup-chem}
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Relative speedup for finite-rate chemistry.}
   \begin{tabular}{c|c|c}
     Scheme & Time (s) & Speedup \\
     \hline
@@ -448,7 +449,6 @@ relative speedup in \tref{tab:srp-rel-speedup-chem}
     Fully Coupled (Approximate) & 270.4 & 1.04 \\
     Decoupled                   & 168.6 & 1.66
   \end{tabular}
-  \caption{Relative speedup for finite-rate chemistry.}
   \label{tab:srp-rel-speedup-chem}
 \end{table}
 %------------------------------------------------------------------------------%

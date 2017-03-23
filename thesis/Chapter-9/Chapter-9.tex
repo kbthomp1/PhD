@@ -32,13 +32,13 @@ to the angle of attack, $\alpha$, is computed by both schemes and compared.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Angle of attack sensitivity relative difference.}
   \begin{tabular}{c|c|c|c}
     Case & Decoupled Sensitivity & Fully Coupled Sensitivity & Rel. Diff\\
     \hline
     Cylinder    &  0.764409218044021E-07 &  0.764409218054372E-07 & 1E-11 \\
     Sphere-Cone & -0.877773486565165E-02 & -0.877773486565157E-02 & 2E-14
   \end{tabular}
-  \caption{Angle of attack sensitivity relative difference.}
   \label{tab:cylinder-adj-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -56,6 +56,7 @@ coupled adjoint solutions matched to give the same sensitivity.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Annular jet plenum sensitivity relative difference.}
   \begin{tabular}{c|c|c|c}
     Design Variable & Decoupled Sensitivity & Fully Coupled Sensitivity & Rel. Diff\\
     \hline
@@ -63,7 +64,6 @@ coupled adjoint solutions matched to give the same sensitivity.
     $T_{p,o}$ &  0.19089941243495E-03 &  0.19089941237390E-03 & 3E-10 \\
     $\fa$     & -0.28035409093945E-01 & -0.28035409045530E-01 & 1E-9
   \end{tabular}
-  \caption{Annular jet plenum sensitivity relative difference.}
   \label{tab:srp-adj-diff}
 \end{table}
 %------------------------------------------------------------------------------%
@@ -118,6 +118,7 @@ linearizations are stored, rather than recomputed at each timestep.
 %------------------------------------------------------------------------------%
 \begin{table}[h]
   \centering
+  \caption{Relative speedup.}
   \begin{tabular}{c|c|c|c}
     Scheme & Linearizations & Time to Convergence (s) & Speedup \\
     \hline
@@ -126,7 +127,6 @@ linearizations are stored, rather than recomputed at each timestep.
     Fully Coupled & Stored      & 61.22 & 5.05 \\
     Decoupled     & Stored      & 18.69 & $\mathbf{16.6}$ \\
   \end{tabular}
-  \caption{Relative speedup.}
   \label{tab:srp-rel-speedup}
 \end{table}
 %------------------------------------------------------------------------------%
