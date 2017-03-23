@@ -216,7 +216,8 @@
     \begin{titlepage}
     \centering
       \quad
-      \vspace{0.35\textheight}
+      %\vspace{0.35\textheight}
+      \vfill
 
       \copyright{} Copyright \ncsu@year{} by \@author \\[1em]
       All Rights Reserved
@@ -420,8 +421,8 @@
         by \\
         \@author
             \vfill
-       \ncsu@titlepageparagraph
-           \vfill
+       \ncsu@titlepageparagraph\\[2.5\ncsu@lineheight]
+           %\vfill
        \ncsu@program\\[2.5\ncsu@lineheight]
        \ncsu@citystate\\[1\ncsu@lineheight]
        \ncsu@year
@@ -461,7 +462,7 @@
 {\clearpage}
 
 %%  Nomenclature
-\newcommand{\nomenclaturetitle}{Nomenclature}
+\newcommand{\nomenclaturetitle}{List of Nomenclature}
 \newenvironment{nomenclature}
 {\ncsu@dedbioack{\nomenclaturetitle}}
 {\clearpage}
@@ -469,7 +470,7 @@
 %% -------------------------------------------------------------------------- %%
 %% -------------------------  Table of Contents ----------------------------- %%
 %% -------------------------------------------------------------------------- %%
-\renewcommand{\contentsname}{Table of Contents}
+\renewcommand{\contentsname}{Table of Contents\hfill}
 \settowidth{\cftchapnumwidth}{\textbf{Chapter 000}}
 \renewcommand{\cftchappresnum}{Chapter }
 \renewcommand{\cftchapleader}{\cftdotfill{\cftsecdotsep}}
@@ -487,7 +488,7 @@
 \renewcommand{\cfttoctitlefont}{\hfill\ncsu@headingformat}
 \renewcommand{\cftaftertoctitle}{\hfill}
 
-\renewcommand{\listfigurename}{List of Figures}
+\renewcommand{\listfigurename}{LIST OF FIGURES}
 \settowidth{\cftfignumwidth}{Figure 00.00}
 \renewcommand{\cftfigpresnum}{Figure }
 \newcommand{\thesislistoffigures}{%
@@ -503,7 +504,7 @@
 \renewcommand{\cftloftitlefont}{\hfill\ncsu@headingformat}
 \renewcommand{\cftafterloftitle}{\hfill}
 
-\renewcommand{\listtablename}{List of Tables}
+\renewcommand{\listtablename}{LIST OF TABLES}
 \settowidth{\cfttabnumwidth}{Table 00.00}
 \renewcommand{\cfttabpresnum}{Table }
 \newcommand{\thesislistoftables}{%
