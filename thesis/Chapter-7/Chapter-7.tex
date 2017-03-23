@@ -6,7 +6,7 @@ are verified against derivatives obtained with a complex step, which is also
 described.  Additionally, this chapter details the methods by which the gradient
 information is computed in the forward-mode and in the reverse-mode.
 
-\section{Forward-mode Sensitivities Using Complex-Variables}
+\section{Forward-mode Sensitivities Using Complex Vari\-ables}
 
 The sensitivities can be computed in the forward-mode by using
 finite-difference.  While this approach is unfavorable to use in practice,
@@ -109,8 +109,8 @@ perfect gas annular jet simulation.
   \begin{tabular}{c|c|c|c} 
     Design Variable & Adjoint & Complex & Relative Difference \\ 
     \hline 
-    $P_{p,o}$ & 0.12067860106210E-04 & 0.12067860106758E-04 & 4.54e-11 \\
-    $T_{p,o}$ & 0.36654635117980E-03 & 0.36654635118188E-03 & 5.67e-12 
+    $P_{p,o}$ & 0.120678601062E-04 & 0.120678601067E-04 & 4.54e-11 \\
+    $T_{p,o}$ & 0.366546351179E-03 & 0.366546351181E-03 & 5.67e-12 
   \end{tabular}
   \label{tab:pg-deriv-check}
 \end{table}
@@ -126,9 +126,9 @@ ejected in a 5-species freestream air mixture with frozen flow
   \begin{tabular}{c|c|c|c} 
     Design Variable & Adjoint & Complex & Relative Difference\\
     \hline 
-    $P_{p,o}$ & -0.18451007644622E-06 & -0.184510076442032E-06 & 2.27e-11 \\ 
-    $T_{p,o}$ &  0.62086963151678E-03 &  0.620869631517086E-03 & 4.93e-13 \\ 
-    $\fa$     & -0.34045335117520E-01 & -0.340453351177196E-01 & 5.86e-12 
+    $P_{p,o}$ & -0.18451007644E-06 & -0.184510076442E-06 & 2.27e-11 \\ 
+    $T_{p,o}$ &  0.62086963151E-03 &  0.620869631517E-03 & 4.93e-13 \\ 
+    $\fa$     & -0.34045335117E-01 & -0.340453351177E-01 & 5.86e-12 
   \end{tabular}
   \label{tab:frozen-deriv-check}
 \end{table}
@@ -144,9 +144,9 @@ those in \tref{tab:frozen-deriv-check}, with reactions allowed to take place.
   \begin{tabular}{c|c|c|c}
     Design Variable & Adjoint & Complex & Relative Difference\\
     \hline
-    $P_{p,o}$ & -0.11081315601976E-06 & -0.110529774659536E-06 & 2.56e-03 \\
-    $T_{p,o}$ &  0.19089941237390E-03 &  0.190892847933810E-03 & 3.44e-05 \\
-    $\fa$     & -0.28035409045530E-01 & -0.280251731728184E-01 & 3.65e-04
+    $P_{p,o}$ & -0.110813156019E-06 & -0.1105297746595E-06 & 2.56e-03 \\
+    $T_{p,o}$ &  0.190899412373E-03 &  0.1908928479338E-03 & 3.44e-05 \\
+    $\fa$     & -0.280354090455E-01 & -0.2802517317281E-01 & 3.65e-04
   \end{tabular}
   \label{tab:react-deriv-check}
 \end{table}

@@ -102,7 +102,7 @@ contributions, of the form
 \end{equation}
 %------------------------------------------------------------------------------%
 
-\section{Quadratic Interpolation Between Thermodynamic Curve Fits}
+\section{Quadratic Interpolation Between Thermodyna\-mic Curve Fits}
 \label{sec:quad-cp-blending}
 
 We seek to blend the two thermodynamic curve fits in such a way that we maintain
@@ -425,21 +425,25 @@ can be done first, and the transformation can then be applied to the system
 \begin{equation}
   \begin{aligned}
     \pd{\mr}{\mU}^{T} \adjlam{} =
-    \begin{pmatrix}
+    \left(
+    \begin{smallmatrix}
       \rho   & \dots  & 0      &  0      & 0      \\ \\
       \vdots & \ddots & \vdots &  \vdots & \vdots \\ \\
       0      & \dots  &\rho    &  0      & 0      \\ \\
       c_1    & \dots  & c_{N_s} &  0      & 0      \\ \\
       0      & \dots  & 0      &  1      & 0      \\ \\
       0      & \dots  & 0      &  0      & 1
-    \end{pmatrix}
-    \begin{pmatrix}
+    \end{smallmatrix}
+    \right)
+    \left(
+    \begin{smallmatrix}
       \rlprod{\rho_1}{\rho_1}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho_1}    &+& \rlprod{\rho \vu}{\rho_1}    &+& \rlprod{\rho E}{\rho_1} \\ \\
       \vdots                     & \ddots & & \vdots                        & & \vdots                       & & \vdots                   \\ \\
       \rlprod{\rho_1}{\rho_{N_s}} & \dots  &+& \rlprod{\rho_{N_s}}{\rho_{N_s}} &+& \rlprod{\rho \vu}{\rho_{N_s}} &+& \rlprod{\rho E}{\rho_{N_s}} \\ \\
       \rlprod{\rho_1}{\rho \vu}  & \dots  &+& \rlprod{\rho_{N_s}}{\rho \vu}  &+& \rlprod{\rho \vu}{\rho \vu}  &+& \rlprod{\rho E}{\rho \vu} \\ \\
       \rlprod{\rho_1}{\rho E}    & \dots  &+& \rlprod{\rho_{N_s}}{\rho E}    &+& \rlprod{\rho \vu}{\rho E}    &+& \rlprod{\rho E}{\rho E}
-    \end{pmatrix}
+    \end{smallmatrix}
+    \right)
   \end{aligned}
   \label{adj-drdv}
 \end{equation}
